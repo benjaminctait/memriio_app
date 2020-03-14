@@ -5,18 +5,7 @@ import {
     Image
   } from 'react-native';
 
-class SettingsButton extends Component{
-    render(){
-        return(
-            <TouchableOpacity onPress={this.props.onPress}>
-            <Image
-              style={styles.button}
-              source={require('./images/settings.png')}
-            />
-          </TouchableOpacity>
-        )
-    }
-}
+
 
 const styles = StyleSheet.create({
     button: {

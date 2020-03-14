@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {RNCamera } from 'react-native-camera'
+import {StartButton,BackButton,PostButton} from './buttons'
 
 
 import { 
@@ -16,6 +17,13 @@ import {
 class Camera extends Component{
 
 
+  takePicture = async () => {
+    if (this.camera) {
+      const data = await this.camera.takePictureAsync();
+      alert(data.uri)
+    }
+  };
+
     render(){
         return(
          
@@ -25,19 +33,27 @@ class Camera extends Component{
                   style = {styles.preview}
                   type = {RNCamera.Constants.Type.back}
                   flashMode = {RNCamera.Constants.flashMode}
-
                 />
-                <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center' }}>
-                  <TouchableOpacity 
-                    onPress={this.takePicture} 
-                    style={styles.capture}>
-                    <Text style={{ fontSize: 14 }}> SNAP </Text>
-                  </TouchableOpacity>
-                </View>
-                <Button
-                  title="Press me"
-                  onPress={() => this.props.navigation.navigate('Feed')}
+                <View style={{
+                    
+                    flexDirection:'row',
+                    justifyContent:'space-between',
+                    alignItems:'center',
+                    margin:10
+                    
+                  }}>
+                  <BackButton 
+                    
+                    onPress={() => this.props.navigation.navigate('Feed')}
+                    
                   />
+                  <StartButton
+                    onPress={this.takePicture}                     
+                  />
+                  <PostButton
+
+                  />
+                </View>
             </View>
         )
     }
@@ -67,3 +83,7 @@ const styles = StyleSheet.create({
   },
   });
 
+  // <Button
+  //   title="Press me"
+  //   
+  // />
