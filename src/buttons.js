@@ -18,6 +18,32 @@ class StartButton extends Component{
     }
 }
 
+class VideoStartButton extends Component{
+  render(){
+      return(
+          <TouchableOpacity onPress={this.props.onPress}>
+          <Image
+            style={styles.bigButton}
+            source={require('./images/dottedcircle.png')}
+          />
+        </TouchableOpacity>
+      )
+  }
+}
+
+class VideoStopButton extends Component{
+  render(){
+      return(
+          <TouchableOpacity onPress={this.props.onPress}>
+          <Image
+            style={styles.bigButton}
+            source={require('./images/dottedcircleStop.png')}
+          />
+        </TouchableOpacity>
+      )
+  }
+}
+
 class PostButton extends Component{
   render(){
       return(
@@ -92,4 +118,4 @@ const styles = StyleSheet.create({
     }
   });
 
-export {StartButton,PostButton,BackButton,SettingsButton}
+export {StartButton,PostButton,BackButton,SettingsButton,VideoStartButton,VideoStopButton}

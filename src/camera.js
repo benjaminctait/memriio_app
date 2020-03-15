@@ -16,11 +16,12 @@ import {
 
 class Camera extends Component{
 
+  
 
   takePicture = async () => {
     if (this.camera) {
       const data = await this.camera.takePictureAsync();
-      alert(data.uri)
+      this.props.addImage(data.uri)
     }
   };
 
@@ -83,7 +84,4 @@ const styles = StyleSheet.create({
   },
   });
 
-  // <Button
-  //   title="Press me"
-  //   
-  // />
+  
