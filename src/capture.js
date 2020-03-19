@@ -1,96 +1,188 @@
 import React, { Component } from 'react';
-import Camera from './camera'
-import VideoComponent from './video'
-import AudioComponent from './audio'
-import FileComponent from './file'
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import MaterialComIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {RNCamera } from 'react-native-camera'
+import AsyncStorage from '@react-native-community/async-storage'
+
+import {CameraClickButton,
+        BackButton,
+        PostButton,
+        VideoStartButton,
+        AudioStartButton,
+        VideoStopButton,
+        AudioStopButton,
+        IconButtonCamera,
+        IconButtonVideo,
+        IconButtonAudio,
+        IconButtonFile,
+      } from './buttons'
 
 
-const CaptureNav = createBottomTabNavigator();
+import { 
+    StyleSheet,
+    View,    
+  } from 'react-native';
 
 
-class Capture extends Component {
+class CaptureComponent extends Component{
 
-  addImage = (imageurl) =>{
-    alert('addImage' + imageurl)
+  state = {
+    mode:'camera',
+    isRecordingVideo:false,
+    isRecordingAudio:false,
+    icount:0,
+    vcount:0,
+    acount:0,
+    fcount:0,
+  
   }
 
-  addVideo = (videourl) =>{
-    alert('addVideo',videourl)
+
+  startRecordingVideo = async () => {
+    if (this.camera) {
+      this.setState({isRecordingVideo:true})
+      const data = await this.camera.recordAsync({})
+
+      this.setState({vcount:this.state.vcount+1})
+      try{
+        await AsyncStorage.setItem( 'video - ' + this.state.vcount , data.uri )
+      } catch (err) {
+        alert(err)
+      }
+    }
+  };
+
+  stopRecordingVideo = async  () => {
+    if (this.camera) {
+      this.camera.stopRecording()
+      this.setState({isRecordingVideo:false})
+    }
   }
 
-  addAudioStream = (streamurl) =>{
-    alert('addAudio', streamurl)
+  startRecordingAudio = async () => {
+    alert('start audio')
+  };
+
+  stopRecordingAudio = async () => {
+    alert('stop audio')
   }
 
-  addFile = (fileurl) =>{
-    alert('addFile', fileurl)
+  takePicture = async () => {
+    if (this.camera) {
+      
+      this.setState({vcount:this.state.vcount+1})
+      try{
+        const data = await this.camera.takePictureAsync();
+        const key = 'image-' + this.state.vcount
+        await AsyncStorage.setItem( key , data.uri )
+        alert( key + ' : ' + data.uri)
+      } catch (err) {
+        alert(err)
+      }
+    }
   }
 
+  showMode = (modeName) =>  {
+    this.setState({mode:modeName})
+  }
+
+  showPost = () => {
+    this.props.navigation.navigate('NewPost')
+  }
+    
   
 
-  render(){
-    return (
-      <CaptureNav.Navigator >
-        
-        <CaptureNav.Screen 
-          name="Camera"           
-          options={{
-            tabBarLabel:'Camera',
-            tabBarIcon : () => (
-              <MaterialIcon name='camera-alt' color={'black'} size={26} />
-            )
-          }}
-        >
-          {props => <Camera{...props} addImage={this.addImage} />}
-        </CaptureNav.Screen>
 
+    render(){
+      switch ( this.state.mode ){
+        case 'camera' :
 
-        <CaptureNav.Screen 
-          name="Video" 
-          options={{
-            tabBarLabel:'Video',
-            tabBarIcon : () => (
-              <MaterialIcon name='videocam' color={'black'} size={26} />
-            )
-          }}
-          
-        >
-          {props => <VideoComponent{...props} addVideo={this.addVideo} />}  
-        </CaptureNav.Screen>
+          bigButton = <CameraClickButton onPress={this.takePicture} /> 
+          break;
+        case 'video' :
 
+          if (this.state.isRecordingVideo){
+            bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />   
+          } else {
+            bigButton = <VideoStartButton onPress={this.startRecordingVideo} />  
+          }
+          break;
+        case 'audio' : 
 
-        <CaptureNav.Screen 
-          name="Audio" 
-          options={{
-            tabBarLabel:'Audio',
-            tabBarIcon : () => (
-              <MaterialIcon name='volume-up' color={'black'} size={26} />
-            )
-          }}
-        >
-          {props => <AudioComponent{...props} addAudioStream = { this.addAudioStream} />}  
+          if (this.state.isRecordingAudio){
+            bigButton = <AudioStopButton onPress={this.stopRecordingAudio} />   
+          } else {
+            bigButton = <AudioStartButton onPress={this.startRecordingAudio} />  
+          }
+          break;
+        case 'file' :
 
-        </CaptureNav.Screen>
-         
-         <CaptureNav.Screen
-          name="File"
-          options={{
-            tabBarLabel:'File',
-            tabBarIcon : () => (
-              <MaterialComIcon name='file-plus' color={'black'} size={26} />
-            )
-          }}
-        >
-          {props => <FileComponent{...props} addFile = { this.addFile } />}  
-        </CaptureNav.Screen> 
+          bigButton = <VideoStartButton onPress={this.startRecordingVideo} />
+          break;
 
-      </CaptureNav.Navigator>
-    )
-  }
+      }
+      
+       
+        return(
+
+            
+            <View style={styles.container}>
+                <RNCamera
+                  ref = {ref => { this.camera = ref}}
+                  style = {styles.preview}
+                  type = {RNCamera.Constants.Type.back}
+                  flashMode = {RNCamera.Constants.flashMode}
+                />
+                
+                  <View style={styles.modeButtons} >
+                    <IconButtonCamera onPress={() => this.showMode('camera')} selected={this.state.mode=='camera'} />
+                    <IconButtonVideo onPress={() => this.showMode('video')} selected={this.state.mode=='video'} />
+                    <IconButtonAudio onPress={() => this.showMode('audio')} selected={this.state.mode=='audio'} />
+                    <IconButtonFile onPress={() => this.showMode('file')} selected={this.state.mode=='file'} />
+                  </View> 
+
+                  <View style={styles.mainButtons}>
+                  
+                      <BackButton onPress={() => this.props.navigation.navigate('Feed')} />
+                      {bigButton}
+                      <PostButton onPress={() => this.showPost() } />
+
+                  </View>
+                
+            </View>
+        )
+    }
 }
 
-export default Capture
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: 'black',
+  },
+  preview: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  mainButtons: {
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignItems:'center',
+    backgroundColor:'transparent',
+    margin:10,
+    borderBottomWidth:10,
+  },
+
+  modeButtons: {
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignSelf:'center',
+    alignItems:'center',
+    backgroundColor:'transparent',
+    margin:5,
+    width:'80%'
+  },
+
+  });
+
+  export default CaptureComponent; 
