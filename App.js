@@ -7,6 +7,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './src/homescr'
 import LogoTitle from './src/logotitle'
 import {SettingsButton} from './src/buttons'
+import AsyncStorage from '@react-native-community/async-storage';
 
 const Stack = createStackNavigator();
 
@@ -23,15 +24,14 @@ class App extends Component{
               options={{
                 headerTitle: props => <LogoTitle {...props} />,
                 headerRight: () => (
-                  <SettingsButton
-                    
-                    onPress={() => alert('This is a button!')}
-                    
+                  <SettingsButton onPress={() => {
+                    AsyncStorage.clear()
+                    alert('Storage cleared!')
+                  }}
                   />
                 ),
               }}
             />
-           
 
         </Stack.Navigator>
       </NavigationContainer>

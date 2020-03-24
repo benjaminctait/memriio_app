@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {RNCamera } from 'react-native-camera'
 import AsyncStorage from '@react-native-community/async-storage'
+import fs from 'react-native-fs';
+ 
 
 import {CameraClickButton,
         BackButton,
@@ -32,7 +34,6 @@ class CaptureComponent extends Component{
     vcount:0,
     acount:0,
     fcount:0,
-  
   }
 
 
@@ -44,6 +45,7 @@ class CaptureComponent extends Component{
       this.setState({vcount:this.state.vcount+1})
       try{
         await AsyncStorage.setItem( 'video - ' + this.state.vcount , data.uri )
+        alert('called')
       } catch (err) {
         alert(err)
       }
@@ -68,12 +70,18 @@ class CaptureComponent extends Component{
   takePicture = async () => {
     if (this.camera) {
       
+      
       this.setState({vcount:this.state.vcount+1})
       try{
         const data = await this.camera.takePictureAsync();
         const key = 'image-' + this.state.vcount
-        await AsyncStorage.setItem( key , data.uri )
-        alert( key + ' : ' + data.uri)
+        const fullpath = data.uri.split('//')[1];
+        
+        await AsyncStorage.setItem( key , fullpath )
+        alert( key + ' : ' + fullpath)
+
+        
+
       } catch (err) {
         alert(err)
       }
@@ -186,3 +194,10 @@ const styles = StyleSheet.create({
   });
 
   export default CaptureComponent; 
+
+  //const filename = fullpath.replace(/^.*[\\\/]/, '')
+  // const newpath = this.state.targetFolder + filename
+
+  // alert( key + ' : ' + newpath)
+        
+  // await fs.moveFile(fullpath,newpath)

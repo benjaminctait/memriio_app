@@ -4,6 +4,7 @@ import {
     StyleSheet,
     View,
     Text,
+    Image,
   } from 'react-native';
 
 
@@ -13,6 +14,11 @@ class Feed extends Component{
          
             <View style={styles.mainArea}>
                 <Text style={styles.textMain} >Feed</Text>
+                <Image
+                  style={{ height: '100%', width: '100%'}}
+                  source={{uri:'/Users/bentait/Pictures/cow.jpg'}}
+                  resizeMode='contain'
+            /> 
             </View>
         )
     }
