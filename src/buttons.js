@@ -4,7 +4,8 @@ import {
     TouchableOpacity,
     TouchableNativeFeedback,
     Image,
-    Text
+    Text,
+    View,
   } from 'react-native';
 
 class CameraClickButton extends Component{
@@ -173,6 +174,28 @@ class IconButtonAudio extends Component{
         
       )}}
 
+class PersonTag extends Component{
+
+  render(){
+      return(
+          <TouchableOpacity onPress={this.props.onPress}>
+          <View style={styles.ptag}>
+          <Text style={styles.ptagText}> {this.props.title}</Text>
+          </View>   
+        </TouchableOpacity>     
+      )}}
+
+class LocationTag extends Component{
+
+  render(){
+      return(
+          <TouchableOpacity onPress={this.props.onPress}>
+          <View style={styles.ptag}>
+          <Text style={styles.ptagText}> {this.props.title}</Text>
+          </View>   
+        </TouchableOpacity>     
+      )}}
+
 class IconButtonFile extends Component{
   
   
@@ -228,7 +251,24 @@ const styles = StyleSheet.create({
       width: 30,
       backgroundColor: 'transparent',
       
-    }
+    },
+    ptag:{
+      borderColor:'green',
+      backgroundColor:'#f5f5f5',
+      borderWidth:0.5,
+      borderRadius:10,
+      paddingHorizontal:4,
+      paddingBottom:2,
+      marginRight:4,
+      marginBottom:4,
+
+    },
+
+    ptagText:{
+      fontSize:10,
+
+    },
+
   });
 
 export {CameraClickButton,
@@ -243,4 +283,6 @@ export {CameraClickButton,
         IconButtonVideo,
         IconButtonFile,
         IconButtonAudio,
+        PersonTag,
+        LocationTag,
       }

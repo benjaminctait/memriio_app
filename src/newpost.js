@@ -7,25 +7,28 @@ import KeyboardShift from './keyboardShift';
 import { 
     StyleSheet,    
     ScrollView,  
-    Button,
+    Text,
     View,
     Image,
     TextInput,
     TextInputComponent,
     Keyboard,
+    
  
   } from 'react-native';
 
   import {CameraClickButton,
     BackButton,
     PostButton,
+    PersonTag,
+    LocationTag,
     
   } from './buttons'
 
 import { 
   Input, 
   ListItem,
-
+  CheckBox,
 
 } from 'react-native-elements';
 
@@ -39,6 +42,7 @@ class NewPost extends Component{
 
   sendPost(){
     alert('send post')
+    this.setState()
   }
   
   getLocation(){
@@ -69,6 +73,8 @@ class NewPost extends Component{
     }
   }
 
+
+
   render(){
     
     return( 
@@ -79,7 +85,7 @@ class NewPost extends Component{
           
           <Input 
             inputStyle={styles.titletext} 
-            placeholder='New Post Title'
+            placeholder='Create a title'
             placeholderTextColor='gray'
             
           /> 
@@ -113,28 +119,49 @@ class NewPost extends Component{
           <View>
             
             <ListItem
-              title='Who was involved'
+              title='Tag people'
               leftIcon={{name:'face'}}
               topDivider
               bottomDivider
               chevron
               onPress={()=> this.getPeople()}
+              subtitle={
+                <View style={styles.subtitle}>
+                <PersonTag title='Jamie Reynolds'/>
+                <PersonTag title='Bob Jane'/>
+                <PersonTag title='Monty Full'/>
+                <PersonTag title='Monty Full'/>
+                <PersonTag title='Monty Full'/>
+                </View>}
 
             />
             <ListItem
-              title='Where did this happen'
+              title='Flag the location'
               leftIcon={{name:'language'}}
               bottomDivider
               chevron
               onPress={()=> this.getLocation()}
+              subtitle={
+                <View style={styles.subtitle}>
+                <LocationTag title='New York State'/>
+                <LocationTag title='Rock Tavern'/>
+                <LocationTag title='UAP Foundry,RT'/>
+                </View>}
 
             />
             <ListItem
-              title='Which groups do you want know'
+              title='Share post with'
               leftIcon={{name:'group'}}
               bottomDivider
               chevron
               onPress={()=> this.getGroups()}
+              subtitle={
+                <View style={styles.subtitle}>
+                <PersonTag title='Personal'/>
+                <PersonTag title='My Family'/>
+                <PersonTag title='UAP'/>
+                
+                </View>}
               
             />
             <View style={styles.textAreaContainer} >
@@ -184,7 +211,7 @@ const styles = StyleSheet.create({
   titletext:{
     marginTop:15,
     marginBottom:10,
-    fontSize:20,
+    fontSize:15,
   },
   textAreaContainer: {
     borderColor: 'lightgray',
@@ -193,6 +220,16 @@ const styles = StyleSheet.create({
   },
   textArea: {
     height: 150,
-    justifyContent: "flex-start"
+    justifyContent: "flex-start",
+    fontSize:15,
+  },
+  subtitle: {
+    flexDirection:'row',
+    flexWrap:'wrap',
+    
+    
+    marginTop:5,
+    marginRight:5,
+    fontSize:8,
   }
 })
