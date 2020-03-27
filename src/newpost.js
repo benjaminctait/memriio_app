@@ -37,12 +37,18 @@ import {
 class NewPost extends Component{
     
   state={
-    content:[]
+    title:'',
+    story:'',
+    content:[],
+    people:[],
+    location:[],
+    groups:[],
   }
 
   sendPost(){
-    alert('send post')
-    this.setState()
+    Keyboard.dismiss()
+    alert('send post ' + this.state.story)
+  
   }
   
   getLocation(){
@@ -53,8 +59,10 @@ class NewPost extends Component{
     Keyboard.dismiss()
   }
 
+
   getPeople(){
     Keyboard.dismiss()
+    
   }
   
 
@@ -64,7 +72,12 @@ class NewPost extends Component{
       const keys =  await AsyncStorage.getAllKeys()
       
       await AsyncStorage.multiGet(keys,(err,stores) => { 
-      this.setState({content:stores})
+      this.setState({
+          content:stores,
+          people:['Choppy','Dummy','Hommer'],
+          location:['UAP RT Foundry','Beacon, NY','New York State'],
+          groups:['Close Family','UAP']
+        })
       
       })
       
@@ -85,10 +98,11 @@ class NewPost extends Component{
           
           <Input 
             inputStyle={styles.titletext} 
+            onChangeText = {(text) => {this.setState({title:text})}}
             placeholder='Create a title'
             placeholderTextColor='gray'
             
-          /> 
+          >{this.state.title}</Input>
           
           <View style={{ 
                   flex: 0, 
@@ -127,13 +141,10 @@ class NewPost extends Component{
               onPress={()=> this.getPeople()}
               subtitle={
                 <View style={styles.subtitle}>
-                <PersonTag title='Jamie Reynolds'/>
-                <PersonTag title='Bob Jane'/>
-                <PersonTag title='Monty Full'/>
-                <PersonTag title='Monty Full'/>
-                <PersonTag title='Monty Full'/>
+                  {this.state.people.map((person) =>(
+                    <PersonTag title={person}/>
+                  ))}
                 </View>}
-
             />
             <ListItem
               title='Flag the location'
@@ -143,9 +154,9 @@ class NewPost extends Component{
               onPress={()=> this.getLocation()}
               subtitle={
                 <View style={styles.subtitle}>
-                <LocationTag title='New York State'/>
-                <LocationTag title='Rock Tavern'/>
-                <LocationTag title='UAP Foundry,RT'/>
+                  {this.state.location.map((place) =>(
+                    <LocationTag title={place}/>
+                  ))}
                 </View>}
 
             />
@@ -157,10 +168,9 @@ class NewPost extends Component{
               onPress={()=> this.getGroups()}
               subtitle={
                 <View style={styles.subtitle}>
-                <PersonTag title='Personal'/>
-                <PersonTag title='My Family'/>
-                <PersonTag title='UAP'/>
-                
+                  {this.state.groups.map((group) =>(
+                    <PersonTag title={group}/>
+                  ))}
                 </View>}
               
             />
@@ -171,6 +181,7 @@ class NewPost extends Component{
                 placeholderTextColor="grey"
                 numberOfLines={5}
                 multiline={true}
+                onChangeText = {(text) => {this.setState({story:text})}}
               />
             </View>
           </View> 
