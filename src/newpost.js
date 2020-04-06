@@ -3,6 +3,7 @@ import BasicCard from './cards'
 import AsyncStorage from '@react-native-community/async-storage'
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import KeyboardShift from './keyboardShift';
+import postNewMemory from './datapass'
 
 import { 
     StyleSheet,    
@@ -46,8 +47,33 @@ class NewPost extends Component{
   }
 
   sendPost(){
+    
     Keyboard.dismiss()
-    alert('send post ' + this.state.story)
+    const filearray = []
+    const grouparray = []
+    const personarray = []
+
+    this.state.content.map((file,i)=>{
+          filearray[i] = file[1]; // strip out the image name - just need the file paths 
+    })
+
+    this.state.groups.map((group,i)=>{
+      grouparray[i] = i;    // temporary - need to fix with real group ids
+    })
+
+    this.state.people.map((person,i)=>{
+      personarray[i] = i;    // temporary - need to fix with real people ids
+    })
+    
+
+    postNewMemory(this.state.title,
+                  this.state.story,
+                  filearray,
+                  personarray,
+                  this.state.location[0],
+                  grouparray,
+                  1)
+    
   
   }
   
