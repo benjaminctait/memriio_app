@@ -1,27 +1,50 @@
 import React, { Component } from 'react';
+import MemoryCard from './cards'
+import {getMemories} from './datapass'
 
 import { 
     StyleSheet,
     View,
+    ScrollView,
     Text,
     Image,
   } from 'react-native';
 
 
 class Feed extends Component{
-    render(){
-        return(
-         
-            <View style={styles.mainArea}>
-                <Text style={styles.textMain} >Feed</Text>
-                <Image
-                  style={{ height: '100%', width: '100%'}}
-                  source={{uri:'/Users/bentait/Pictures/cow.jpg'}}
-                  resizeMode='contain'
-            /> 
-            </View>
-        )
-    }
+
+state = {
+  memories:[]
+}
+
+loadMemories = (memories) => {
+  this.setState({memories:memories})
+}
+
+componentDidMount () {
+  const userid = 0
+  const groups = [0,1] 
+  getMemories(userid,groups,this.loadMemories)
+      
+}
+
+    
+render(){
+    return(
+        <ScrollView style={styles.mainArea}>
+          {this.state.memories.map((mem,index) => (
+            
+              <MemoryCard 
+                key = {index}
+                title = {mem.title} 
+                story= {mem.story}
+                heroimage = {mem.remoteURLS[0]}
+              ></MemoryCard>
+          ))}
+                  
+        </ScrollView>
+    )
+}
 }
 
 export default Feed;
@@ -29,14 +52,14 @@ export default Feed;
 const styles = StyleSheet.create({
     mainArea:{
       flex:1,
-      alignItems:'center',
-      justifyContent:'center',
+      
     },
     
     textMain:{
       alignItems:'center',
       justifyContent:'center',
       fontSize: 30,
+      
       color:'black'
     }
   });

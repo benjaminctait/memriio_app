@@ -10,67 +10,53 @@ import {
 
   } from 'react-native';
 
-
-class BasicCard extends Component{
-    
-    render(){
-      const ipath  = this.props.imgPath
-      return (
-        <Image
-            style={styles.image}
-            source={{ uri: ipath }}
-        />
-      );
-    }
-}
-
-class CardWithText extends Component{
-    
+class MemoryCard extends Component{
+  
+ 
   render(){
-    const ipath  = this.props.imgPath
+    
     return (
-      <View style={styles.card}>
-        <Text style={styles.nameT}>{this.props.imgName}</Text>
-        <Image
-          style={styles.image}
-          source={{ uri: ipath }}
-        />
-        <Text>asdasd</Text>
-        
-      </View>
-    );
       
+      <View style={styles.card}>
+      <Image
+          style={styles.image}
+          source={{ uri: this.props.heroimage }}
+      />
+      <Text style = {styles.titleText} >{this.props.title} </Text>
+      <Text style = {styles.bodyText} > {this.props.story}</Text>
+      </View>
+    )
   }
 }
-
 
 const styles = StyleSheet.create({
   
   card: {
     
-    width: '95%',
-    margin: 10,
+    width: '100%',
+    margin: 0,
     backgroundColor: 'white'
     
   },
   image: {
-    height:130,
-    resizeMode:'contain',
-    shadowRadius:5,
-    shadowOffset:{  width: 10,  height: 10,  },
-    shadowColor: 'gray',
-    shadowOpacity: 1.0, 
-    
+    height:300,
+    resizeMode:'stretch',
   },
   
-  nameT:{
+  titleText:{
     color: 'black',
-    backgroundColor:'transparent',
-    marginBottom: 5
-  }
-  })
+    fontSize:20,
+    fontWeight:'bold',
+    
+  },
+  bodyText:{
+    color: 'black',
+    fontSize: 15,
+  },
+
+})
   
-export default BasicCard
+export default MemoryCard;
 
 
           

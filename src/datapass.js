@@ -8,7 +8,7 @@ const S3_BUCKET = 'memriiostorage'
 const REGION = 'us-east-2'
 
 
-const memData = {
+const memory = {
     title:'',       // short title of the memory : string
     story:'',       // text desciribing the memory : string
     files:[],       // an array of local file paths : [ string ]
@@ -24,50 +24,105 @@ const memData = {
 
 // post new memory -----------------------------------------------------
 
-postNewMemory =  (
+export function postNewMemory  (
                 title,
                 story,
                 files,
                 people,
                 location,
                 groups,
-                userid,
-                ) => {
-        
-    memData.title = title
-    memData.story = story
-    memData.files = files
-    memData.people = people
-    memData.location = location
-    memData.groups = groups
-    memData.userid = userid
+                userid
+                )  
+                
+{
+    memory.title = 'My first Post'  
+    memory.story = 'A story about my first post' 
+    memory.files = files
+    memory.people = people
+    memory.location = location
+    memory.groups = groups
+    memory.userid = userid
 
     
     const uploaded = uploadNewMemory()
+    return uploaded
     
 }
+
+// post new memory -----------------------------------------------------
+
+export function getMemories (userID,groupIDs,callback)  
+{
     
+    const memories = []
+
+    memories[0] =     
+     {
+        title : "This is a cow",
+        story : 'Once upon a time there was a cow who wasnt a cow but was a cow but wasnt a cow',
+        people : [1,2,45,12],
+        location : 'UAP Rock Tavern',
+        groups : [0,5],
+        remoteURLS : [
+          '/Users/bentait/Pictures/cow.jpg',
+          '/Users/bentait/Pictures/table.jpg'
+        ],
+        userid : 0,
+        MemoryID : 35
+      },
+
+      memories[1] = {
+        title : "This is a table",
+        story : 'The dog jumed over the moon and then back again and then back again and then back again and then back again',
+        people : [1,2,45,12],
+        location : 'UAP New York',
+        groups : [0,5],
+        remoteURLS : [
+          '/Users/bentait/Pictures/table.jpg',
+          '/Users/bentait/Pictures/cow.jpg'
+        ],
+        userid : 0,
+        MemoryID : 36
+      }  
+    
+        console.log('memories : ' + memories[0].title);
+        
+        callback(memories)
+
+}
+
 // create a new memory ID -----------------------------------------------------
 
 uploadNewMemory = async () => {
-
-    uploadFiletoS3(memData.files[0])
+    
+    console.log('1 upload new memory');
+    
+    uploadFiletoS3(memory.files[0])
         .then(response => {
             if(response == 'success'){
+                
+                console.log('2 upload new memory - first file uploaded to s3 : ' + response);
+                
                 createMemoryID()
                 .then(response => {
                     if(response == 'success'){
-                        addFileToMemory(memData.files[0],true)
+                        console.log('');
+                        console.log('3 upload new memory - memory id created : ' + response);
+                        
+                        addFileToMemory(memory.remoteURLS[0],true).then(response => console.log('file associated : ' + response));
+                        
                         addRemaingFilestoMemory()
                         addPeopletoMemory()     
-                        addGroupstoMemory()                
+                        addGroupstoMemory()     
+                        return true           
                     }else{
-
+                        return false
                     }
                 })
                     
             }else{
-                console.log('failed to upload first file : ' + memData.files[0]);
+                return false
+                console.log('failed to upload first file : ' + memory.files[0]);
             }
         })
         
@@ -77,13 +132,13 @@ uploadNewMemory = async () => {
 
 addRemaingFilestoMemory = () => {
 
-    memData.files.map((file,index) => {
+    memory.files.map((file,index) => {
         if(index != 0)
         {
             uploadFiletoS3(file)
                 .then(response => {
                     if(response == 'success'){
-                        addFileToMemory(memData.remoteURLS[index],false)
+                        addFileToMemory(memory.remoteURLS[index],false)
             }else{
 
             }
@@ -95,7 +150,7 @@ addRemaingFilestoMemory = () => {
 
 addPeopletoMemory = () => {
 
-    memData.people.map((person,index) => {
+    memory.people.map((person,index) => {
          addPersontoMemory(person)
                 .then(response => {
                     if(response == 'success'){
@@ -105,12 +160,13 @@ addPeopletoMemory = () => {
             }
         })
     })
+    
 }   
 // add people to memory ------------------------------------------------
 
 addGroupstoMemory = () => {
 
-    memData.groups.map((groupid,index) => {
+    memory.groups.map((groupid,index) => {
          addGrouptoMemory(groupid)
                 .then(response => {
                     if(response == 'success'){
@@ -125,11 +181,13 @@ addGroupstoMemory = () => {
 
 uploadFiletoS3 = (filepath) => {    
     
+    console.log('uploading file to S3 : ' + filepath);
+    
     return new Promise((resolve,reject) => {
 
     let fileParts = filepath.split('.');
-    let fileName = memData.userid + '-' + Date.now()
-    let fileType = fileParts[1];
+    let filename = memory.userid + '-' + Date.now()
+    let filetype = fileParts[1];
 
         const file ={
             uri: filepath,
@@ -147,7 +205,7 @@ uploadFiletoS3 = (filepath) => {
         RNS3.put(file, options)
             .then(response => {                
                 if (response.status == 201){          
-                    memData.remoteURLS.push(response.body.postResponse.location)   
+                    memory.remoteURLS.push(response.body.postResponse.location)   
                     resolve('success')
                 }else{
                     reject('failure')
@@ -159,23 +217,24 @@ uploadFiletoS3 = (filepath) => {
 // add file to memory -----------------------------------------------------
 
 addFileToMemory = (remoteFileURL,ishero) => {
-
+    console.log('add file to memory : ' + remoteFileURL +' ' + ishero);
+    
     return new Promise((resolve,reject) => {
         fetch('https://memriio-api-0.herokuapp.com/associateFile', {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memData.MemoryID,
+                        memid: memory.MemoryID,
                         fileurl: remoteFileURL,
                         ishero: ishero
                         })
                     })
                     .then(response => response.json())
                     .then(response => {
-                        if ( response.status == 200){
+                        if ( response.status !== 400){
                             resolve('success')
                         }else{
-                            reject('failed to add file to memory')
+                            reject('failed to associate file : ' + response)
                         }
                     })
     })
@@ -185,22 +244,24 @@ addFileToMemory = (remoteFileURL,ishero) => {
 // add a person to a memory -----------------------------------------------------
 
 addPersontoMemory = (personID) => {
-
+    
     return new Promise((resolve,reject) => {
         fetch('https://memriio-api-0.herokuapp.com/associatePerson', {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memData.MemoryID,
+                        memid: memory.MemoryID,
                         userid: personID
                         })
                     })
                     .then(response => response.json())
                     .then(response => {
-                        if ( response.status == 200){
+                        if ( response.status !== 400){
+                            console.log('associate person : ' + personID + '  ' + response);
                             resolve('success')
                         }else{
-                            reject('failed to add person to memory')
+                            console.log('associate person : ' + personID + '  ' + response);
+                            reject('failed to associate person : ' + response)
                         }
                     })
     })
@@ -208,7 +269,6 @@ addPersontoMemory = (personID) => {
 
 // add a person to a memory -----------------------------------------------------
 
-associateKeyword
 
 addGrouptoMemory = (groupID) => {
 
@@ -217,16 +277,18 @@ addGrouptoMemory = (groupID) => {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memData.MemoryID,
+                        memid: memory.MemoryID,
                         groupid: groupID
                         })
                     })
                     .then(response => response.json())
                     .then(response => {
-                        if ( response.status == 200){
+                        if ( response.status !== 400){
+                            console.log('associate group : ' + groupID + '  ' + response);
                             resolve('success')
                         }else{
-                            reject('failed to add group to memory')
+                            console.log('associate group : ' + groupID + '  ' + response);
+                            reject('failed to associate group : ' + response)
                         }
                     })
     })
@@ -235,24 +297,25 @@ addGrouptoMemory = (groupID) => {
 // add a keyword to a memory -----------------------------------------------------
 
 
-
-addGrouptoMemory = (word) => {
+addKeywordtoMemory = (word) => {
 
     return new Promise((resolve,reject) => {
         fetch('https://memriio-api-0.herokuapp.com/associateKeyword', {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memData.MemoryID,
+                        memid: memory.MemoryID,
                         keyword: word
                         })
                     })
                     .then(response => response.json())
                     .then(response => {
-                        if ( response.status == 200){
+                        if ( response.status !== 400){
+                            console.log('associate key word : ' + word + '  ' + response);
                             resolve('success')
                         }else{
-                            reject('failed to add group to memory')
+                            console.log('associate key word : ' + word + '  ' + response);
+                            reject('failed to associate keyword : ' + response)
                         }
                     })
     })
@@ -268,19 +331,20 @@ createMemoryID = () => {
             method: 'post',
             headers: {'Content-Type':'application/json'},
             body:JSON.stringify({
-                userid : memData.userid,
-                title : memData.title,
-                story : memData.story,
-                location : memData.location,
-                groupid: 0,
+                userid : memory.userid,
+                title : memory.title,
+                story : memory.story,
+                location : memory.location
                 })
         })
         .then(response => response.json())
         .then(memory => {
             if(memory.created){
-                memData.MemoryID = memory.id
+                memory.MemoryID = memory.id
+                console.log('creatememid : ' + memory.id);
                 resolve('success')
             }  else {
+                console.log('creatememid : ' + memory.id);
                 reject('failed : unable to create memory')
             }
         })
@@ -289,4 +353,3 @@ createMemoryID = () => {
 
 
 
-export default postNewMemory;
