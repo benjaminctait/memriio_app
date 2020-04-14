@@ -18,11 +18,23 @@ state = {
 }
 
 loadMemories = (memories) => {
-  this.setState({memories:memories})
+this.setState({memories:memories})
+
+memories.map((mem,index) =>{
+  console.log('MEMORY ID : ', mem.id);
+  console.log('Created on : ', mem.createdon);
+  console.log('Title      : ', mem.title);
+  console.log('Story      : ', mem.story);
+  console.log('Hero shot  : ', mem.fileurl);
+  console.log('Userid     : ', mem.userid);
+  
+})
+  
+  
 }
 
-componentDidMount () {
-  const userid = 0
+componentDidMount = () => {
+  const userid = 1
   const groups = [0,1] 
   getMemories(userid,groups,this.loadMemories)
       
@@ -38,7 +50,10 @@ render(){
                 key = {index}
                 title = {mem.title} 
                 story= {mem.story}
-                heroimage = {mem.remoteURLS[0]}
+                //article = {mem.article}
+                heroimage = {mem.fileurl}
+                // createdon
+                // userid
               ></MemoryCard>
           ))}
                   

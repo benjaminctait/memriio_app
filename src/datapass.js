@@ -1,11 +1,12 @@
 import React from 'react';
+import{ REACT_APP_AWS_KEY_ID,
+        REACT_APP_AWS_SECRET_ACCESS_KEY,
+        REACT_APP_S3_BUCKET,
+        REACT_APP_REGION } from 'react-native-dotenv'
 
 import { RNS3 } from 'react-native-aws3'
+import ImageResizer from 'react-native-image-resizer';
 
-const AWS_ACCESS_KEY_ID = 'AKIAJFJXJF3KI5JT4BHA'
-const AWS_SECRET_ACCESS_KEY = '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'
-const S3_BUCKET = 'memriiostorage'
-const REGION = 'us-east-2'
 
 
 const memory = {
@@ -35,8 +36,8 @@ export function postNewMemory  (
                 )  
                 
 {
-    memory.title = 'My first Post'  
-    memory.story = 'A story about my first post' 
+    memory.title = title 
+    memory.story = story
     memory.files = files
     memory.people = people
     memory.location = location
@@ -44,8 +45,12 @@ export function postNewMemory  (
     memory.userid = userid
 
     
-    const uploaded = uploadNewMemory()
-    return uploaded
+    const memUploaded = uploadNewMemory()
+    if (memUploaded) {
+        alert('Memory upload successfull')
+    }else{
+        alert('Something went wrong with memory upload')
+    }
     
 }
 
@@ -54,40 +59,19 @@ export function postNewMemory  (
 export function getMemories (userID,groupIDs,callback)  
 {
     
-    const memories = []
-
-    memories[0] =     
-     {
-        title : "This is a cow",
-        story : 'Once upon a time there was a cow who wasnt a cow but was a cow but wasnt a cow',
-        people : [1,2,45,12],
-        location : 'UAP Rock Tavern',
-        groups : [0,5],
-        remoteURLS : [
-          '/Users/bentait/Pictures/cow.jpg',
-          '/Users/bentait/Pictures/table.jpg'
-        ],
-        userid : 0,
-        MemoryID : 35
-      },
-
-      memories[1] = {
-        title : "This is a table",
-        story : 'The dog jumed over the moon and then back again and then back again and then back again and then back again',
-        people : [1,2,45,12],
-        location : 'UAP New York',
-        groups : [0,5],
-        remoteURLS : [
-          '/Users/bentait/Pictures/table.jpg',
-          '/Users/bentait/Pictures/cow.jpg'
-        ],
-        userid : 0,
-        MemoryID : 36
-      }  
-    
-        console.log('memories : ' + memories[0].title);
-        
-        callback(memories)
+    console.log('getMemories : ' )
+    fetch('https://memriio-api-0.herokuapp.com/get_memories_userid', {
+        method: 'post',headers: {
+            'Content-Type':'application/json'},
+                body:JSON.stringify({userid: userID,})})
+                .then(response => response.json())
+                .then(response => {
+                    if ( response.status !== 400){
+                        callback(response)
+                    }else{
+                        
+                    }
+                })
 
 }
 
@@ -114,6 +98,7 @@ uploadNewMemory = async () => {
                         addRemaingFilestoMemory()
                         addPeopletoMemory()     
                         addGroupstoMemory()     
+                        
                         return true           
                     }else{
                         return false
@@ -121,12 +106,13 @@ uploadNewMemory = async () => {
                 })
                     
             }else{
-                return false
                 console.log('failed to upload first file : ' + memory.files[0]);
+                return false
+                
             }
         })
-        
 }
+
 
 // add remaining files to memory ------------------------------------------------
 
@@ -186,38 +172,69 @@ uploadFiletoS3 = (filepath) => {
     return new Promise((resolve,reject) => {
 
     let fileParts = filepath.split('.');
-    let filename = memory.userid + '-' + Date.now()
     let filetype = fileParts[1];
 
-        const file ={
-            uri: filepath,
-            name: filename,
-            type: filetype
-        }
-        const options = {
-            keyPrefix: '',
-            bucket: S3_BUCKET,
-            region: REGION,
-            accessKey: AWS_ACCESS_KEY_ID,
-            secretKey: AWS_SECRET_ACCESS_KEY,
-            successActionStatus: 201
-        }
-        RNS3.put(file, options)
-            .then(response => {                
-                if (response.status == 201){          
-                    memory.remoteURLS.push(response.body.postResponse.location)   
-                    resolve('success')
-                }else{
-                    reject('failure')
+        processImage(filepath)
+        .then(response => {
+            if(response != 'failure'){
+                let filename = memory.userid + '-' + Date.now()
+
+                const file ={
+                    uri: response,
+                    name: filename,
+                    type: filetype
                 }
-            })
+                
+                const options = {
+                    keyPrefix: '',
+                    bucket: REACT_APP_S3_BUCKET,
+                    region: REACT_APP_REGION,
+                    accessKey: REACT_APP_AWS_KEY_ID,
+                    secretKey: REACT_APP_AWS_SECRET_ACCESS_KEY,
+                    successActionStatus: 201
+                }
+
+                RNS3.put(file, options)
+                .then(response => {                
+                    if (response.status == 201){          
+                        memory.remoteURLS.push(response.body.postResponse.location)   
+                        resolve('success')
+                    }else{
+                        console.log('rns3 FAILED : response')
+                        
+                        reject('failure')
+                    }
+                })
+            }
+        })
     })   
 }
-    
+
+// Process image ----------------------------------------------------------
+
+processImage = async (filepath) => {
+
+    try {
+        return new Promise((resolve, reject) => {
+            ImageResizer.createResizedImage(filepath, 3000, 1080, 'JPEG', 80, 0)
+                .then(response => {
+                    console.log('Resized Image : ' + response.name + " : Resized to : " + response.size);
+                    resolve(response.path);
+                })
+                .catch(err => {
+                    console.log(err);
+                    reject('failure');
+                });
+        });
+    }
+    catch (err_1) {
+        console.log(err_1);
+    }
+}
 // add file to memory -----------------------------------------------------
 
 addFileToMemory = (remoteFileURL,ishero) => {
-    console.log('add file to memory : ' + remoteFileURL +' ' + ishero);
+    
     
     return new Promise((resolve,reject) => {
         fetch('https://memriio-api-0.herokuapp.com/associateFile', {
@@ -232,6 +249,7 @@ addFileToMemory = (remoteFileURL,ishero) => {
                     .then(response => response.json())
                     .then(response => {
                         if ( response.status !== 400){
+                            console.log('associate file : memid :'  + memory.MemoryID + ' file : ' + remoteFileURL + ' hero shot = ' + ishero + ' ' + response);
                             resolve('success')
                         }else{
                             reject('failed to associate file : ' + response)
@@ -268,7 +286,6 @@ addPersontoMemory = (personID) => {
 }
 
 // add a person to a memory -----------------------------------------------------
-
 
 addGrouptoMemory = (groupID) => {
 
@@ -338,13 +355,13 @@ createMemoryID = () => {
                 })
         })
         .then(response => response.json())
-        .then(memory => {
-            if(memory.created){
-                memory.MemoryID = memory.id
-                console.log('creatememid : ' + memory.id);
+        .then(memData => {
+            if(memData.created){
+                memory.MemoryID = memData.id
+                console.log('creatememid : ' + memory.MemoryID + 'remoteid ' + memData.id);
                 resolve('success')
             }  else {
-                console.log('creatememid : ' + memory.id);
+                console.log('creatememid : ' + memData.id);
                 reject('failed : unable to create memory')
             }
         })

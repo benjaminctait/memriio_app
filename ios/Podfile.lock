@@ -190,6 +190,8 @@ PODS:
     - React
   - react-native-camera/RN (3.19.1):
     - React
+  - react-native-image-resizer (1.2.1):
+    - React
   - react-native-safe-area-context (0.7.3):
     - React
   - React-RCTActionSheet (0.62.1):
@@ -285,6 +287,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-camera (from `../node_modules/react-native-camera`)
+  - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
@@ -341,6 +344,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   react-native-camera:
     :path: "../node_modules/react-native-camera"
+  react-native-image-resizer:
+    :path: "../node_modules/react-native-image-resizer"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   React-RCTActionSheet:
@@ -397,6 +402,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: e9698dee4fd43ceb44832baf15d5745f455b0157
   React-jsinspector: f74a62727e5604119abd4a1eda52c0a12144bcd5
   react-native-camera: 2eb144a4572d9342bddc946f4c0c3bc2b50e374e
+  react-native-image-resizer: 487329f0748d62a075f9d1ba1676c3ab394d169f
   react-native-safe-area-context: 8260e5157617df4b72865f44006797f895b2ada7
   React-RCTActionSheet: af8f28dd82fec89b8fe29637b8c779829e016a88
   React-RCTAnimation: 0d21fff7c20fb8ee41de5f2ebb63221127febd96

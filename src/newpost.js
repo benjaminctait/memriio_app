@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import BasicCard from './cards'
 import AsyncStorage from '@react-native-community/async-storage'
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+
 import KeyboardShift from './keyboardShift';
-import postNewMemory from './datapass'
+import {postNewMemory} from './datapass'
 
 import { 
     StyleSheet,    
@@ -45,8 +45,8 @@ class NewPost extends Component{
     location:[],
     groups:[],
   }
-
-  sendPost(){
+ 
+  sendPost = () => {
     
     Keyboard.dismiss()
     const filearray = []
@@ -65,6 +65,7 @@ class NewPost extends Component{
       personarray[i] = i;    // temporary - need to fix with real people ids
     })
     
+    
 
     postNewMemory(this.state.title,
                   this.state.story,
@@ -73,20 +74,20 @@ class NewPost extends Component{
                   this.state.location[0],
                   grouparray,
                   1)
-    
+   this.props.navigation.goBack()
   
   }
   
-  getLocation(){
+  getLocation = () => {
     Keyboard.dismiss()
   }
 
-  getGroups(){
+  getGroups = () => {
     Keyboard.dismiss()
   }
 
 
-  getPeople(){
+  getPeople = () => {
     Keyboard.dismiss()
     
   }

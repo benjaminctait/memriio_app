@@ -40,11 +40,13 @@ const styles = StyleSheet.create({
   },
   image: {
     height:300,
-    resizeMode:'stretch',
+    resizeMode:'cover'
   },
   
   titleText:{
     color: 'black',
+    marginTop:5,
+    marginBottom:5,
     fontSize:20,
     fontWeight:'bold',
     
@@ -52,6 +54,7 @@ const styles = StyleSheet.create({
   bodyText:{
     color: 'black',
     fontSize: 15,
+    marginBottom:10,
   },
 
 })
