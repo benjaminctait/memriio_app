@@ -3,7 +3,6 @@ import{ REACT_APP_AWS_KEY_ID,
         REACT_APP_AWS_SECRET_ACCESS_KEY,
         REACT_APP_S3_BUCKET,
         REACT_APP_REGION } from 'react-native-dotenv'
-
 import { RNS3 } from 'react-native-aws3'
 import ImageResizer from 'react-native-image-resizer';
 
@@ -45,12 +44,7 @@ export function postNewMemory  (
     memory.userid = userid
 
     
-    const memUploaded = uploadNewMemory()
-    if (memUploaded) {
-        alert('Memory upload successfull')
-    }else{
-        alert('Something went wrong with memory upload')
-    }
+    return uploadNewMemory()
     
 }
 

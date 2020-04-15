@@ -44,7 +44,7 @@ class CaptureComponent extends Component{
 
       this.setState({vcount:this.state.vcount+1})
       try{
-        await AsyncStorage.setItem( 'video - ' + this.state.vcount , data.uri )
+        await AsyncStorage.setItem( 'video- ' + this.state.vcount , data.uri )
         alert('called')
       } catch (err) {
         alert(err)
@@ -195,9 +195,4 @@ const styles = StyleSheet.create({
 
   export default CaptureComponent; 
 
-  //const filename = fullpath.replace(/^.*[\\\/]/, '')
-  // const newpath = this.state.targetFolder + filename
-
-  // alert( key + ' : ' + newpath)
-        
-  // await fs.moveFile(fullpath,newpath)
+  

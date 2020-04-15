@@ -8,6 +8,7 @@ import HomeScreen from './src/homescr'
 import LogoTitle from './src/logotitle'
 import {SettingsButton} from './src/buttons'
 import AsyncStorage from '@react-native-community/async-storage';
+//import FlashMessage from "react-native-flash-message";
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,7 @@ class App extends Component{
 
         </Stack.Navigator>
       </NavigationContainer>
+      
     )
   }
 };

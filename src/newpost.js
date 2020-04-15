@@ -67,14 +67,20 @@ class NewPost extends Component{
     
     
 
-    postNewMemory(this.state.title,
-                  this.state.story,
-                  filearray,
-                  personarray,
-                  this.state.location[0],
-                  grouparray,
-                  1)
-   this.props.navigation.goBack()
+    if(postNewMemory(this.state.title,
+                    this.state.story,
+                    filearray,
+                    personarray,
+                    this.state.location[0],
+                    grouparray,
+                    1))
+        { 
+          cleanupAsyncstorage()
+          this.props.navigation.navigate('Feed')      
+          alert('We are uploading your post now. we will let you know when its done')     
+        }
+    
+   
   
   }
   
@@ -92,20 +98,50 @@ class NewPost extends Component{
     
   }
   
+   // ---------------------------------------------------------------------------------
+   // Removes all content captured for the current post
+   // pre : 
+   // post :  any key value pair where key contains 'image-','video-', 'audio-' will 
+   //         be removed from Storage
+
+  cleanupAsyncstorage = async() =>{
+    try{
+      
+      const keys =  await AsyncStorage.getAllKeys()
+      
+      keys.map(key,index => {
+        if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) {
+          AsyncStorage.removeItem(key)
+        }
+      })
+      
+    }catch (e) {
+      alert(e)
+    }
+
+  }
+
+  // ---------------------------------------------------------------------------------
+   // Loads the state of the New Post view
+   // pre :   AsyncStorage contains at least one content file
+   // post :  state contains all captured content.
+   //         Note : people, location and groups can load after the component is loaded.
 
   async componentDidMount(){
     try{
-      await AsyncStorage.removeItem('video - 1')
-      const keys =  await AsyncStorage.getAllKeys()
-      
-      await AsyncStorage.multiGet(keys,(err,stores) => { 
-      this.setState({
-          content:stores,
-          people:['Choppy','Dummy','Hommer'],
-          location:['UAP RT Foundry','Beacon, NY','New York State'],
-          groups:['Close Family','UAP']
+      await AsyncStorage.removeItem('video- 1')
+      const keys =  await AsyncStorage.getAllKeys().then(keys => {
+        keys.map(key,index => {
+          if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) {
+            stores.push(AsyncStorage.getItem(key))
+          }
         })
-      
+        this.setState({
+          content:stores,
+          people:['Choppy','Dummy','Hommer'],                           // need to change this
+          location:['UAP RT Foundry','Beacon, NY','New York State'],    // need to change this
+          groups:['Home','UAP']                                          // need to change this
+        })
       })
       
     }catch (e) {
