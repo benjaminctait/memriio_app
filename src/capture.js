@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import {RNCamera } from 'react-native-camera'
 import AsyncStorage from '@react-native-community/async-storage'
-import fs from 'react-native-fs';
- 
+
 
 import {CameraClickButton,
         BackButton,

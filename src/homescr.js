@@ -6,27 +6,17 @@ import Search from './search';
 import CaptureComponent from './capture';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import NewPost  from './newpost'
-import { View, Text} from 'react-native';
-import Signin from './signin'
+
 
 const BottomNav = createBottomTabNavigator();
 const RootNav = createStackNavigator();
 
 class Main extends Component {
 
-  state = { 
-    isLoggedIn:false,
-    userid:0
-  }
-  
-  userLoginSuccess(userid){
-    this.setState({isLoggedIn:true,userid:userid})
-
-  }
 
   render(){
 
-    if(this.state.isLoggedIn){
+    
 
       return (
       
@@ -64,22 +54,14 @@ class Main extends Component {
           />
   
         </BottomNav.Navigator>
-      )
-
-    }else{
-      return (
-        
-          
-          <Signin logUserIn={this.userLoginSuccess}/>
-     
-      )
-    }
-
-    
-  }
+      )   
+  } 
 }
 
+//-----------------------------------------------------------------------
+
 class HomeScreen extends Component {
+
   render(){
     return (
       <RootNav.Navigator>
@@ -93,8 +75,7 @@ class HomeScreen extends Component {
       
       <RootNav.Screen 
         name="NewPost"
-        component ={NewPost}
-        
+        component ={NewPost}        
         options ={{
           headerShown:false,
           cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,

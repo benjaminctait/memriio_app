@@ -53,7 +53,7 @@ export function postNewMemory  (
 export function getMemories (userID,groupIDs,callback)  
 {
     
-    console.log('getMemories : ' )
+    console.log('getMemories for user : ' + userID + ' in groups ' + groupIDs )
     fetch('https://memriio-api-0.herokuapp.com/get_memories_userid', {
         method: 'post',headers: {
             'Content-Type':'application/json'},
