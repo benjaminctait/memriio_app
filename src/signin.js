@@ -48,11 +48,8 @@ class Signin extends Component {
 
 
     onSubmitSignIn = () => {
-        console.log('made it');
+        console.log('onSubmitSignIn ' +  this.state.email + ' ' + this.state.password);
         this.setState({spinner:true})
-        console.log(this.state.email);
-        console.log(this.state.password);
-        
         
         fetch('https://memriio-api-0.herokuapp.com/signin', {
             method: 'post',
@@ -65,13 +62,12 @@ class Signin extends Component {
                 .then(response => response.json())
                 .then(user => {
                  
-                 console.log('made it 2');
                  console.log(user);
                  
                                 
                  if(user.id){
                     this.setState({spinner:false}) 
-                    console.log('calling logUserIn ' + user.id );
+                    console.log('onSubmitSignUp -> calling callback with user : ' + user.id );
                     this.props.loguserin(user)
                     
                     
@@ -87,13 +83,8 @@ class Signin extends Component {
 
 onSubmitSignUp = () => {
 
-    console.log('made it to signup');
+    console.log('onSubmitSignUp ' + this.state.firstname + ' ' + this.state.lastname + ' ' + this.state.email + ' ' + this.state.password);
     this.setState({spinner:true})
-    console.log(this.state.firstname);
-    console.log(this.state.familyname);
-    console.log(this.state.email);
-    console.log(this.state.password);
-    
     
     fetch('https://memriio-api-0.herokuapp.com/register', {
         method: 'post',

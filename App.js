@@ -1,12 +1,13 @@
 
 import React, { Component } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer ,useNavigation } from '@react-navigation/native';
+import { createStackNavigator,CardStyleInterpolators } from '@react-navigation/stack';
 import HomeScreen from './src/homescr'
 import LogoTitle from './src/logotitle'
 import {SettingsButton} from './src/buttons'
 import AsyncStorage from '@react-native-community/async-storage'
 import Signin from './src/signin'
+import Settings from './src/settings.js'
 
 //import FlashMessage from "react-native-flash-message";
 
@@ -29,11 +30,12 @@ class App extends Component{
 //--------------------------------------------------------------------------
   
   handleLogonIn = async (user) => {
-    console.log('logged in userid : ' + user.id);   
+    console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.id); 
+    
     await AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(true) )
-    await AsyncStorage.setItem( 'uaserid'  , JSON.stringify(user.id))
-    await AsyncStorage.setItem( 'firstname'  , JSON.stringify(user.firstname))
-    await AsyncStorage.setItem( 'lastname'  , JSON.stringify(user.lastname))
+    await AsyncStorage.setItem( 'uaserid'  ,JSON.stringify( user.id ))
+    await AsyncStorage.setItem( 'firstname'  , user.firstname)
+    await AsyncStorage.setItem( 'lastname'  , user.lastname)
 
     this.setState({
         isLoggedIn:true,
@@ -55,6 +57,7 @@ async logCurrentUserOut(){
     AsyncStorage.setItem( 'firstname'  , '')
     AsyncStorage.setItem( 'lastname'  , '')
     console.log('Logging user out : ' + this.state.firstname + ' id : ' + this.state.userid);  
+
     this.setState({
       isLoggedIn:false,
       userid:0,
@@ -81,7 +84,7 @@ async componentDidMount(){
 //--------------------------------------------------------------------------
   
   render(){
-  
+   
     if(this.state.isLoggedIn)
     {
       return(
@@ -90,14 +93,23 @@ async componentDidMount(){
               <Stack.Screen
                 name="Home"
                 component={HomeScreen}
-                options={{
+                options={({navigation}) => ({
                   headerTitle: props => <LogoTitle {...props} />,
-                  headerRight: () => (
-                    <SettingsButton onPress={() => {
-                        this.logCurrentUserOut()
+                  headerRight: props => (
+                    <SettingsButton {...props} onPress={() => 
+                      navigation.navigate('Settings')
+                      //this.logCurrentUserOut()
                         
-                      }}/>
+                      }/>
                   ),
+                })}
+              />
+              <Stack.Screen 
+                name="Settings"
+                component ={Settings}        
+                options ={{
+                  headerLeft: null,
+                  cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
                 }}
               />
 

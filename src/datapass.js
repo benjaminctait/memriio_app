@@ -5,6 +5,7 @@ import{ REACT_APP_AWS_KEY_ID,
         REACT_APP_REGION } from 'react-native-dotenv'
 import { RNS3 } from 'react-native-aws3'
 import ImageResizer from 'react-native-image-resizer';
+import AsyncStorage from '@react-native-community/async-storage'
 
 
 
@@ -20,6 +21,28 @@ const memory = {
     MemoryID:0,     // id of the newly created memory : int
     errorLog:[],    // array or error messages : [ string ]
    
+}
+
+
+// get details for the current user -----------------------------------------------------
+
+export async function activeUser  (){
+
+    logged = await AsyncStorage.getItem( 'userLoggedin')
+    console.log('activeUser is anyone loggedin: ' + logged);
+
+    if(logged){
+        
+            id = await AsyncStorage.getItem('uaserid')
+            firstName = await AsyncStorage.getItem('firstname')
+            lastName = await AsyncStorage.getItem('lastname')
+            user = {id,firstName,lastName}
+            console.log('activeUser user: ' + user.firstName + ' ' + user.lastName + ' id: ' + user.id);
+            return user
+        
+    }else{
+        return null
+    }
 }
 
 // post new memory -----------------------------------------------------

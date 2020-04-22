@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import MemoryCard from './cards'
-import {getMemories} from './datapass'
+import {getMemories,activeUser} from './datapass'
 import AsyncStorage from '@react-native-community/async-storage'
 
 import { 
@@ -9,35 +9,47 @@ import {
     ScrollView,
     Text,
     Image,
+    ActionSheetIOS,
   } from 'react-native';
 
 
 class Feed extends Component{
 
 state = {
-  memories:[]
+  memories:[],
+  user:null
 }
 
 //----------------------------------------------------------------------------------------------
 
 loadMemories = (memories) => {
+
   this.setState({memories:memories})
 
-  if(memories.length){
+  if(Array.isArray(memories)){
+
+  try{
+    console.log('loadMemories -> Server retrieved ' + memories.length + ' memories');
+    
     memories.map((mem,index) =>{
-      console.log('MEMORY ID : ' +  mem.id + 'Title : ' + mem.title + 'user id : ' + mem.userid);
+      console.log('MEMORY ID : ' +  mem.id + ' Title : ' + mem.title + ' user id : ' + mem.userid);
     })
+  }catch(err){
+    console.log('Feed->loadMemories: ' + err);
+  }
+    
   }else{
     console.log('No memories to load')
+    
   }
 }
 
 //----------------------------------------------------------------------------------------------
 
 componentDidMount = async () => {
-  const userid =  await AsyncStorage.getItem('uaserid')
+  this.state.user =  await activeUser()
   const groups = [0] 
-  getMemories(userid,groups,this.loadMemories)
+  getMemories(user.id,groups,this.loadMemories)
       
 }
 
@@ -45,9 +57,8 @@ componentDidMount = async () => {
 
 render(){
 
-  console.log('number of memories : ' + this.state.memories.length);
-  
-  
+    
+
   if(Array.isArray(this.state.memories)){
 
     return(
@@ -70,6 +81,7 @@ render(){
   }else{
     return(
       <View style={styles.nomemory}>
+        <Text style={styles.textMain}>Hi {this.state.user.firstName}</Text>
         <Text style={styles.textMain}>No memories to load</Text>
       </View>
     )

@@ -1,24 +1,19 @@
 import React, { Component } from 'react';
-import BasicCard from './cards'
 import AsyncStorage from '@react-native-community/async-storage'
-
 import KeyboardShift from './keyboardShift';
 import {postNewMemory} from './datapass'
 
 import { 
-    StyleSheet,    
-    ScrollView,  
-    Text,
+    StyleSheet,   
     View,
     Image,
     TextInput,
-    TextInputComponent,
     Keyboard,
-    
  
   } from 'react-native';
 
-  import {CameraClickButton,
+  import {
+    CameraClickButton,
     BackButton,
     PostButton,
     PersonTag,

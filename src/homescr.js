@@ -16,8 +16,6 @@ class Main extends Component {
 
   render(){
 
-    
-
       return (
       
         <BottomNav.Navigator>
@@ -80,8 +78,8 @@ class HomeScreen extends Component {
           headerShown:false,
           cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
         }}
-      
       />
+
       </RootNav.Navigator>
     )
   }
