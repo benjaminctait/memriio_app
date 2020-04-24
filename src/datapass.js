@@ -36,8 +36,9 @@ export async function activeUser  (){
             id = await AsyncStorage.getItem('uaserid')
             firstName = await AsyncStorage.getItem('firstname')
             lastName = await AsyncStorage.getItem('lastname')
-            user = {id,firstName,lastName}
-            console.log('activeUser user: ' + user.firstName + ' ' + user.lastName + ' id: ' + user.id);
+            email = await AsyncStorage.getItem('email')
+            user = {id,firstName,lastName,email}
+            console.log('activeUser user: ' + user.firstName + ' ' + user.lastName + ' id: ' + user.id + ' email: ' + user.email);
             return user
         
     }else{

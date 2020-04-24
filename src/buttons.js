@@ -233,9 +233,8 @@ const styles = StyleSheet.create({
       height: 20,
       width: 20,
       alignSelf:'center',
-      backgroundColor: 'transparent',
-      
-  },
+      backgroundColor: 'transparent',  
+    },
     iconTextUp: {
       color:'grey',
       justifyContent:'center',

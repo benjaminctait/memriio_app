@@ -12,6 +12,7 @@ import {
 import { TextInput } from 'react-native-gesture-handler';
 import Spinner from 'react-native-loading-spinner-overlay'
 import AsyncStorage from '@react-native-community/async-storage'
+import { AnimationFrameScheduler } from 'rxjs/internal/scheduler/AnimationFrameScheduler';
 
 
 
@@ -23,7 +24,8 @@ class Signin extends Component {
         familyname:'',
         password:'',
         spinner:false,
-        registermode:false
+        registermode:false,
+        credentialError:false,
 
     }
 
@@ -72,9 +74,11 @@ class Signin extends Component {
                     
                     
                  }else{
-                    this.setState({spinner:false}) 
-                    this.setState({email:''})   
-                    this.setState({password:''})   
+                    this.setState({ spinner:false,
+                                    email:'',
+                                    password:'',
+                                    credentialError:true}) 
+                    
                  }
              })
         }
@@ -120,6 +124,13 @@ onSubmitSignUp = () => {
 //---------------------------------------------------------------------------------
        
     render() {
+
+        if(this.state.credentialError){
+            errorMessage = <Text style={styles.errorText}> Something went wrong with those credentials. We couldn't log you in </Text> 
+            
+        }else{
+            errorMessage = null
+        }
         
         if( this.state.registermode === false){
             return (
@@ -129,6 +140,10 @@ onSubmitSignUp = () => {
                         textContent={'Lets see now...'}
                         textStyle={styles.spinnerTextStyle}
                     />
+                    <View style={{flexDirection:'row',width:'80%',alignContent:'center',}}> 
+                        {errorMessage}
+                    </View>
+
                     <View style={styles.inputContainer}>
                     <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/message/ultraviolet/50/3498db'}}/>
                     <TextInput style={styles.inputs}
@@ -272,6 +287,15 @@ const styles = StyleSheet.create({
     },
     loginText: {
         color: 'white',
+    },
+    errorText: {
+        flex:1,
+        flexWrap:'wrap',
+        color: 'red',
+        marginBottom:40,
+        textAlign:'center'
+        
+
     },
     spinnerTextStyle: {
         color: '#FFF'

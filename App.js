@@ -17,6 +17,7 @@ class App extends Component{
   constructor () {
     super();
     this.handleLogonIn = this.handleLogonIn.bind(this);
+    this.logCurrentUserOut = this.logCurrentUserOut.bind(this)
   }
 
   state = { 
@@ -30,12 +31,13 @@ class App extends Component{
 //--------------------------------------------------------------------------
   
   handleLogonIn = async (user) => {
-    console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.id); 
+    console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.id + ' email: ' + user.email); 
     
     await AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(true) )
     await AsyncStorage.setItem( 'uaserid'  ,JSON.stringify( user.id ))
     await AsyncStorage.setItem( 'firstname'  , user.firstname)
     await AsyncStorage.setItem( 'lastname'  , user.lastname)
+    await AsyncStorage.setItem( 'email'  , user.email)
 
     this.setState({
         isLoggedIn:true,
@@ -49,13 +51,14 @@ class App extends Component{
 
 //--------------------------------------------------------------------------
 
-async logCurrentUserOut(){
+logCurrentUserOut = async () => {
 
   if(this.state.isLoggedIn){
     AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(false) )
     AsyncStorage.setItem( 'uaserid'  , JSON.stringify(0)) 
     AsyncStorage.setItem( 'firstname'  , '')
     AsyncStorage.setItem( 'lastname'  , '')
+    AsyncStorage.setItem( 'email'  , '')
     console.log('Logging user out : ' + this.state.firstname + ' id : ' + this.state.userid);  
 
     this.setState({
@@ -97,7 +100,7 @@ async componentDidMount(){
                   headerTitle: props => <LogoTitle {...props} />,
                   headerRight: props => (
                     <SettingsButton {...props} onPress={() => 
-                      navigation.navigate('Settings')
+                      navigation.navigate('Settings',{logoutcallback:this.logCurrentUserOut})
                       //this.logCurrentUserOut()
                         
                       }/>
