@@ -2,42 +2,58 @@ import React, { Component } from 'react';
 import { 
     StyleSheet,
     View,
-    TouchableOpacity,
-    TouchableHighlight,
+    TouchableOpacity,    
     Text,
     Image,
 } from 'react-native';
 
-import Spinner from 'react-native-loading-spinner-overlay'
-import {activeUser} from './datapass'
+import {activeUser,createMemoryCloud,mapUserClouds} from './datapass'
 import KeyboardShift from './keyboardShift';
 import { 
   Input, 
   ListItem,
-  CheckBox,
-
 } from 'react-native-elements';
 import {
-  
   BackButton,
   PersonTag,
-  LocationTag,
-  
 } from './buttons'
 
 
 
 class Settings extends Component {
 
-  
+  constructor () {
+    super();
+    this.setupClouds = this.setupClouds.bind(this);
+    
+  }
 
     state = {
         email:'',
         firstname:'',
         familyname:'',
-        groups:[],
+        clouds:[],
         avatar:null,
-    }
+        userid:0
+    }     
+  
+//--------------------------------------------------------------------------
+
+setupClouds = (clouds) => {
+  
+  if(Array.isArray(clouds)){
+
+    const firstitem = [{id:0,
+      name:'Personal',
+      administrator:this.state.userid,
+      createdon:null}] 
+    const newarray = firstitem.concat(clouds)
+    
+    this.setState({clouds:newarray})
+    
+  }
+  
+}
 
 //--------------------------------------------------------------------------
 
@@ -46,19 +62,41 @@ class Settings extends Component {
     const user = await activeUser()
     console.log('settings load : user - ' + user.id + ' ' + user.firstName + ' ' + user.lastName + ' ' + user.email);
     
-
     this.setState({
+      userid:user.id,
       email:user.email,
       firstname:user.firstName,
-      familyname:user.lastName,
     })
+
+    mapUserClouds(user.id,this.setupClouds)
 
   }
 
 //--------------------------------------------------------------------------
+
+createNewMemoryCloud = () => {
+  alert('Nothing')
+  //createMemoryCloud('Home',this.state.userid)
+}
+
+//--------------------------------------------------------------------------
     render(){
-    
-        return( 
+      
+      
+      
+      if(this.state.userid == 1){
+        
+        specialButton =  <Text 
+                          style={styles.labelText}
+                          onPress = {() =>{this.createNewMemoryCloud()}}
+                          >Create</Text>
+            
+      }else{
+        specialButton = null 
+      }  
+      return( 
+
+          
     
           <KeyboardShift >      
           <View style={styles.container} >
@@ -87,6 +125,7 @@ class Settings extends Component {
 
                 <Input 
                   label ='email'
+                  autoCapitalize={false}
                   labelStyle={styles.labelText}
                   containerStyle={styles.inputContainer}
                   inputStyle={styles.inputText} 
@@ -95,26 +134,46 @@ class Settings extends Component {
                   placeholderTextColor='black'
             
                 />
-          
+
+                
                 <ListItem
-                  title='My Groups'
-                  leftIcon={{name:'group'}}
+                  title='My Memory Clouds'
+                  leftIcon={{name:'cloud-queue'}}
+                  containerStyle={{
+                    marginLeft:5
+                    
+                  }}
                   bottomDivider
                   chevron
                   onPress={()=> this.getGroups()}
+                  subtitle={
+                    <View style={styles.subtitle}>
+                      {this.state.clouds.map((cloud) =>(
+                        <PersonTag title={cloud.name}/>
+                      ))}
+                    </View>}
                   />
 
                   <View style={styles.settingsTextItem}>
                     <Image
                       style={styles.littleButton}
-                      source={require('./images/video.png')}            
+                      source={require('./images/opendoor.png')}            
                     />
                     <TouchableOpacity style={styles.xText}>
                       <Text 
+                        style={styles.labelText}
                         onPress = {() =>{this.props.route.params.logoutcallback()}}
                       >Logout</Text>
                     </TouchableOpacity>
+
+                    
+                    
                   </View>
+
+                  <TouchableOpacity style={styles.xText}>
+                    {specialButton}
+                  </TouchableOpacity>
+
                 
               </View> 
            
@@ -122,6 +181,7 @@ class Settings extends Component {
             <View style={styles.mainButtons}>
                       
                 <BackButton onPress={() => this.props.navigation.goBack(null)} />
+                
     
             </View>
           </KeyboardShift>
@@ -137,10 +197,6 @@ const styles = StyleSheet.create({
       backgroundColor: 'white',
     },   
     inputContainer: {
-      borderWidth:1,
-      borderRadius:10,
-      backgroundColor: '#DCDCDC',
-      borderColor:'#DCDCDC',
       width:'95%',
       marginBottom:20,
       alignSelf:'center',
@@ -149,10 +205,6 @@ const styles = StyleSheet.create({
     settingsTextItem:{
       flex: 0,
       flexDirection:'row',
-      //borderWidth:1,
-      //borderRadius:10,
-      //backgroundColor: '#DCDCDC',
-      //borderColor:'#DCDCDC',
       width:'95%',
       height:50,
       marginTop:20,
@@ -164,22 +216,23 @@ const styles = StyleSheet.create({
     inputText:{
       marginTop:2,
       marginBottom:2,
-      fontSize:12,
+      fontSize:18,
+      color:'blue'
+      
+      
     },
     xText:{
       marginTop:2,
       marginBottom:2,
-      marginLeft:20,
-      fontSize:15,
+      marginLeft:10,
       alignSelf:'center',
-      
 
     },
 
     labelText:{
       marginTop:2,
       marginBottom:2,
-      fontSize:12,
+      fontSize:15,
     },
     
     mainButtons: {
@@ -191,10 +244,17 @@ const styles = StyleSheet.create({
     },
     littleButton: {
       marginLeft: 5,
-      height: 20,
-      width: 20,
+      height: 30,
+      width: 30,
       alignSelf:'center',
       backgroundColor: 'transparent',  
     },
+    subtitle: {
+      flexDirection:'row',
+      flexWrap:'wrap',
+      marginTop:5,
+      marginRight:5,
+      fontSize:8,
+    }
     
   })

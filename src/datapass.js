@@ -24,6 +24,35 @@ const memory = {
 }
 
 
+// create a new emory cloud  -----------------------------------------------------
+
+export async function createMemoryCloud  (cloudName,administratorID){
+    console.log('datapass.createMemoryCloud : ' + cloudName + ' admin : ' + administratorID);
+    
+    return new Promise((resolve,reject) => {
+        fetch('https://memriio-api-0.herokuapp.com/createcloud', {
+            method: 'post',
+            headers: {'Content-Type':'application/json'},
+            body:JSON.stringify({
+                name : cloudName,
+                adminid : administratorID
+                })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.created){
+                
+                console.log('createMemoryCloud: ' + data.id + 'with administrator ' + administratorID);
+                resolve('success')
+            }  else {
+                console.log('createMemoryCloud: Error creating cloud : ' + cloudName);
+                reject('failed : unable to create memory')
+            }
+        })
+    })
+    
+}
+
 // get details for the current user -----------------------------------------------------
 
 export async function activeUser  (){
@@ -72,16 +101,39 @@ export function postNewMemory  (
     
 }
 
-// post new memory -----------------------------------------------------
+// retrieve all memories for user and cloudIDs where user in in that cloud --------------------
 
-export function getMemories (userID,groupIDs,callback)  
+export function mapUserClouds (userid,callback)  
 {
     
-    console.log('getMemories for user : ' + userID + ' in groups ' + groupIDs )
+    console.log('mepUserClouds for user : ' + userid )
+        fetch('https://memriio-api-0.herokuapp.com/get_clouds_userid', {
+        method: 'post',headers: {
+            'Content-Type':'application/json'},
+                body:JSON.stringify({userID: userid})})
+                .then(response => response.json())
+                .then(res => {
+                    if ( res.success ){
+                        console.log('server response : ' + res.success);
+                        console.log('server data : ' + res.clouds);
+                        callback(res.data)
+                    }else{
+                        console.log('server response : ' + res.success + ' with ' + res.error);  
+                    }
+                })
+
+}
+
+// retrieve all memories for user and cloudIDs where user in in that cloud --------------------
+
+export function getMemories (userID,cloudIDs,callback)  
+{
+    
+    console.log('getMemories for user : ' + userID + ' in groups ' + cloudIDs )
     fetch('https://memriio-api-0.herokuapp.com/get_memories_userid', {
         method: 'post',headers: {
             'Content-Type':'application/json'},
-                body:JSON.stringify({userid: userID,})})
+                body:JSON.stringify({userid: userID,cloudids: cloudIDs})})
                 .then(response => response.json())
                 .then(response => {
                     if ( response.status !== 400){

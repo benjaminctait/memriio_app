@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import AsyncStorage from '@react-native-community/async-storage'
 import KeyboardShift from './keyboardShift';
-import {postNewMemory} from './datapass'
+import {postNewMemory,mapUserClouds} from './datapass'
 
 import { 
     StyleSheet,   
@@ -28,9 +28,14 @@ import {
 
 } from 'react-native-elements';
 
-
+//--------------------------------------------------------------------------
 
 class NewPost extends Component{
+  constructor () {
+    super();
+    this.setupClouds = this.setupClouds.bind(this);
+    
+  }
     
   state={
     title:'',
@@ -38,22 +43,42 @@ class NewPost extends Component{
     content:[],
     people:[],
     location:[],
-    groups:[],
+    clouds:[],
+  } 
+
+//--------------------------------------------------------------------------
+
+setupClouds = (clouds) => {
+  
+  if(Array.isArray(clouds)){
+
+    const firstitem = [{id:0,
+      name:'Personal',
+      administrator:this.state.userid,
+      createdon:null}] 
+    const newarray = firstitem.concat(clouds)
+    this.setState({clouds:newarray})
   }
- 
+}
+
+//--------------------------------------------------------------------------
+
   sendPost = () => {
     
     Keyboard.dismiss()
     const filearray = []
-    const grouparray = []
+    const cloudarray = []
     const personarray = []
 
     this.state.content.map((file,i)=>{
           filearray[i] = file[1]; // strip out the image name - just need the file paths 
     })
 
-    this.state.groups.map((group,i)=>{
-      grouparray[i] = i;    // temporary - need to fix with real group ids
+    this.state.clouds.map((cloud,i)=>{
+      if(cloud.id > 0){
+        cloudarray.push(cloud.id)  
+      }
+      
     })
 
     this.state.people.map((person,i)=>{
@@ -67,7 +92,7 @@ class NewPost extends Component{
                     filearray,
                     personarray,
                     this.state.location[0],
-                    grouparray,
+                    cloudarray,
                     1))
         { 
           cleanupAsyncstorage()
@@ -135,9 +160,10 @@ class NewPost extends Component{
           content:stores,
           people:['Choppy','Dummy','Hommer'],                           // need to change this
           location:['UAP RT Foundry','Beacon, NY','New York State'],    // need to change this
-          groups:['Home','UAP']                                          // need to change this
         })
+        
       })
+      mapUserClouds(user.id,this.setupClouds)
       
     }catch (e) {
       alert(e)
@@ -295,8 +321,6 @@ const styles = StyleSheet.create({
   subtitle: {
     flexDirection:'row',
     flexWrap:'wrap',
-    
-    
     marginTop:5,
     marginRight:5,
     fontSize:8,
