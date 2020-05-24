@@ -6,40 +6,33 @@ import Search from './search';
 import CaptureComponent from './capture';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import NewPost  from './newpost'
+import { View, StyleSheet} from 'react-native';
 
 
 const BottomNav = createBottomTabNavigator();
 const RootNav = createStackNavigator();
 
 class Main extends Component {
-
-
+  
   render(){
 
       return (
       
         <BottomNav.Navigator>
+          
           <BottomNav.Screen 
             name="Feed" 
             component= {Feed} 
+            
             options={{
+              
               tabBarLabel: 'Home', 
               tabBarIcon : () => (
                 <MaterialIcon name='home' color={'black'} size={26}  />
             )}}
           />
-  
-          <BottomNav.Screen 
-            name="Search" 
-            component= {Search} 
-            options={{
-              tabBarLabel: 'Search', 
-              tabBarIcon : () => (
-                <MaterialIcon name='search' color={'black'} size={26}  />
-            )}}
-          />
-          
-          <BottomNav.Screen 
+
+        <BottomNav.Screen 
             name="CaptureComponent" 
             component= {CaptureComponent} 
             options={{
@@ -49,7 +42,19 @@ class Main extends Component {
               tabBarIcon : () => (
                 <MaterialIcon name='control-point' color={'black'} size={26}  />
             )}}
-          />
+          />  
+  
+         <BottomNav.Screen 
+            name="Search" 
+            component= {Search} 
+            options={{
+              tabBarLabel: 'Search', 
+              tabBarIcon : () => (
+                <MaterialIcon name='search' color={'black'} size={26}  />
+            )}}
+          /> 
+          
+          
   
         </BottomNav.Navigator>
       )   
@@ -63,22 +68,22 @@ class HomeScreen extends Component {
   render(){
     return (
       <RootNav.Navigator>
-      <RootNav.Screen 
-        name= "Main"
-        component = {Main}
-        options ={{
-          headerShown:false,
-        }}
-      />
-      
-      <RootNav.Screen 
-        name="NewPost"
-        component ={NewPost}        
-        options ={{
-          headerShown:false,
-          cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
-        }}
-      />
+        <RootNav.Screen 
+          name= "Main"
+          component = {Main}
+          options ={{
+            headerShown:false,
+          }}
+        />
+        
+        <RootNav.Screen 
+          name="NewPost"
+          component ={NewPost}   
+          options ={{
+            headerShown:false,
+            cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+          }}
+        />
 
       </RootNav.Navigator>
     )
@@ -88,5 +93,16 @@ class HomeScreen extends Component {
 
 export default HomeScreen
 
-
+const styles = StyleSheet.create({
+  
+   iconrow :{
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'space-between',
+    marginTop:4,
+    marginLeft:4,
+    marginRight:4,
+  },
+  
+})
           

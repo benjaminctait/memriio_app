@@ -67,9 +67,9 @@ class Signin extends Component {
                  console.log(user);
                  
                                 
-                 if(user.id){
+                 if(user.userid){
                     this.setState({spinner:false}) 
-                    console.log('onSubmitSignUp -> calling callback with user : ' + user.id );
+                    console.log('onSubmitSignUp -> calling callback with user : ' + user.userid );
                     this.props.loguserin(user)
                     
                     
@@ -107,9 +107,9 @@ onSubmitSignUp = () => {
              console.log('new user created');
              console.log(user);
                             
-             if(user.id){
+             if(user.userid){
                 this.setState({spinner:false}) 
-                console.log('calling logUserIn ' + user.id );
+                console.log('calling logUserIn ' + user.userid );
                 this.props.loguserin(user)
                 
                 
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
         height:45,
         marginLeft:16,
         borderBottomColor: '#FFFFFF',
-        
+        color:'black',
         flex:1,
     },
     inputIcon:{
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#00b5ec",
     },
     loginText: {
-        color: 'white',
+        color: 'black',
     },
     errorText: {
         flex:1,

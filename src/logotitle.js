@@ -10,7 +10,10 @@ class LogoTitle extends Component{
     render(){
         return(
             <View style={styles.mainArea}>
-                <Text style={styles.textMain} > memriio </Text>
+               <Image
+                  style={styles.logo}
+                  source={require('./images/memriio_logo.png')}
+                />
             </View>
         )
     }
@@ -19,7 +22,6 @@ class LogoTitle extends Component{
 const styles = StyleSheet.create({
     mainArea:{
       flex:1,
-      alignItems:'center',
       justifyContent:'center',
     },    
     textMain:{
@@ -27,7 +29,17 @@ const styles = StyleSheet.create({
       justifyContent:'center',
       fontSize: 15,
       color:'black'
-    }
+    },
+    logo: {
+      
+      width: 100,
+      marginBottom: 5,
+      marginLeft:5,
+      resizeMode:'contain',
+      
+      backgroundColor: 'transparent',
+    },
   });
 
 export default LogoTitle
+

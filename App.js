@@ -31,17 +31,17 @@ class App extends Component{
 //--------------------------------------------------------------------------
   
   handleLogonIn = async (user) => {
-    console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.id + ' email: ' + user.email); 
+    console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.userid + ' email: ' + user.email); 
     
     await AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(true) )
-    await AsyncStorage.setItem( 'uaserid'  ,JSON.stringify( user.id ))
+    await AsyncStorage.setItem( 'uaserid'  ,JSON.stringify( user.userid ))
     await AsyncStorage.setItem( 'firstname'  , user.firstname)
     await AsyncStorage.setItem( 'lastname'  , user.lastname)
     await AsyncStorage.setItem( 'email'  , user.email)
 
     this.setState({
         isLoggedIn:true,
-        userid:user.id,
+        userid:user.userid,
         firstname:user.firstname,
         familyname:user.lastname
     })
@@ -96,12 +96,14 @@ async componentDidMount(){
               <Stack.Screen
                 name="Home"
                 component={HomeScreen}
+                
                 options={({navigation}) => ({
-                  headerTitle: props => <LogoTitle {...props} />,
+                  headerLeft: props => <LogoTitle {...props} />,
+                  headerTitle:'',
                   headerRight: props => (
                     <SettingsButton {...props} onPress={() => 
                       navigation.navigate('Settings',{logoutcallback:this.logCurrentUserOut})
-                      //this.logCurrentUserOut()
+                    
                         
                       }/>
                   ),

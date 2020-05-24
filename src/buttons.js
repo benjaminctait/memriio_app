@@ -103,7 +103,7 @@ class BackButton extends Component{
 class SettingsButton extends Component{
   render(){
       return(
-          <TouchableOpacity onPress={this.props.onPress}>
+          <TouchableOpacity onPress={this.props.onPress} style={styles.settingsbutton}>
           <Image
             style={styles.littleButton}
             source={require('./images/settings.png')}
@@ -174,27 +174,123 @@ class IconButtonAudio extends Component{
         
       )}}
 
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+class SubTag extends Component{
+  //onTagPress
+  //onRightIconPress
+  //tagStyle
+  //textStyle
+  //rightIconStyle
+  //title
+  //rigthIconUp
+  //rightIconDown
+  //switchRightIconOnTagPress
+  //swithLeftIconOnTagPress
+
+  constructor(props){
+    super(props)
+    this.state.switchRightIconOnTagPress = props.switchRightIconOnTagPress
+    this.state.switchLeftIconOnTagPress = props.switchLeftIconOnTagPress
+    
+  }
+
+  state ={
+    rightUp:true,
+    leftUp:true,
+    switchRightIconOnTagPress:false,
+    switchLeftIconOnTagPress:false,
+  }
+
+//-----------------------------------------------------------
+onTagPress = () =>{
+
+  if(this.state.switchRightIconOnTagPress){
+    let x = !this.state.rightUp
+    this.setState({rightUp:x})
+  }
+  if(this.state.switchLeftIconOnTagPress){
+    let x = !this.state.leftUp
+    this.setState({leftUp:x})
+  }
+  this.props.onTagPress
+}
+
+//-----------------------------------------------------------
+onRightIconPress = () =>{
+  let x = !this.state.rightUp
+  this.setState({rightUp:x})
+  this.props.onRightIconPress
+}
+
+//-----------------------------------------------------------
+onLeftIconPress = () => {
+  let x = !this.state.leftUp
+  this.setState({leftUp:x})
+  this.props.onLeftIconPress
+  
+}
+
+//-----------------------------------------------------------
+getRightIcon = () => {
+  if(this.state.rightUp){
+    return(
+      <Image
+        onPress={this.onRightIconPress}
+        style={[styles.badge,this.props.rightIconStyle]}
+        source={this.props.rightIconUp}            
+      />
+    )
+  }else{
+    return (
+      <Image
+        onPress={this.onRightIconPress}
+        style={[styles.badge,this.props.rightIconStyle]}
+        source={this.props.rightIconDown}            
+      />
+    )
+  }
+}
+//-----------------------------------------------------------
+
+  render(){
+      return(
+          <TouchableOpacity onPress={this.onTagPress}>
+            <View style={[styles.ptag,this.props.tagStyle]}>
+              <Text style={[styles.ptagText,this.props.textStyle]}> {this.props.title}</Text>
+              {this.getRightIcon()}
+            </View>   
+        </TouchableOpacity>     
+      )}}
+
+//-----------------------------------------------------------------------------
+
 class PersonTag extends Component{
 
   render(){
       return(
           <TouchableOpacity onPress={this.props.onPress}>
-          <View style={styles.ptag}>
-          <Text style={styles.ptagText}> {this.props.title}</Text>
-          </View>   
+            <View style={styles.ptag}>
+              <Text style={styles.ptagText}> {this.props.title}</Text>
+            </View>   
         </TouchableOpacity>     
       )}}
+      
 
 class LocationTag extends Component{
+
+ 
 
   render(){
       return(
           <TouchableOpacity onPress={this.props.onPress}>
-          <View style={styles.ptag}>
-          <Text style={styles.ptagText}> {this.props.title}</Text>
+          <View style={[styles.ptag,this.props.tagstyle]}>
+          <Text style={[styles.ptagText,this.props.textstyle]}> {this.props.title}</Text>
           </View>   
         </TouchableOpacity>     
       )}}
+
 
 class IconButtonFile extends Component{
   
@@ -216,18 +312,46 @@ class IconButtonFile extends Component{
         </TouchableOpacity>
         
       )}}
+//-----------------------------------------------------------------------
 
+class SwitchIcon extends Component{
+  
+  state = {
+    up:true, 
+  }
+  
+  handleOnPress = () =>{
+      let newval = !this.state.up
+      this.setState({up:newval})
+      this.props.onPress()
+  }
 
+  render(){
+   
+      if(this.state.up){
+        imgsrc = this.props.upImage
+      }else{
+        imgsrc = this.props.downImage
+      }
+
+      return(
+          <TouchableOpacity onPress={this.handleOnPress}>
+          <Image
+            style={styles.littleButton}
+            source={imgsrc}          
+          />          
+        </TouchableOpacity>
+        
+      )}}
 
 
             
 const styles = StyleSheet.create({
-    bigButton: {
+    
+  bigButton: {
         height: 70,
         width: 70,
         backgroundColor: 'transparent',
-        
-        
     },
     littleButton: {
       height: 20,
@@ -235,6 +359,18 @@ const styles = StyleSheet.create({
       alignSelf:'center',
       backgroundColor: 'transparent',  
     },
+    settingsbutton:{
+      marginRight:5,
+    },
+
+    badge: {
+      height: 12,
+      width: 12,
+      marginLeft:2,
+      marginTop:2,
+      backgroundColor: 'transparent',  
+    },
+
     iconTextUp: {
       color:'grey',
       justifyContent:'center',
@@ -252,6 +388,9 @@ const styles = StyleSheet.create({
       
     },
     ptag:{
+      flex:0,
+      flexDirection:'row',
+      justifyContent:'space-between',
       borderColor:'green',
       backgroundColor:'#f5f5f5',
       borderWidth:0.5,
@@ -264,9 +403,9 @@ const styles = StyleSheet.create({
     },
 
     ptagText:{
-      fontSize:10,
-
+      fontSize:12,
     },
+
 
   });
 
@@ -284,4 +423,6 @@ export {CameraClickButton,
         IconButtonAudio,
         PersonTag,
         LocationTag,
+        SubTag,
+        SwitchIcon,
       }

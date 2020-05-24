@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import AsyncStorage from '@react-native-community/async-storage'
 import KeyboardShift from './keyboardShift';
-import {postNewMemory,mapUserClouds} from './datapass'
+import {
+    postNewMemory,
+    mapUserClouds,
+    activeUser,
+    cleanupStorage} from './datapass'
 
 import { 
     StyleSheet,   
@@ -16,7 +20,7 @@ import {
     CameraClickButton,
     BackButton,
     PostButton,
-    PersonTag,
+    SubTag,
     LocationTag,
     
   } from './buttons'
@@ -44,6 +48,7 @@ class NewPost extends Component{
     people:[],
     location:[],
     clouds:[],
+    user:null
   } 
 
 //--------------------------------------------------------------------------
@@ -70,10 +75,6 @@ setupClouds = (clouds) => {
     const cloudarray = []
     const personarray = []
 
-    this.state.content.map((file,i)=>{
-          filearray[i] = file[1]; // strip out the image name - just need the file paths 
-    })
-
     this.state.clouds.map((cloud,i)=>{
       if(cloud.id > 0){
         cloudarray.push(cloud.id)  
@@ -89,21 +90,23 @@ setupClouds = (clouds) => {
 
     if(postNewMemory(this.state.title,
                     this.state.story,
-                    filearray,
+                    this.state.content,
                     personarray,
                     this.state.location[0],
                     cloudarray,
-                    1))
+                    this.state.user.userid))
         { 
-          cleanupAsyncstorage()
+          cleanupStorage()
           this.props.navigation.navigate('Feed')      
           alert('We are uploading your post now. we will let you know when its done')     
         }
     
-   
   
   }
-  
+
+// ---------------------------------------------------------------------------------  
+
+
   getLocation = () => {
     Keyboard.dismiss()
   }
@@ -118,28 +121,7 @@ setupClouds = (clouds) => {
     
   }
   
-   // ---------------------------------------------------------------------------------
-   // Removes all content captured for the current post
-   // pre : 
-   // post :  any key value pair where key contains 'image-','video-', 'audio-' will 
-   //         be removed from Storage
 
-  cleanupAsyncstorage = async() =>{
-    try{
-      
-      const keys =  await AsyncStorage.getAllKeys()
-      
-      keys.map(key,index => {
-        if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) {
-          AsyncStorage.removeItem(key)
-        }
-      })
-      
-    }catch (e) {
-      alert(e)
-    }
-
-  }
 
   // ---------------------------------------------------------------------------------
    // Loads the state of the New Post view
@@ -148,29 +130,42 @@ setupClouds = (clouds) => {
    //         Note : people, location and groups can load after the component is loaded.
 
   async componentDidMount(){
+    const store=[]
+    const user = await activeUser();
     try{
-      await AsyncStorage.removeItem('video- 1')
-      const keys =  await AsyncStorage.getAllKeys().then(keys => {
-        keys.map(key,index => {
-          if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) {
-            stores.push(AsyncStorage.getItem(key))
+      console.log('newpost-didmount with user id : ' + user.userid);
+      await AsyncStorage.getAllKeys()
+      .then(keys => {
+        console.log('newpost-didmount getallkeys : ' + keys);
+        keys.map((key,index) => {
+          if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) 
+          {
+              AsyncStorage.getItem(key)
+                .then(item => {
+                  console.log('push content : key' + key + ' value ' + item);
+                  store.push(item)
+                })
           }
         })
+        console.log('content is array ' + Array.isArray(this.state.content));
+        
         this.setState({
-          content:stores,
-          people:['Choppy','Dummy','Hommer'],                           // need to change this
+          content:store,
+          people:['Choppy','Dummy','Bloke'],                           // need to change this
           location:['UAP RT Foundry','Beacon, NY','New York State'],    // need to change this
+          user:user
         })
         
       })
-      mapUserClouds(user.id,this.setupClouds)
+      mapUserClouds(user.userid,this.setupClouds)
+      
       
     }catch (e) {
       alert(e)
     }
   }
 
-
+// ---------------------------------------------------------------------------------
 
   render(){
     
@@ -198,7 +193,7 @@ setupClouds = (clouds) => {
                  
                 }}
           >
-            { this.state.content.map((result,i,item) => (
+            { this.state.content.map((item) => (
             <View style={{
                     width: '30%', 
                     height:120,
@@ -207,7 +202,7 @@ setupClouds = (clouds) => {
                   }} >
               <Image
                 style={{ height: '100%', width: '100%',borderRadius:10}}
-                source={{uri:item[i][1]}}                  
+                source={{uri:item}}                  
                 resizeMode='cover'
 
               /> 
@@ -226,7 +221,10 @@ setupClouds = (clouds) => {
               subtitle={
                 <View style={styles.subtitle}>
                   {this.state.people.map((person) =>(
-                    <PersonTag title={person}/>
+                    <SubTag 
+                      title={person}
+                      rightIcon={require('./images/x-symbol.png')}
+                    />
                   ))}
                 </View>}
             />
@@ -252,8 +250,11 @@ setupClouds = (clouds) => {
               onPress={()=> this.getGroups()}
               subtitle={
                 <View style={styles.subtitle}>
-                  {this.state.groups.map((group) =>(
-                    <PersonTag title={group}/>
+                  {this.state.clouds.map((cloud) =>(
+                    <SubTag 
+                      title={cloud.name}
+                      rightIcon={require('./images/x-symbol.png')}
+                    />
                   ))}
                 </View>}
               

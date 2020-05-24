@@ -16,6 +16,7 @@ import {
 import {
   BackButton,
   PersonTag,
+  SubTag,
 } from './buttons'
 
 
@@ -49,6 +50,8 @@ setupClouds = (clouds) => {
       createdon:null}] 
     const newarray = firstitem.concat(clouds)
     
+    
+    
     this.setState({clouds:newarray})
     
   }
@@ -60,15 +63,17 @@ setupClouds = (clouds) => {
   componentDidMount = async () => {
   
     const user = await activeUser()
-    console.log('settings load : user - ' + user.id + ' ' + user.firstName + ' ' + user.lastName + ' ' + user.email);
+    console.log('settings load : user - ' + user.userid + ' ' + user.firstName + ' ' + user.lastName + ' ' + user.email);
     
     this.setState({
-      userid:user.id,
+      userid:user.userid,
       email:user.email,
       firstname:user.firstName,
+      familyname:user.lastName,
+
     })
 
-    mapUserClouds(user.id,this.setupClouds)
+    mapUserClouds(user.userid,this.setupClouds)
 
   }
 
@@ -149,10 +154,19 @@ createNewMemoryCloud = () => {
                   subtitle={
                     <View style={styles.subtitle}>
                       {this.state.clouds.map((cloud) =>(
-                        <PersonTag title={cloud.name}/>
+                        <SubTag  
+                        title = {cloud.name} 
+                        rightIconUp   =   {require('./images/checked_blue.png')}
+                        rightIconDown =   {require('./images/x-symbol.png')}
+                        switchRightIconOnTagPress = {true}
+                        textStyle = {styles.ptagText}
+                        tagStyle = {styles.ptag}
+                      />
                       ))}
-                    </View>}
+                    </View>
+                  }
                   />
+                  
 
                   <View style={styles.settingsTextItem}>
                     <Image
@@ -255,6 +269,21 @@ const styles = StyleSheet.create({
       marginTop:5,
       marginRight:5,
       fontSize:8,
-    }
+    },
     
+    ptagText:{
+      fontSize:15,
+    },
+    ptag:{
+      borderWidth:.5,
+      borderRadius:5,
+      paddingHorizontal:4,
+      paddingBottom:4,
+      paddingTop:4,
+      marginTop:4,
+      marginRight:8,
+      marginBottom:4,
+      borderColor:'blue',
+      backgroundColor:'#f5f5f5',
+    }
   })
