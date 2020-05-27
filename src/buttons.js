@@ -24,9 +24,9 @@ class CameraClickButton extends Component{
 class VideoStartButton extends Component{
   render(){
       return(
-          <TouchableOpacity onPress={this.props.onPress}>
+          <TouchableOpacity onPress={this.props.onPress} style={this.props.style}>
           <Image
-            style={styles.bigButton}
+            style={[styles.bigButton,this.props.imageStyle]}
             source={require('./images/dottedcircleplay.png')}
           />
           
@@ -38,9 +38,9 @@ class VideoStartButton extends Component{
 class VideoStopButton extends Component{
   render(){
       return(
-          <TouchableOpacity onPress={this.props.onPress}>
+          <TouchableOpacity onPress={this.props.onPress} style={this.props.style}>
           <Image
-            style={styles.bigButton}
+            style={[styles.bigButton,this.props.imageStyle]}
             source={require('./images/dottedcircleStop.png')}
           />
         </TouchableOpacity>
@@ -337,7 +337,7 @@ class SwitchIcon extends Component{
       return(
           <TouchableOpacity onPress={this.handleOnPress}>
           <Image
-            style={styles.littleButton}
+            style={styles.mediumButton}
             source={imgsrc}          
           />          
         </TouchableOpacity>
@@ -348,7 +348,7 @@ class SwitchIcon extends Component{
             
 const styles = StyleSheet.create({
     
-  bigButton: {
+    bigButton: {
         height: 70,
         width: 70,
         backgroundColor: 'transparent',

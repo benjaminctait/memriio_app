@@ -1,0 +1,20 @@
+getFileView = async () => {
+
+  
+  if(this.props.heroExtension == 'jpg'){
+    return (
+      <Image
+        style={styles.image}
+        source={{ uri: this.props.heroimage }}
+      />
+      )      
+  }else if(this.props.heroExtension == 'mov') {
+    
+    let tmp = this.props.heroimage.split('/')
+    let surl = await getObjectSignedurl( tmp[tmp.length-1])
+    
+    return (
+      <Text>{surl}</Text> 
+      )
+  }
+}

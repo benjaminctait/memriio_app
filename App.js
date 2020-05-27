@@ -34,7 +34,7 @@ class App extends Component{
     console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.userid + ' email: ' + user.email); 
     
     await AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(true) )
-    await AsyncStorage.setItem( 'uaserid'  ,JSON.stringify( user.userid ))
+    await AsyncStorage.setItem( 'uaserid'  , JSON.stringify( user.userid ))
     await AsyncStorage.setItem( 'firstname'  , user.firstname)
     await AsyncStorage.setItem( 'lastname'  , user.lastname)
     await AsyncStorage.setItem( 'email'  , user.email)

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {SwitchIcon} from './buttons'
-//import Video from'react-native-video'
+import VideoPlayer from './videoplayer'
+
 
 import { 
     StyleSheet,
@@ -9,6 +10,7 @@ import {
     Image,
 
   } from 'react-native';
+
 
 class MemoryCard extends Component{
   constructor(props){
@@ -76,8 +78,9 @@ getLower = () =>{
 
 //----------------------------------------------------------------
 
-getFileView = () => {
+getFileView =  () => {
 
+  
   if(this.props.heroExtension == 'jpg'){
     return (
       <Image
@@ -86,32 +89,20 @@ getFileView = () => {
       />
       )      
   }else if(this.props.heroExtension == 'mov') {
-    console.log('getFileView ' + this.props.heroimage + ' ' + this.props.heroExtension);
-    let fp = this.props.heroimage +'.'+ this.props.heroExtension
-    
     return (
-      <View></View>
-      // <Video 
-      //   style={styles.image}
-      //   ref = {(ref) => this.player = ref}
-      //   source={{ uri: fp }}  
-      //   onBuffer={this.onBuffer}                // Callback when remote video is buffering
-      //   onEnd={this.onEnd}                      // Callback when playback finishes
-      //   onError={this.videoError}               // Callback when video cannot be l
-        
-      // />
+      <VideoPlayer 
+      source ={this.props.heroimage }
+      />
     )
   }
-
 }
+
 
 //----------------------------------------------------------------
 
   render(){
     let lower     = this.getLower()
     let fileview  = this.getFileView()
-    
-    
     
     return (
       
@@ -132,22 +123,20 @@ getFileView = () => {
             downImage = {require('./images/share_green.png')}
           />
 
-            <SwitchIcon // Comment icon
-              onPress = {this.handleOnComment}
-              upImage = {require('./images/comment_purple.png')}
-              downImage = {require('./images/comment_purple.png')}
-            />
+          <SwitchIcon // Comment icon
+            onPress = {this.handleOnComment}
+            upImage = {require('./images/comment_purple.png')}
+            downImage = {require('./images/comment_purple.png')}
+          />
         </View>
-        <View style={styles.iconrow}></View> 
-        <View style={styles.iconrow}></View>
-        <View style={styles.iconrow}>
-        <SwitchIcon // Story expand icon
-              onPress = {this.handleOnExpand}
-              upImage = {require('./images/chevron_down_purple.png')}
-              downImage = {require('./images/chevron_up_purple.png')}
-            />
-        </View>
-        
+          <View style={styles.iconrow}></View> 
+          <View style={styles.iconrow}>
+          <SwitchIcon // Story expand icon
+                onPress = {this.handleOnExpand}
+                upImage = {require('./images/chevron_down_purple.png')}
+                downImage = {require('./images/chevron_up_purple.png')}
+              />
+          </View>
       </View>
         
         {lower}
@@ -157,6 +146,7 @@ getFileView = () => {
 
 };
 
+//------------------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   
@@ -178,6 +168,7 @@ const styles = StyleSheet.create({
     marginLeft:4,
     marginRight:4,
   },
+
   card: {
     
     width: '100%',

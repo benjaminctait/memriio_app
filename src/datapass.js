@@ -185,7 +185,7 @@ export function getMemories (userID,cloudIDs,callback)
                 .then(response => response.json())
                 .then(response => {
                     if ( response.status !== 400){
-                        callback(response)
+                        callback(response.data)
                     }else{
                         
                     }
@@ -292,7 +292,20 @@ addGroupstoMemory = () => {
         })
     })
 }   
-// upload file direct to S3 -----------------------------------------------------
+// ------------------------------------------------------------------------------
+
+getFileMime = (extension) => {
+    let mime =''
+    switch (extension) {
+        case 'mov': mime = 'video/quicktime' 
+        break;
+        case 'jpg': mime = 'image/jpeg' 
+        break;
+    }
+    return mime
+}
+
+// ------------------------------------------------------------------------------
 
 uploadFiletoS3 = (filepath) => {    
     
@@ -301,17 +314,18 @@ uploadFiletoS3 = (filepath) => {
     return new Promise((resolve,reject) => {
 
     let fileParts = filepath.split('.');
-    let filetype = fileParts[1];
+    let extension = fileParts[1]
+    let MIME = getFileMime(extension)
 
-        processImage(filepath,filetype)
+        processImage(filepath,extension)
         .then(response => {
             if(response != 'failure'){
-                let filename = memory.userid + '-' + Date.now()
+                let filename = memory.userid + '-' + Date.now() + '.' + extension
 
                 const file ={
                     uri: response,
                     name: filename,
-                    type: filetype
+                    type: MIME
                 }
                 
                 const options = {
@@ -325,6 +339,7 @@ uploadFiletoS3 = (filepath) => {
                 console.log('Attempt RNS3.put')
                 console.log('File uri ' + file.uri )
                 console.log('filename ' + file.name+ ' type ' + file.type);                 
+                
                 
                 RNS3.put(file, options)
                 .then(response => {                
@@ -397,6 +412,26 @@ addFileToMemory = (remoteFileURL,fileext,ishero) => {
     })
 }
 
+//-------------------------------------------------------------------------------
+
+export async function getObjectSignedurl (fileName) {
+
+    return new Promise((resolve,reject) => {
+        fetch('https://memriio-api-0.herokuapp.com/getObject_signedurl', {
+            method: 'post',headers: {
+                'Content-Type':'application/json'},
+                    body:JSON.stringify({fileName: fileName})})
+                    .then(response => response.json())
+                    .then(response => {
+                        if ( response.success){
+                            resolve(response.signedURL)                       
+                        }else{
+                            reject( response.error)
+                        }
+                    })
+            })
+ 
+}
 
 // add a person to a memory -----------------------------------------------------
 

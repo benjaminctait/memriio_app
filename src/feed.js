@@ -41,6 +41,8 @@ handleSearchChange = (searchwords) =>{
     this.state.searchwordcount--
     searchMemories(this.state.user.userid,null,wordarray,this.loadMemories)
   }else if(searchwords === ''){
+    console.log('searchword count = ' + this.state.searchwordcount);
+    
     this.state.searchwordcount = 0
     getMemories(this.state.user.userid,[0],this.loadMemories)
   }
@@ -62,13 +64,12 @@ loadClouds = (clouds) => {
   
   let personal ={
     id:0,
-    name:'Peronsal',
+    name:'Personal',
     administrator:this.state.user.userid,
     createdon:this.state.user.createdon,    
   }
   clouds.push(personal)
   clouds.reverse()
-  console.log('loadClouds ' + JSON.stringify(clouds));
   
   this.setState({userClouds:clouds})
   
@@ -88,11 +89,15 @@ componentDidMount = async () => {
 //----------------------------------------------------------------------------------------------
 
 render(){
-
+  
+  
   if(Array.isArray(this.state.memories)){
+    
     feedview =
       <ScrollView style={styles.scrollarea}>
       {this.state.memories.map((mem,index) => (
+        
+        
           <MemoryCard 
             key = {index}
             title = {mem.title} 
@@ -108,6 +113,7 @@ render(){
     </ScrollView>
 
     }else{
+      
       feedview = 
         <View style={styles.nomemory}>
           <Text style={styles.textMain}>Hi {this.state.user.firstName}</Text>
