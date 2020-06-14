@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {SwitchIcon} from './buttons'
 import VideoPlayer from './videoplayer'
+import Carousel from 'react-native-snap-carousel'
+import { getMemoryFiles } from './datapass'
 
 
 import { 
@@ -8,6 +10,7 @@ import {
     View,
     Text,  
     Image,
+    Dimensions,
 
   } from 'react-native';
 
@@ -17,14 +20,33 @@ class MemoryCard extends Component{
     super(props)
     this.handleOnExpand.bind(this)
     this.handleOnLike.bind(this)
+    this.renderFileView.bind(this)
   }
 
 
   state ={
-    storyVisible:false
+    storyVisible:false,
+    files:[],
+    people:[],
+    activeIndex:0,
+
   }
 
-//----------------------------------------------------------------
+//------------------------------------------------------------------------------------------------
+
+async componentDidMount() {
+
+  getMemoryFiles  ( this.props.memory.memid, (memfiles) =>{ 
+        this.setState({ files:memfiles })
+        console.log('didMount : ' + this.props.memory.memid + ' memfile count ' + memfiles.length);
+      })
+ // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
+
+  
+  
+}
+
+//------------------------------------------------------------------------------------------------
 
 handleOnShare = () =>{
   console.log('MemoryCard : handleOnShare ');
@@ -59,16 +81,16 @@ getLower = () =>{
   if(this.state.storyVisible){
     return (
       <View style={styles.storyarea}>
-        <Text style = {styles.titleText} >{this.props.title} </Text>
-        <Text style = {styles.italicText} >{this.props.description}</Text>
-        <Text style = {styles.bodyText} >{this.props.story}</Text>
+        <Text style = {styles.titleText}  > {this.props.memory.title } </Text>
+        <Text style = {styles.italicText} > {this.props.memory.description }</Text>
+        <Text style = {styles.bodyText}   > {this.props.memory.story }</Text>
       </View>
     )
   }else{
     return (
-      <View style={styles.titleblock}>
-      <Text style = {styles.titleText} >{this.props.title} </Text>
-      <Text style = {styles.bodyText} >{this.props.description}</Text>
+      <View style = { styles.titleblock }>
+      <Text style = { styles.titleText } > { this.props.memory.title } </Text>
+      <Text style = { styles.bodyText }  > { this.props.memory.description } </Text>
       
     </View>
      
@@ -78,31 +100,52 @@ getLower = () =>{
 
 //----------------------------------------------------------------
 
-getFileView =  () => {
+getCarousel = () => {
+  const {width} = Dimensions.get('window')
 
+  return(
+    <View style={{ flex: 0, flexDirection:'row', justifyContent: 'center', }}>
+        <Carousel
+          layout={"tinder"}
+          ref={ref => this.carousel = ref}
+          data={this.state.files}
+          sliderWidth={width}
+          itemWidth={width}
+          renderItem={this.renderFileView}
+          onSnapToItem = { index => this.setState({activeIndex:index}) } />
+    </View>
+  )
+}
+
+//----------------------------------------------------------------
+
+renderFileView  ({item,index})  {
+
+  //console.log('renderFileView source : ' + item.fileurl);
   
-  if(this.props.heroExtension == 'jpg'){
+  
+  if(item.fileext == 'jpg' || item.fileext == 'jpeg'){
     return (
       <Image
         style={styles.image}
-        source={{ uri: this.props.heroimage }}
+        source={{ uri: item.thumburl }}
       />
       )      
-  }else if(this.props.heroExtension == 'mov') {
+  }else if(item.fileext == 'mp4' || item.fileext == 'mov') {
     return (
       <VideoPlayer 
-      source ={this.props.heroimage }
+        poster = {item.thumburl}
+        source = {item.fileurl}
       />
     )
   }
 }
 
-
 //----------------------------------------------------------------
 
   render(){
-    let lower     = this.getLower()
-    let fileview  = this.getFileView()
+    let lower     = this.getLower()    
+    let fileview  = this.getCarousel()
     
     return (
       

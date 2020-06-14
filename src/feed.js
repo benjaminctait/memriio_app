@@ -18,15 +18,27 @@ import { TextInput } from 'react-native-gesture-handler';
 import { SubTag } from './buttons';
 
 
+
 class Feed extends Component{
 
-state = {
-  memories:[],
-  userClouds:[],
-  user:null,
-  searchwordcount:1,
+  constructor(props){
+    super(props)
+    this.getIncludedClouds.bind(this)
+    this.handleSearchChange.bind(this)
+    this.handleCloudChange.bind(this)
+    this.flushFeed.bind(this)
+  }
 
-}
+  state = 
+  {
+    memories:[],
+    userClouds:[],
+    user:null,
+    searchwordcount:1,
+    searchwords:'',
+    cloudInclusions:[{}],
+    isLoading:true
+  }
 
 //----------------------------------------------------------------------------------------------
 
@@ -34,26 +46,27 @@ handleSearchChange = (searchwords) =>{
 
   searchwords = searchwords.toLowerCase()
   let wordarray = searchwords.split(' ')
-  if(wordarray.length > this.state.searchwordcount){
+  let cloudids =this.getIncludedClouds()
+ 
+  if(searchwords === ''){
+    this.state.searchwordcount = 0
+    getMemories(this.state.user.userid,cloudids,this.loadMemories)
+  }else if(wordarray.length > this.state.searchwordcount){
     this.state.searchwordcount++
-    searchMemories(this.state.user.userid,null,wordarray,this.loadMemories)
+    searchMemories(this.state.user.userid,cloudids,wordarray,this.loadMemories)
   }else if(wordarray.length < this.state.searchwordcount){
     this.state.searchwordcount--
-    searchMemories(this.state.user.userid,null,wordarray,this.loadMemories)
-  }else if(searchwords === ''){
-    console.log('searchword count = ' + this.state.searchwordcount);
-    
-    this.state.searchwordcount = 0
-    getMemories(this.state.user.userid,[0],this.loadMemories)
-  }
+    searchMemories(this.state.user.userid,cloudids,wordarray,this.loadMemories)
+   }
   
 }
 
 //----------------------------------------------------------------------------------------------
 
 loadMemories = (memories) => {
-
-  this.setState({memories:memories})
+  
+  this.setState({memories:memories,isLoading:false})
+  
   
 }
 
@@ -61,7 +74,7 @@ loadMemories = (memories) => {
 
 loadClouds = (clouds) => {
 
-  
+  let cloudids = [0]
   let personal ={
     id:0,
     name:'Personal',
@@ -70,7 +83,12 @@ loadClouds = (clouds) => {
   }
   clouds.push(personal)
   clouds.reverse()
-  
+
+  clouds.map(cloud =>{
+    this.state.cloudInclusions.push({cloudid:cloud.id,include:true})
+    cloudids.push(cloud.id)
+  })
+  getMemories(this.state.user.userid,cloudids,this.loadMemories)
   this.setState({userClouds:clouds})
   
 }
@@ -78,40 +96,80 @@ loadClouds = (clouds) => {
 //----------------------------------------------------------------------------------------------
 
 componentDidMount = async () => {
-  this.state.user =  await activeUser()
-  const groups = [0] 
-  getMemories(this.state.user.userid,groups,this.loadMemories)
+  this.state.user =  await activeUser()  
   mapUserClouds(this.state.user.userid,this.loadClouds)
-
-      
 } 
+
+//----------------------------------------------------------------------------------------------
+handleCloudChange = (properties) => {
+  this.flushFeed()
+  this.state.cloudInclusions.forEach(element => {
+      if(element.cloudid === properties.cloudid){element.include = !element.include}
+  })
+  console.log('CloudChange : ' + this.getIncludedClouds());
+  
+  this.handleSearchChange(this.state.searchwords)
+
+}
+
+//----------------------------------------------------------------------------------------------
+flushFeed = () => {
+  this.setState({isLoading:true})
+}
+
+//----------------------------------------------------------------------------------------------
+
+getIncludedClouds = () => {
+  let cloudids =[]
+  this.state.cloudInclusions.map(cloud =>{if(cloud.include) cloudids.push(cloud.cloudid)})
+  return cloudids
+}
 
 //----------------------------------------------------------------------------------------------
 
 render(){
   
+  let memisArray = Array.isArray(this.state.memories) 
+  let memcount = 0
+  if(memisArray) memcount = this.state.memories.length 
   
-  if(Array.isArray(this.state.memories)){
+  
+  
+  
+  if( memisArray 
+      && !this.state.isLoading 
+      && memcount){
     
     feedview =
       <ScrollView style={styles.scrollarea}>
       {this.state.memories.map((mem,index) => (
         
-        
           <MemoryCard 
             key = {index}
+            memory = {mem}
             title = {mem.title} 
             description= {mem.description}
             story = {mem.story}
-            heroimage = {mem.fileurl}
-            heroExtension = {mem.fileext}
             createdon = {mem.createdon}
             userid = {mem.userid}
 
           ></MemoryCard>
       ))}     
     </ScrollView>
-
+    }else if (memisArray && this.state.isLoading){
+      console.log(memisArray + ' : ' + this.state.isLoading);
+      feedview =
+        <View style={styles.nomemory}>
+          <Text style={styles.textMain}>Loading...</Text>
+        </View>
+    
+    }else if (memisArray && !this.state.isLoading && memcount == 0){
+      console.log(memisArray + ' : ' + this.state.isLoading);
+      feedview =
+        <View style={styles.nomemory}>
+          <Text style={styles.textMain}>Im Empty !</Text>
+        </View>
+    
     }else{
       
       feedview = 
@@ -131,14 +189,17 @@ render(){
         />
         {feedview}
         <View style={styles.cloudarea}>
-          {this.state.userClouds.map((cloud) => (
+          {this.state.userClouds.map((cloud,index) => (
             <SubTag  
-              title = {cloud.name} 
-              rightIconUp   =   {require('./images/checked_blue.png')}
-              rightIconDown =   {require('./images/x-symbol.png')}
+              title         =   { cloud.name }
+              cloudid       =   { cloud.id }
+              key           =   { index }
+              rightIconUp   =   { require('./images/checked_blue.png')}
+              rightIconDown =   { require('./images/x-symbol.png')}
+              textStyle     =   { styles.ptagText }
+              tagStyle      =   { styles.ptag }
+              onTagPress    =   { this.handleCloudChange }
               switchRightIconOnTagPress = {true}
-              textStyle = {styles.ptagText}
-              tagStyle = {styles.ptag}
             />
             ))}   
         </View> 

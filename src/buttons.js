@@ -214,7 +214,9 @@ onTagPress = () =>{
     let x = !this.state.leftUp
     this.setState({leftUp:x})
   }
-  this.props.onTagPress
+  this.props.onTagPress(this.props)
+  
+  
 }
 
 //-----------------------------------------------------------

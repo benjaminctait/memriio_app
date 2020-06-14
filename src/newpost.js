@@ -71,7 +71,7 @@ setupClouds = (clouds) => {
   sendPost = () => {
     
     Keyboard.dismiss()
-    const filearray = []
+    
     const cloudarray = []
     const personarray = []
 
@@ -97,6 +97,7 @@ setupClouds = (clouds) => {
                     this.state.user.userid))
         { 
           cleanupStorage()
+          console.log('New Memory Post Complete');
           this.props.navigation.navigate('Feed')      
           alert('We are uploading your post now. we will let you know when its done')     
         }
@@ -140,11 +141,16 @@ setupClouds = (clouds) => {
         keys.map((key,index) => {
           if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) 
           {
-              AsyncStorage.getItem(key)
-                .then(item => {
-                  console.log('push content : key' + key + ' value ' + item);
-                  store.push(item)
-                })
+              if(!key.includes('thumb')){
+                AsyncStorage.getItem(key)
+                  .then(item => {
+                    this.getMatchingThumb(keys,key)
+                    .then(thumb => {
+                      console.log('push content : file' + item + ' value ' + thumb);  
+                      store.push({filepath:item,thumbnail:thumb})
+                    })
+                  })
+              }
           }
         })
         console.log('content is array ' + Array.isArray(this.state.content));
@@ -165,12 +171,32 @@ setupClouds = (clouds) => {
     }
   }
 
+
 // ---------------------------------------------------------------------------------
+
+getMatchingThumb = ( keys,targetKey ) => {
+
+  return new Promise ((resolve,reject)=>{
+    let targetKeyNumber = parseInt(targetKey.slice(-1))
+    keys.map(key => {
+      if(key.includes('video-thumb')){
+        let thumbKeyNumber = parseInt(key.slice(-1))
+        
+        if(targetKeyNumber === thumbKeyNumber){
+          AsyncStorage.getItem(key).then(thumbPath =>{resolve(thumbPath)})
+        }
+      } 
+    })
+  })
+}
+
+
+// ---------------------------------------------------------------------------------
+  
 
   render(){
     
     return( 
-
       
       <KeyboardShift >      
       <View style={styles.container} >
@@ -193,7 +219,7 @@ setupClouds = (clouds) => {
                  
                 }}
           >
-            { this.state.content.map((item) => (
+            { this.state.content.map((item,index) => (
             <View style={{
                     width: '30%', 
                     height:120,
@@ -201,8 +227,9 @@ setupClouds = (clouds) => {
 
                   }} >
               <Image
+                key = {index}
                 style={{ height: '100%', width: '100%',borderRadius:10}}
-                source={{uri:item}}                  
+                source={{uri:item.thumbnail}}                  
                 resizeMode='cover'
 
               /> 
@@ -220,8 +247,9 @@ setupClouds = (clouds) => {
               onPress={()=> this.getPeople()}
               subtitle={
                 <View style={styles.subtitle}>
-                  {this.state.people.map((person) =>(
+                  {this.state.people.map((person,index) =>(
                     <SubTag 
+                      key={index}
                       title={person}
                       rightIcon={require('./images/x-symbol.png')}
                     />
@@ -236,8 +264,10 @@ setupClouds = (clouds) => {
               onPress={()=> this.getLocation()}
               subtitle={
                 <View style={styles.subtitle}>
-                  {this.state.location.map((place) =>(
-                    <LocationTag title={place}/>
+                  {this.state.location.map((place,index) =>(
+                    <LocationTag 
+                      key={index}
+                      title={place}/>
                   ))}
                 </View>}
 
@@ -250,8 +280,9 @@ setupClouds = (clouds) => {
               onPress={()=> this.getGroups()}
               subtitle={
                 <View style={styles.subtitle}>
-                  {this.state.clouds.map((cloud) =>(
+                  {this.state.clouds.map((cloud,index) =>(
                     <SubTag 
+                      key={index}
                       title={cloud.name}
                       rightIcon={require('./images/x-symbol.png')}
                     />

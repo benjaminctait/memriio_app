@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {RNCamera } from 'react-native-camera'
 import AsyncStorage from '@react-native-community/async-storage'
 import {cleanupStorage} from './datapass'
+import MovtoMp4 from 'react-native-mov-to-mp4'
+import { createThumbnail } from "react-native-create-thumbnail";
 
 
 import {CameraClickButton,
@@ -24,6 +26,7 @@ import {
   } from 'react-native';
 
 
+
 class CaptureComponent extends Component{
 
   state = {
@@ -43,7 +46,7 @@ async componentDidMount(){
   
   await cleanupStorage()
   await AsyncStorage.getAllKeys()
-  .then(keys => {console.log('newpost-didmount getallkeys : ' + keys)})
+  .then(keys => {console.log('capture-didmount getallkeys : ' + keys)})
 
 }
 
@@ -54,34 +57,40 @@ async componentDidMount(){
     console.log('startRecordingVideo vcount'  + this.state.vcount);
     
     if (this.camera) {
-      console.log('startRecordingVideo : this.camera ' + this.camera );
+      
       try{
-        console.log('startRecordingVideo : recordAsync' );
+        
         this.setState({isRecordingVideo:true})
         const promise = await this.camera.recordAsync({})
-        console.log('startRecordingVideo : after await recodAsync' + promise );
+        
         if(promise){
-          
           const data = await promise
-          console.log('startRecordingVideo : after await promise' + JSON.stringify(data) );
-          this.setState({
-              isRecordingVideo:false,
-              vcount:this.state.vcount+1
-            })
-          console.log('startRecordingVideo : before setitem' + data.uri );
-          AsyncStorage.setItem( 'video- ' + this.state.vcount , data.uri )
-          onsole.log('startRecordingVideo : after setitem vcount' + this.state.vcount );
+          this.setState({isRecordingVideo:false, vcount:this.state.vcount+1})
+          let fname = Date.now().toString() + '.mp4' 
+          MovtoMp4.convertMovToMp4(data.uri,fname,this.littlecallback.bind(this))
         }
-         
-        alert('called')
+        
       } catch (err) {
-        alert(err)
+        alert('Video error' + err)
       }
     }
   };
 
 //--------------------------------------------------------------------------------------
+  littlecallback = (result) => {
+    console.log('littlecallback' + result);
+    AsyncStorage.setItem( 'video- ' + this.state.vcount , result )
+    createThumbnail({
+      url: result,
+      timeStamp:10000,
+      }).then(thumbnail => {
+      console.log('littlecallback thumbnail: ' + thumbnail.path); 
+      AsyncStorage.setItem( 'video-thumb- ' + this.state.vcount, thumbnail.path)
+    })
+    
+  }
 
+//--------------------------------------------------------------------------------------
   stopRecordingVideo = async  () => {
     console.log('stopRecordingVideo vcount'  + this.camera);
     

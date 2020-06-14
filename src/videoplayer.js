@@ -14,6 +14,7 @@ import { VideoStartButton,VideoStopButton} from './buttons'
     paused:true,
     signedurl:'',
     originalsource:'',
+    
 
   };
 
@@ -26,8 +27,9 @@ import { VideoStartButton,VideoStopButton} from './buttons'
 
   async componentDidMount() {
     let tmp = this.props.source.split('/')
+    this.setState( {poster:this.props.poster })
     getObjectSignedurl( tmp[tmp.length-1]).then(surl => {
-      this.setState({signedurl:surl,originalsource:this.props.source})
+      this.setState( { signedurl:surl , originalsource:this.props.source })
     })
   }
 
@@ -35,7 +37,7 @@ import { VideoStartButton,VideoStopButton} from './buttons'
 
 onPlayPress =(e) =>{
   let newvar = !this.state.paused
-  this.setState({paused:newvar})
+  this.setState({ paused:newvar})
 
 }
 
@@ -46,8 +48,8 @@ getVideoControls =() =>{
     return(
       
         <VideoStartButton 
-          style ={styles.absoluteCenter}
-          onPress = { this.onPlayPress}
+          style = { styles.absoluteCenter }
+          onPress = { this.onPlayPress  }
         />
    
     )
@@ -55,13 +57,12 @@ getVideoControls =() =>{
     return(
       
         <VideoStopButton 
-          style ={styles.bottomLeft}
-          imageStyle={{height:40,width:40}}
-          onPress = { this.onPlayPress}
+          style = { styles.bottomLeft }
+          imageStyle= { {height:40,width:40} }
+          onPress = { this.onPlayPress  }
         />
    
     )
-
 
   }
 }
@@ -77,10 +78,12 @@ getVideoControls =() =>{
         <View>
           <Video 
                 repeat
-                style={{width,height:300}}
-                resizeMode='cover'
+                style=  {{width,height:300}}
+                resizeMode= 'cover'
                 source = {{ uri : this.state.originalsource }}
-                paused={this.state.paused}
+                paused= {this.state.paused}
+                posterResizeMode= 'cover'
+                poster= {this.state.poster}
               />
           {ctrs}
           </View>
