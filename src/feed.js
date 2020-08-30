@@ -1,22 +1,17 @@
 import React, { Component } from 'react';
 import MemoryCard from './cards'
-import {getMemories,
-        activeUser,
-        searchMemories,
-        mapUserClouds,
-       } from './datapass'
-import AsyncStorage from '@react-native-community/async-storage'
+import * as mem from './datapass'
 
 import { 
     StyleSheet,
     View,
     ScrollView,
     Text,
+    RefreshControl,
    
   } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { SubTag } from './buttons';
-
 
 
 class Feed extends Component{
@@ -31,33 +26,73 @@ class Feed extends Component{
 
   state = 
   {
+    
     memories:[],
     userClouds:[],
     user:null,
     searchwordcount:1,
     searchwords:'',
     cloudInclusions:[{}],
-    isLoading:true
+    isLoading:true,
+    personalMemoryunsharedOnly:false,
+    refreshing:false,
   }
+
+//----------------------------------------------------------------------------------------------
+
+
+refreshFeed = () => {
+this.handleSearchChange(this.state.searchwords)
+
+
+}
 
 //----------------------------------------------------------------------------------------------
 
 handleSearchChange = (searchwords) =>{
 
-  searchwords = searchwords.toLowerCase()
-  let wordarray = searchwords.split(' ')
-  let cloudids =this.getIncludedClouds()
- 
-  if(searchwords === ''){
-    this.state.searchwordcount = 0
-    getMemories(this.state.user.userid,cloudids,this.loadMemories)
-  }else if(wordarray.length > this.state.searchwordcount){
-    this.state.searchwordcount++
-    searchMemories(this.state.user.userid,cloudids,wordarray,this.loadMemories)
-  }else if(wordarray.length < this.state.searchwordcount){
-    this.state.searchwordcount--
-    searchMemories(this.state.user.userid,cloudids,wordarray,this.loadMemories)
-   }
+  let wordarray = []
+  if(searchwords) wordarray = searchwords.toLowerCase().split(' ')
+  let cloudids = this.getIncludedClouds()
+  let userid = this.state.user.userid
+
+  console.log( 'handleSearchChange ' + cloudids + ': searchwords ' + wordarray)
+  
+  if(cloudids.length === 0){
+      
+      this.loadMemories(null)
+
+  }else if (cloudids.length === 1 && cloudids[0].value === 0 ){  // personal only
+     
+      if(this.state.personalMemoryunsharedOnly){                 // personal only - unshared only     
+          mem.getMemories_PersonalOnly_Unshared(userid,wordarray)
+          .then(memories => {this.loadMemories(memories)},error => {this.loadMemories(null)})
+
+      }else {                                                     // personal only - bth shared and undshared         
+          mem.getMemories_PersonalOnly_All( userid,wordarray )
+          .then(memories => {this.loadMemories(memories)}, error => {this.loadMemories(null)})
+
+      }
+  }else if (cloudids.includes(0) ){                                // personal cloud + other clouds
+
+      if(wordarray.length >0 ){                                   // clouds + searchwords  
+          mem.getMemories_User_Words_Clouds( userid , wordarray , cloudids)
+          .then(memories => {this.loadMemories(memories)},  error => {this.loadMemories(null)})
+      
+      }else{                                                      // clouds but no search words          
+          mem.getMemories_User_Clouds( userid , cloudids )             
+          .then(memories => { this.loadMemories(memories)},  error => { this.loadMemories(null)})
+      }
+  }else{
+      if(wordarray.length > 0 ){                                   // clouds + searchwords
+          mem.getMemories_Words_Clouds(cloudids,wordarray)
+         .then(memories => {this.loadMemories(memories)},  error => {this.loadMemories(null)})
+      
+      }else{                                                      // clouds but no search words
+          mem.getMemories_Clouds(cloudids)            
+          .then(memories => {this.loadMemories(memories)}, error => {this.loadMemories(null)})
+      }
+  }
   
 }
 
@@ -66,7 +101,6 @@ handleSearchChange = (searchwords) =>{
 loadMemories = (memories) => {
   
   this.setState({memories:memories,isLoading:false})
-  
   
 }
 
@@ -88,7 +122,7 @@ loadClouds = (clouds) => {
     this.state.cloudInclusions.push({cloudid:cloud.id,include:true})
     cloudids.push(cloud.id)
   })
-  getMemories(this.state.user.userid,cloudids,this.loadMemories)
+  mem.getMemories(this.state.user.userid,cloudids,this.loadMemories)
   this.setState({userClouds:clouds})
   
 }
@@ -96,18 +130,17 @@ loadClouds = (clouds) => {
 //----------------------------------------------------------------------------------------------
 
 componentDidMount = async () => {
-  this.state.user =  await activeUser()  
-  mapUserClouds(this.state.user.userid,this.loadClouds)
+  this.state.user =  await mem.activeUser()  
+  mem.mapUserClouds(this.state.user.userid,this.loadClouds)
 } 
 
 //----------------------------------------------------------------------------------------------
-handleCloudChange = (properties) => {
+handleCloudChange = (cloud,shouldInclude) => {
   this.flushFeed()
   this.state.cloudInclusions.forEach(element => {
-      if(element.cloudid === properties.cloudid){element.include = !element.include}
+      if(element.cloudid === cloud.id){element.include = shouldInclude}
   })
-  console.log('CloudChange : ' + this.getIncludedClouds());
-  
+   
   this.handleSearchChange(this.state.searchwords)
 
 }
@@ -127,21 +160,30 @@ getIncludedClouds = () => {
 
 //----------------------------------------------------------------------------------------------
 
+onRefresh = () => {
+  this.state.refreshing = true
+  console.log('refreshfeed ');
+  this.refreshFeed()
+  this.state.refreshing = false
+}
+
+//----------------------------------------------------------------------------------------------
+
 render(){
   
   let memisArray = Array.isArray(this.state.memories) 
   let memcount = 0
   if(memisArray) memcount = this.state.memories.length 
   
-  
-  
-  
   if( memisArray 
       && !this.state.isLoading 
       && memcount){
     
     feedview =
-      <ScrollView style={styles.scrollarea}>
+      <ScrollView 
+        style={styles.scrollarea}
+        refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.onRefresh} />}
+        >
       {this.state.memories.map((mem,index) => (
         
           <MemoryCard 
@@ -174,8 +216,7 @@ render(){
       
       feedview = 
         <View style={styles.nomemory}>
-          <Text style={styles.textMain}>Hi {this.state.user.firstName}</Text>
-          <Text style={styles.textMain}>No memories to load</Text>
+          <Text style={styles.textMain}>No memories !</Text>
         </View>
     }
 
@@ -192,7 +233,7 @@ render(){
           {this.state.userClouds.map((cloud,index) => (
             <SubTag  
               title         =   { cloud.name }
-              cloudid       =   { cloud.id }
+              data          =   { cloud }
               key           =   { index }
               rightIconUp   =   { require('./images/checked_blue.png')}
               rightIconDown =   { require('./images/x-symbol.png')}

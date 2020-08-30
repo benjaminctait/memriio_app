@@ -178,7 +178,7 @@ class IconButtonAudio extends Component{
 //-----------------------------------------------------------------------------
 
 class SubTag extends Component{
-  //onTagPress
+  
   //onRightIconPress
   //tagStyle
   //textStyle
@@ -191,22 +191,29 @@ class SubTag extends Component{
 
   constructor(props){
     super(props)
-    this.state.switchRightIconOnTagPress = props.switchRightIconOnTagPress
-    this.state.switchLeftIconOnTagPress = props.switchLeftIconOnTagPress
+    this.state.switchRightIconOnTagPress  = props.switchRightIconOnTagPress
+    this.state.switchLeftIconOnTagPress   = props.switchLeftIconOnTagPress
+    this.state.greyOutOnTagPress          = props.greyOutOnTagPress
+    this.state.buttonDown                 = props.buttonDown
+ 
     
   }
 
   state ={
     rightUp:true,
+    
     leftUp:true,
+    buttonDown:false,
     switchRightIconOnTagPress:false,
     switchLeftIconOnTagPress:false,
+    greyOutOnTagPress:false,
   }
 
 //-----------------------------------------------------------
 onTagPress = () =>{
 
   if(this.state.switchRightIconOnTagPress){
+
     let x = !this.state.rightUp
     this.setState({rightUp:x})
   }
@@ -214,8 +221,13 @@ onTagPress = () =>{
     let x = !this.state.leftUp
     this.setState({leftUp:x})
   }
-  this.props.onTagPress(this.props)
-  
+  if(this.state.greyOutOnTagPress){
+    this.setState({buttonDown:!this.state.buttonDown})
+  }
+  if(this.props.onTagPress)
+  { 
+    this.props.onTagPress( this.props.data, this.state.buttonDown )
+  }
   
 }
 
@@ -257,14 +269,37 @@ getRightIcon = () => {
 //-----------------------------------------------------------
 
   render(){
+    if(this.state.greyOutOnTagPress){
+      if(this.state.buttonDown){
+        return(
+        <TouchableOpacity onPress={this.onTagPress}>
+          <View style={styles.ptagGreyed}>
+            <Text style={styles.ptagTextGreyed}> {this.props.title}</Text>
+            {this.getRightIcon()}
+          </View>   
+        </TouchableOpacity>  
+        )    
+      }else{
+        return (
+        <TouchableOpacity onPress={this.onTagPress}>
+          <View style={[styles.ptag,this.props.tagStyle]}>
+            <Text style={[styles.ptagText,this.props.textStyle]}> {this.props.title}</Text>
+            {this.getRightIcon()}
+          </View>   
+        </TouchableOpacity>   
+        ) 
+      }
+    }else{
       return(
-          <TouchableOpacity onPress={this.onTagPress}>
-            <View style={[styles.ptag,this.props.tagStyle]}>
-              <Text style={[styles.ptagText,this.props.textStyle]}> {this.props.title}</Text>
-              {this.getRightIcon()}
-            </View>   
-        </TouchableOpacity>     
-      )}}
+        <TouchableOpacity onPress={this.onTagPress}>
+          <View style={[styles.ptag,this.props.tagStyle]}>
+            <Text style={[styles.ptagText,this.props.textStyle]}> {this.props.title}</Text>
+            {this.getRightIcon()}
+          </View>   
+      </TouchableOpacity>     
+    )}}
+    }
+      
 
 //-----------------------------------------------------------------------------
 
@@ -278,7 +313,54 @@ class PersonTag extends Component{
             </View>   
         </TouchableOpacity>     
       )}}
+
+//-----------------------------------------------------------------------------
+
+class PersonListItem extends Component{
+
+ 
+  handleOnPress = () =>{
+    this.props.onPress(this.props.person)
+  }
+
+  render(){
+    const {person,tagged} = this.props
+    let bgc = 'white'
+    if(tagged) bgc = 'grey'
+      return(
+          <TouchableOpacity onPress={this.handleOnPress}>
+            <View
+              style={{
+                flexDirection: 'row',
+                flex: 1,
+                borderTopColor:'grey',
+                backgroundColor:bgc,
+                borderTopWidth:1,
+              }}
+              >
+              <Image
+                style={{ width: 40, height: 40, borderRadius: 20,borderColor:'black', margin: 5}}
+                source={ null }
+                resizeMethod={'resize'}
+              />
+              <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
+                <Text                   
+                  style={{ fontSize:15 }}              
+                >{`${person.firstname} ${person.lastname}`}
+                </Text>
+              </View>
+            </View> 
+        </TouchableOpacity>     
+      )
+    }
+
+
+}
       
+            
+//-----------------------------------------------------------------------------
+
+
 
 class LocationTag extends Component{
 
@@ -293,6 +375,7 @@ class LocationTag extends Component{
         </TouchableOpacity>     
       )}}
 
+//-----------------------------------------------------------------------------
 
 class IconButtonFile extends Component{
   
@@ -314,6 +397,7 @@ class IconButtonFile extends Component{
         </TouchableOpacity>
         
       )}}
+
 //-----------------------------------------------------------------------
 
 class SwitchIcon extends Component{
@@ -403,9 +487,28 @@ const styles = StyleSheet.create({
       marginBottom:4,
 
     },
+    ptagGreyed:{
+      flex:0,
+      flexDirection:'row',
+      justifyContent:'space-between',
+      borderColor:'grey',
+      backgroundColor:'white',
+      borderWidth:0.5,
+      borderRadius:10,
+      paddingHorizontal:4,
+      paddingBottom:2,
+      marginRight:4,
+      marginBottom:4,
+
+    },
 
     ptagText:{
-      fontSize:12,
+      fontSize:15,
+    },
+
+    ptagTextGreyed:{
+      fontSize:14,
+      color:'grey'
     },
 
 
@@ -427,4 +530,5 @@ export {CameraClickButton,
         LocationTag,
         SubTag,
         SwitchIcon,
+        PersonListItem,
       }

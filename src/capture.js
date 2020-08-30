@@ -25,8 +25,6 @@ import {
     View,    
   } from 'react-native';
 
-
-
 class CaptureComponent extends Component{
 
   state = {
@@ -116,16 +114,15 @@ async componentDidMount(){
 
   takePicture = async () => {
     if (this.camera) {
-      
-      
       this.setState({vcount:this.state.vcount+1})
+      console.log('capture.takePicture() ' + this.camera)
       try{
-        const data = await this.camera.takePictureAsync();
-        const key = 'image-' + this.state.vcount
-        const fullpath = data.uri.split('//')[1];
         
-        AsyncStorage.setItem( key , fullpath )
-        alert( key + ' : ' + fullpath)          // fix - needs to be a desolving message that appears when you get back to the feed
+        const data = await this.camera.takePictureAsync();  
+        const fullpath = data.uri.split('//')[1];
+        AsyncStorage.setItem( 'image-' + this.state.vcount , fullpath )
+        AsyncStorage.setItem( 'image-thumb-' + this.state.vcount, fullpath)        
+        
 
       } catch (err) {
         alert(err)
@@ -180,17 +177,19 @@ async componentDidMount(){
         
       <View style={styles.container}>
           <RNCamera
-            ref = {ref => { this.camera = ref}}
-            style = {styles.preview}
-            type = {RNCamera.Constants.Type.back}
-            flashMode = {RNCamera.Constants.flashMode}
+            ref                 = { ref => { this.camera = ref}}
+            style               = { styles.preview}
+            type                = { RNCamera.Constants.Type.back}
+            flashMode           = { RNCamera.Constants.flashMode}
+            autoFocus           = { RNCamera.Constants.AutoFocus.on}
+            playSoundOnCapture  = { true }
           />
           
             <View style={styles.modeButtons} >
-              <IconButtonCamera onPress={() => this.showMode('camera')} selected={this.state.mode=='camera'} />
-              <IconButtonVideo onPress={() => this.showMode('video')} selected={this.state.mode=='video'} />
-              <IconButtonAudio onPress={() => this.showMode('audio')} selected={this.state.mode=='audio'} />
-              <IconButtonFile onPress={() => this.showMode('file')} selected={this.state.mode=='file'} />
+              <IconButtonCamera   onPress={() => this.showMode('camera')} selected={this.state.mode=='camera'} />
+              <IconButtonVideo    onPress={() => this.showMode('video')}  selected={this.state.mode=='video'} />
+              <IconButtonAudio    onPress={() => this.showMode('audio')}  selected={this.state.mode=='audio'} />
+              <IconButtonFile     onPress={() => this.showMode('file')}   selected={this.state.mode=='file'} />
             </View> 
 
             <View style={styles.mainButtons}>

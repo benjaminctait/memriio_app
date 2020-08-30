@@ -2,18 +2,23 @@ import React, { Component } from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
 import {createStackNavigator, CardStyleInterpolators} from '@react-navigation/stack'
 import Feed from './feed';
-import Search from './search';
+
 import CaptureComponent from './capture';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import NewPost  from './newpost'
+import SearchPeople from './searchpeople'
+import SearchLocation from './searchlocation'
 import { View, StyleSheet} from 'react-native';
-
 
 const BottomNav = createBottomTabNavigator();
 const RootNav = createStackNavigator();
 
 class Main extends Component {
-  
+
+  refreshFeed = () =>{
+    console.log('refreshFeed');
+  }
+
   render(){
 
       return (
@@ -21,11 +26,10 @@ class Main extends Component {
         <BottomNav.Navigator>
           
           <BottomNav.Screen 
+            
             name="Feed" 
             component= {Feed} 
-            
             options={{
-              
               tabBarLabel: 'Home', 
               tabBarIcon : () => (
                 <MaterialIcon name='home' color={'black'} size={26}  />
@@ -44,19 +48,7 @@ class Main extends Component {
             )}}
           />  
   
-         <BottomNav.Screen 
-            name="Search" 
-            component= {Search} 
-            options={{
-              tabBarLabel: 'Search', 
-              tabBarIcon : () => (
-                <MaterialIcon name='search' color={'black'} size={26}  />
-            )}}
-          /> 
-          
-          
-  
-        </BottomNav.Navigator>
+         </BottomNav.Navigator>
       )   
   } 
 }
@@ -65,20 +57,53 @@ class Main extends Component {
 
 class HomeScreen extends Component {
 
+  testCallBack =() => {
+    console.log('HomeScreen.refreshFeed');
+  }
+
+  
+  
   render(){
+
+    const props = {refreshFeed:() => this.testCallBack()}
     return (
-      <RootNav.Navigator>
+      <RootNav.Navigator 
+        
+      >
         <RootNav.Screen 
           name= "Main"
           component = {Main}
+          
           options ={{
             headerShown:false,
           }}
         />
         
         <RootNav.Screen 
+          
           name="NewPost"
-          component ={NewPost}   
+          component ={NewPost}    
+          screenProps={props}         
+          options ={{
+            headerShown:false,
+            cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+          }}
+        />
+
+        <RootNav.Screen 
+          
+          name="SearchPeople"
+          component ={SearchPeople}    
+          options ={{
+            headerShown:false,
+            cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+          }}
+        />
+
+        <RootNav.Screen 
+          
+          name="SearchLocation"
+          component ={SearchLocation}    
           options ={{
             headerShown:false,
             cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,

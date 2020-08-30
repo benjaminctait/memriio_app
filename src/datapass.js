@@ -8,8 +8,6 @@ import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage'
 
 
-
-
 const memory = {
     title:'',       // short title of the memory : string
     story:'',       // text desciribing the memory : string
@@ -17,11 +15,8 @@ const memory = {
     people:[],      // an array of userids : [ int ]
     location:'',    // name of the location : string
     groups:[],      // array of group IDs : [ int ]
-    remoteURLS:[],  // array of remote url S3 path pairs  : [ sourcefile, thumbnail ]
     userid:0,       // id of the current user : int
-    MemoryID:0,     // id of the newly created memory : int
-    errorLog:[],    // array or error messages : [ string ]
-   
+    memid:0,     // id of the newly created memory : int
 }
 
 
@@ -86,7 +81,8 @@ export function postNewMemory  (
                 people,
                 location,
                 groups,
-                userid
+                userid,
+                callback
                 )  
                 
 {
@@ -97,10 +93,67 @@ export function postNewMemory  (
     memory.location = location
     memory.groups = groups
     memory.userid = userid
-    memory.remoteURLS=[];
+    memory.searchWords=[]
+    memory.memid = -1
 
-    return uploadNewMemory()
+    uploadNewMemory(callback)
+    cleanupStorage()
     
+}
+
+// create a new memory ID -----------------------------------------------------
+
+uploadNewMemory = (callBackOnSuccess) => {
+
+    let Promises = []
+    let isHeroFile = false
+    
+    createMemoryID()
+    .then(response =>{
+        if(response === 'success' && memory.memid !== -1 ){
+        
+            memory.people.map(person => { Promises.push( addPersontoMemory ( person ))})
+            memory.groups.map(cloud  => { Promises.push( addCloudtoMemory  ( cloud  ))})
+            Promises.push( setMemorySearchWords ( getSearchWords() ))
+
+            memory.files.map((memfile,idx)  =>  { 
+
+                if(idx === 0) { isHeroFile = true } else { isHeroFile = false }// automatically set the first file memory as the hero shot.
+        
+                if( isSupportedImageFile( memfile.filepath ) ){
+
+                  Promises.push( uploadImageFile( memfile ).then( result => { addFileToMemory(result,isHeroFile)}) )                    
+        
+                }else if( isSupportedVideoFile( memfile.filepath )){
+                  
+                  Promises.push( uploadVideoFile( memfile ).then( result => { addFileToMemory(result,isHeroFile)}) )      
+
+                }
+        
+            })
+            
+            Promise.all(Promises).then(values => {
+                console.log('uploadNewMemory() - upload complete for memory id ' + memory.memid );
+                callBackOnSuccess(memory.memid)
+                
+            })
+
+        }
+    })
+}
+
+// ---------------------------------------------------------------------------------
+
+getSearchWords = () => { 
+
+    let words = [ ]
+    let titlewords = memory.title.split(' ')  // need to replace with a proper extractor
+    let storywords = memory.story.split(' ')  // need to replace with a proper extractor
+
+    titlewords.map(word =>{ words.push ( { keyword:word , strength:0 } )})
+    storywords.map(word =>{ words.push ( { keyword:word , strength:0 } )})
+    
+    return words
 }
 
 // ---------------------------------------------------------------------------------
@@ -134,21 +187,20 @@ export async function cleanupStorage (){
 export function mapUserClouds (userid,callback)  
 {
     
-    console.log('mepUserClouds for user : ' + userid )
-        fetch('https://memriio-api-0.herokuapp.com/get_clouds_userid', {
-        method: 'post',headers: {
-            'Content-Type':'application/json'},
-                body:JSON.stringify({userID: userid})})
-                .then(response => response.json())
-                .then(res => {
-                    if ( res.success ){
-                        console.log('server response : ' + res.success);
-                        console.log('server data : ' + res.data);
-                        callback(res.data)
-                    }else{
-                        console.log('server response : ' + res.success + ' with ' + res.error);  
-                    }
-                })
+    fetch('https://memriio-api-0.herokuapp.com/get_clouds_userid', {
+    method: 'post',headers: {
+        'Content-Type':'application/json'},
+            body:JSON.stringify({userID: userid})})
+            .then(response => response.json())
+            .then(res => {
+                if ( res.success ){
+                    console.log('server response : ' + res.success);
+                    console.log('server data : ' + res.data);
+                    callback(res.data)
+                }else{
+                    console.log('server response : ' + res.success + ' with ' + res.error);  
+                }
+            })
 
 }
 
@@ -156,8 +208,6 @@ export function mapUserClouds (userid,callback)
 
 export function searchMemories (userid,cloudids,searchwords,callback)  
 {
-    
-    console.log('searchMemories for user : ' + userid + ' in groups ' + cloudids + ' searchwords '+ searchwords  )
     fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_keywords_cloudids', {
         method: 'post',headers: {
             'Content-Type':'application/json'},
@@ -179,6 +229,209 @@ export function searchMemories (userid,cloudids,searchwords,callback)
 
 //--------------------------------------------------------------------------------- 
 
+export function getMemories_PersonalOnly_Unshared (userid,searchwords)  {  
+
+    if(searchwords){
+        return new Promise((resolve,reject)=>{
+            fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_keywords_noclouds_unshared', {
+                method: 'post',
+                headers: {'Content-Type':'application/json'},
+                body:JSON.stringify({
+                        userid:userid,
+                        words:searchwords
+                    })
+                })
+                
+                .then(res => {
+                    if ( res.success ){
+                        resolve(res.data)  
+                    }else{
+                        reject(res.error)
+                    }
+                })
+        })
+
+    }else{
+        return new Promise((resolve,reject)=>{
+            fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_noclouds_unshared', {
+                method: 'post',
+                headers: {'Content-Type':'application/json'},
+                body:JSON.stringify({
+                        userid:userid,
+                    })
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if ( res.success ){
+                        resolve(res.data)  
+                    }else{
+                        reject(res.error)
+                    }
+                })
+        })
+
+    }  
+
+}
+
+//-------------------------------------------------------------------------------
+
+export function getMemories_PersonalOnly_All (userid,searchwords) {
+    
+    console.log('getMemories_PersonalOnly_All - userid : ' + userid + ' searchwords : ' + searchwords);
+  
+    
+    if(isNonEmptyArray(searchwords)){
+
+        console.log('getMemories_PersonalOnly_All - with searchwords')
+        return new Promise((resolve,reject)=>{
+            fetch('https://memriio-api-0.herokuapp.com/get_memories_keywords_user_noclouds', {
+                method: 'post',
+                headers: {'Content-Type':'application/json'},
+                body:JSON.stringify({
+                        userid:userid,
+                        words:searchwords
+                    })
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if ( res.success ){
+                        resolve(res.data)  
+                    }else{
+                        reject(res.error)
+                    }
+                })
+        })
+
+    }else{
+        console.log('getMemories_PersonalOnly_All - no searchwords')
+        return new Promise((resolve,reject)=>{
+            fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_noclouds', {
+                method: 'post',
+                headers: {'Content-Type':'application/json'},
+                body:JSON.stringify({
+                        userid:userid,
+                    })
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if ( res.success ){
+                        console.log('getMemories_PersonalOnly_All returns ' + res.data.length )
+                        resolve(res.data)  
+                    }else{
+                        reject(res.error)
+                    }
+                })
+        })
+
+    }  
+
+}
+
+//-------------------------------------------------------------------------------
+
+export function getMemories_User_Words_Clouds  (userid,words,cloudids)  { 
+
+    return new Promise((resolve,reject) =>{
+        fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_keywords_cloudids', {
+            method: 'post',
+            headers: {'Content-Type':'application/json'},
+            body:JSON.stringify({
+                    words:words,
+                    userid:userid,
+                    cloudids:cloudids
+                })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if ( res.success ){
+                    resolve(res.data)  
+                }else{
+                    reject(res.error)
+                }
+            })
+    })
+}
+
+//-------------------------------------------------------------------------------
+
+export function getMemories_User_Clouds ( userid,cloudids)  {  
+
+    console.log('getMemories_User_Clouds - userid : ' + userid + ' cloudids : ' + cloudids);
+
+    return new Promise((resolve,reject)=>{
+        fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_cloudids', {
+            method: 'post',
+            headers: {'Content-Type':'application/json'},
+            body:JSON.stringify({
+                    userid:userid,
+                    cloudids:cloudids
+                })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if ( res.success ){
+                    resolve(res.data)  
+                }else{
+                    reject(res.error)
+                }
+            })
+    })
+}
+
+//-------------------------------------------------------------------------------
+
+export function getMemories_Words_Clouds ( cloudids,words)  {  
+
+    console.log('getMemories_Words_Clouds - cloudids : ' + cloudids + ' words :' + words);
+
+    return new Promise((resolve,reject)=>{
+        fetch('https://memriio-api-0.herokuapp.com/get_memories_keywords_clouds', {
+            method: 'post',
+            headers: {'Content-Type':'application/json'},
+            body:JSON.stringify({
+                    cloudids:cloudids,
+                    words:words
+                })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if ( res.success ){
+                    resolve(res.data)  
+                }else{
+                    reject(res.error)
+                }
+            })
+    })
+}
+
+//-------------------------------------------------------------------------------
+
+export function getMemories_Clouds ( cloudids)  {  
+
+    console.log('getMemories_Clouds - cloudids : ' + cloudids);
+
+    return new Promise((resolve,reject)=>{
+        fetch('https://memriio-api-0.herokuapp.com/get_memories_cloudids', {
+            method: 'post',
+            headers: {'Content-Type':'application/json'},
+            body:JSON.stringify({
+                    cloudids:cloudids
+                })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if ( res.success ){
+                    resolve(res.data)  
+                }else{
+                    reject(res.error)
+                }
+            })
+    })
+}
+
+//-------------------------------------------------------------------------------
+
 export function getMemoryFiles (memid,callback)  
 {
     console.log('getMemoryFiles for memory : ' + memid )
@@ -194,6 +447,36 @@ export function getMemoryFiles (memid,callback)
                         callback(null)
                     }
                 })
+
+}
+
+//--Returns and array of {userid,firstname,lastname} objects from the server-----------------------------------------------
+
+export function getCloudPeople  (clouds,callback) {
+    console.log('getCloudPeople : clouds ' + JSON.stringify(clouds.map(cloud=>parseInt(cloud.id))) )
+
+    return new Promise((resolve,reject) =>{
+
+        fetch('https://memriio-api-0.herokuapp.com/get_cloud_people_clouds', {
+        method: 'post',headers: {
+            'Content-Type':'application/json'},
+                body:JSON.stringify({clouds:clouds})})
+
+                .then(response => response.json())
+                .then(res => {
+                    if ( res.success ){
+                        console.log('getCloudPeople response data : ' + res.data.length + ' poeple records retuirned')
+                        if(callback) callback(res.data)
+                        resolve(res.data)
+
+                    }else{
+                        console.log('getCloudPeople server response : ' + res.success + ' with ' + res.error)
+                        reject(null)
+                    }
+                })
+
+    })
+    
 
 }
 
@@ -239,104 +522,6 @@ export function getMemories (userID,cloudIDs,callback)
 
 }
 
-// create a new memory ID -----------------------------------------------------
-
-uploadNewMemory = async () => {
-    
-    console.log('uploadNewMemory');
-    
-    uploadFile(memory.files[0])
-    .then(response => {
-        if(response){
-            memory.remoteURLS.push(response)
-            console.log('uploadNewMemory - first uploaded : ' + response);
-            createMemoryID()
-            .then(response => {
-                if(response == 'success'){
-                    console.log('uploadNewMemory - memory id created : ' + response);
-                    addFileToMemory(memory.remoteURLS[0],true).then(response => {
-                        console.log('uploadNewMemory - hero associated : ' + response)
-                        addRemaingFilestoMemory()
-                        addPeopletoMemory()     
-                        addGroupstoMemory()
-                    })
-                    return true           
-                }else{
-                    return false
-                }
-            })
-                
-        }else{
-            console.log('failed to upload first file : ' + memory.files[0]);
-            return false
-        }
-    })
-}
-
-// ----------------------------------------------------------------------------
-
-const getExtension = (filepath) => {
-    let fileParts = filepath.split('.');
-    let filetype = fileParts[fileParts.length-1];
-    return filetype
-}
-
-const getFilename = (filepath) => {
-    let parts = filepath.split('/')
-    let fname = parts[parts.length-1]
-    return fname
-}
-
-// add remaining files to memory ------------------------------------------------
-
-addRemaingFilestoMemory = () => {
-
-    memory.files.map((fileObj,index) => {
-        if(index != 0)
-        { 
-            uploadFile(fileObj)
-                .then(response => {
-                    if(response ){
-                        memory.remoteURLS.push(response)
-                        addFileToMemory(memory.remoteURLS[index],false)
-            }else{
-
-            }
-        })
-    }})
-}   
-
-// add people to memory ------------------------------------------------
-
-addPeopletoMemory = () => {
-
-    memory.people.map((person,index) => {
-         addPersontoMemory(person)
-                .then(response => {
-                    if(response == 'success'){
-                        
-            }else{
-
-            }
-        })
-    })
-    
-}   
-// add people to memory ------------------------------------------------
-
-addGroupstoMemory = () => {
-
-    memory.groups.map((groupid,index) => {
-         addGrouptoMemory(groupid)
-                .then(response => {
-                    if(response == 'success'){
-                        
-            }else{
-
-            }
-        })
-    })
-}   
 // ------------------------------------------------------------------------------
 
 getFileMime = (extension) => {
@@ -354,6 +539,8 @@ getFileMime = (extension) => {
     return mime
 }
 
+// ------------------------------------------------------------------------------
+
 stry = (str) => {
     str = JSON.stringify(str)
     if (str.charAt(0) === '"') str = str.substr(1,str.length-1)    
@@ -363,64 +550,96 @@ stry = (str) => {
 
 // ------------------------------------------------------------------------------
 
-uploadFile = (fileObj) =>{
+uploadImageFile = (fileObj) =>{
+
+    let filepath        = stry(fileObj.filepath)
+    let thumbnail       = stry(fileObj.thumbnail)
+    let origFileParts   = filepath.split('.');
+    let origExtension   = origFileParts[1]
+    let thumbFileParts  = thumbnail.split('.');
+    let thumbExtension  = thumbFileParts[1]
+    let commonfileName  = memory.userid + '-' + memory.memid + '-' + Date.now()
+    let origS3URL       = thumbS3URL = ''
+    let targetFileName = commonfileName + '-original' + '.' + origExtension
     
-    let filepath = stry(fileObj.filepath)
-    let thumbnail = stry(fileObj.thumbnail)
-    let origFileParts = filepath.split('.');
-    let origExtension = origFileParts[1]
-    let thumbFileParts = thumbnail.split('.');
-    let thumbExtension = thumbFileParts[1]
-    let commonfileName = memory.userid + '-' + Date.now()
-    let origS3URL = thumbS3URL = ''
     
-    console.log('uploadFile : filepath : '  + filepath)
-    console.log('uploadFile : origext : '  + origExtension)
-    console.log('uploadFile : thumbnail : '  + thumbnail)
-    console.log('uploadFile : thumbext : '  + thumbExtension)
-    console.log('uploadFile : commonfilename : '  + commonfileName)
-        
     return new Promise((resolve,reject) => {
-
-        console.log('uploadFile : calling processImage : ' + filepath);
         
-        processImage(filepath,origExtension)
-            .then(response => {
-                if(response != 'failure'){
-                    let targetFileName = commonfileName + '-original' + '.' + origExtension
-                    _uploadFiletoS3(response,targetFileName)
-                    .then(result => {
-                        if(result != 'failure'){
-                            origS3URL = result
-                            processImage(thumbnail,thumbExtension)
-                            .then(response => {
-                                if(response != 'failure'){
-                                    let targetFileName = commonfileName + '-thumb' + '.' + thumbExtension
-                                    _uploadFiletoS3(response,targetFileName)
-                                    .then(result => {
-                                        if(result != 'failure'){
-                                            thumbS3URL = result
-                                            resolve({originalURL:origS3URL,thumbURL:thumbS3URL})
+        processMediumResImage(filepath,origExtension)
+        .then(response =>{
+            if(response != 'failure'){
+                _uploadFiletoS3(response,targetFileName)
+                .then(result => {
+                    if(result != 'failure'){
+                        origS3URL = result
+                        processLowResImage(thumbnail,thumbExtension)
+                        .then(response => {
+                            if(response != 'failure'){
+                                targetFileName = commonfileName + '-thumb' + '.' + thumbExtension
+                                _uploadFiletoS3(response,targetFileName)
+                                .then(result => {
+                                    if(result != 'failure'){
+                                        thumbS3URL = result
+                                        resolve({originalURL:origS3URL,thumbURL:thumbS3URL})
 
-                                        }else{
-                                            reject(null)
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                    })
-                }
-            })
+                                    }else{
+                                        reject(null)
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            }
+        })
     })
 
 }
 
 //-------------------------------------------------------------------------------
 
+uploadVideoFile = (fileObj) =>{
+    
+    console.log('uploadVideoFile ---------------------------------- ');
+    console.log('original: '    + getFilename(fileObj.filepath))
+    console.log('thumb: '       + getFilename(fileObj.thumbnail))
+
+    let filepath        = stry(fileObj.filepath)
+    let thumbnail       = stry(fileObj.thumbnail)
+    let origFileParts   = filepath.split('.');
+    let origExtension   = origFileParts[1]
+    let thumbFileParts  = thumbnail.split('.');
+    let thumbExtension  = thumbFileParts[1]
+    let commonfileName  = memory.userid + '-' + memory.memid + '-' + Date.now()
+    let origS3URL       = thumbS3URL = ''
+    let vFolder         = commonfileName + '-' + 0
+
+    return new Promise((resolve,reject) => {
+
+        let targetFileName = commonfileName + '-0-stream' + '.' + origExtension
+        _uploadFiletoS3(filepath,targetFileName)
+        .then(result =>{
+            origS3URL = result
+            
+            console.log('uploadVideo pre transcode : targetFileName : ' + targetFileName)
+           transcodeVideoToHLS(targetFileName,vFolder)
+            .then( result => {
+                if( result.success ){
+                    console.log('uploadVideo post transcode : thumburl : ' + result.data);
+                    resolve({originalURL:origS3URL,thumbURL:result.data})
+                }else{
+                    reject('failed to transcode video')
+                }
+            })
+        })
+    })
+}
+
+//-------------------------------------------------------------------------------
+
 _uploadFiletoS3 = (sourceFile,targetFile) => {
     
-    console.log('_uploadFileToS3 : ' + sourceFile);
+    console.log('_uploadFileToS3 : ' + getFilename( sourceFile));
     let fileParts = sourceFile.split('.');
     let extension = fileParts[1]
     let MIME = getFileMime(extension) 
@@ -443,7 +662,7 @@ _uploadFiletoS3 = (sourceFile,targetFile) => {
     return new Promise((resolve,reject) => {
                 
         console.log('Attempt RNS3.put')
-        console.log('sourcefile ' + file.uri )
+        console.log('sourcefile ' + file.name )
         console.log('targetfile ' + file.name+ ' type ' + file.type);                 
         
         RNS3.put(file, options)
@@ -451,7 +670,7 @@ _uploadFiletoS3 = (sourceFile,targetFile) => {
             if (response.status == 201){      
                 resolve(response.body.postResponse.location)
             }else{
-                console.log('RNS3 upload failed : ' + response)
+                console.log('RNS3 upload failed : ' + JSON.stringify(response))
                 reject(null)
             }
         })
@@ -460,12 +679,41 @@ _uploadFiletoS3 = (sourceFile,targetFile) => {
 }
 
 // ------------------------------------------------------------------------------
+transcodeVideoToHLS = ( awsMP4Filekey , awsFilePrefix ) => {
 
-processImage = async (filepath,filetype) => {
+    console.log('transcode : aws file key ' + awsMP4Filekey  + ' prefix : ' + awsFilePrefix )
+
+    return new Promise((resolve,reject) =>{
+        fetch('https://memriio-api-0.herokuapp.com/transcode_mp4_HLS_Playlist', 
+        {
+            method: 'post',headers: {
+                'Content-Type':'application/json'},
+                    body:JSON.stringify({ mp4filekey : awsMP4Filekey , outputPrefix : awsFilePrefix })})
+                    .then(response => response.json())
+                    .then(response => {
+                        if ( response.success){
+                            console.log('transcodeVideoToHLS : response ' + JSON.stringify(response))
+                            resolve({
+                                success:true,
+                                data:response.data
+                            })                       
+                        }else{
+                            reject( {
+                                success:false,
+                                data: null,
+                                err:response.err
+                            })
+                        }
+                    })
+
+    })
+}
+// ------------------------------------------------------------------------------
+
+processLowResImage = async (filepath,filetype) => {
 
     let ft = filetype.toLowerCase()
-    console.log('processImage : filetype is ' + ft);
-    console.log('processImage : ext match ' + (ft == 'mp4'));
+   
     try {
         return new Promise((resolve, reject) => {
            
@@ -491,11 +739,42 @@ processImage = async (filepath,filetype) => {
     }
 }
 
+// ------------------------------------------------------------------------------
+
+processMediumResImage = async (filepath,filetype) => {
+
+    let ft = filetype.toLowerCase()
+   
+    try {
+        return new Promise((resolve, reject) => {
+           
+            
+            if( ft == 'mov'|| ft == 'mp4'){
+                console.log('processImage : filetype is ' + ft);
+                resolve(filepath)
+            }else{
+                ImageResizer.createResizedImage(filepath, 4000, 4000, 'JPEG', 80, 0)
+                .then(response => {
+                    console.log('Resized Image : ' + response.name + " : Resized to : " + response.size);
+                    resolve(response.path);
+                })
+                .catch(err => {
+                    console.log(err);
+                    reject('processImage : Error A ' + err);
+                });
+            }
+        });
+    }
+    catch (err_1) {
+        console.log('processImage : Error B ' + err_1);
+    }
+}
 
 //--------------------------------------------------------------------------
 
 addFileToMemory = (fileUrlObj,ishero) => {
     
+    console.log('addFileToMemory : +++++++++++++ ')
     
     sourceURL = stry(fileUrlObj.originalURL)
     thumbURL  = stry(fileUrlObj.thumbURL)
@@ -503,15 +782,15 @@ addFileToMemory = (fileUrlObj,ishero) => {
     sourceext   = getExtension( sourceURL   )
     thumbext    = getExtension( thumbURL    )
     
-    console.log('addFileToMemory : sourceURL ' + getFilename(sourceURL))
-    console.log('addFileToMemory : thumbURL ' + getFilename(thumbURL))
+    console.log('addFileToMemory : sourceURL ' + sourceURL)
+    console.log('addFileToMemory : thumbURL ' + thumbURL)
     
     return new Promise((resolve,reject) => {
         fetch('https://memriio-api-0.herokuapp.com/associateFile', {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memory.MemoryID,
+                        memid: memory.memid,
                         fileurl: sourceURL,
                         fileext: sourceext,
                         thumburl: thumbURL,
@@ -521,8 +800,8 @@ addFileToMemory = (fileUrlObj,ishero) => {
                     })
                     .then(response => response.json())
                     .then(response => {
-                        if ( response.status !== 400){
-                            console.log('associate file : memid :'  + memory.MemoryID + ' file : ' +  sourceURL + ' hero shot = ' + ishero + ' ' + response);
+                        if ( response.success){
+                            console.log('associate file : memid :'  + response.data.memid + ' file : ' +  sourceURL + ' hero shot = ' + ishero )
                             resolve('success')
                         }else{
                             reject('failed to associate file : ' + response)
@@ -561,7 +840,7 @@ addPersontoMemory = (personID) => {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memory.MemoryID,
+                        memid: memory.memid,
                         userid: personID
                         })
                     })
@@ -580,14 +859,15 @@ addPersontoMemory = (personID) => {
 
 // add a person to a memory -----------------------------------------------------
 
-addGrouptoMemory = (groupID) => {
+addCloudtoMemory = (groupID) => {
 
+    console.log('addCloudToMemory : ' + groupID );
     return new Promise((resolve,reject) => {
         fetch('https://memriio-api-0.herokuapp.com/associateGroup', {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memory.MemoryID,
+                        memid: memory.memid,
                         groupid: groupID
                         })
                     })
@@ -606,6 +886,29 @@ addGrouptoMemory = (groupID) => {
 
 // add a keyword to a memory -----------------------------------------------------
 
+export function setMemorySearchWords  (searchwords) {
+
+
+    console.log('setMemorySearchWords : memoryid ' + memory.memid + ' searchwords count = ' + searchwords.length)
+
+    return new Promise((resolve,reject) =>{
+        fetch('https://memriio-api-0.herokuapp.com/set_searchwords_memid', {
+            method: 'post',headers: {
+                'Content-Type':'application/json'},
+                    body:JSON.stringify({memid:memory.memid,searchwords:searchwords})})
+                    .then(response => response.json())
+                    .then(res => {
+                        if ( res.success ){                          
+                            resolve(res)                        
+                        }else{                            
+                            reject(res.error)
+                        }
+                    })
+    })
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------
 
 addKeywordtoMemory = (word) => {
 
@@ -614,7 +917,7 @@ addKeywordtoMemory = (word) => {
             method: 'post',headers: {
                 'Content-Type':'application/json'},
                     body:JSON.stringify({
-                        memid: memory.MemoryID,
+                        memid: memory.memid,
                         keyword: word
                         })
                     })
@@ -648,15 +951,49 @@ createMemoryID = () => {
                 })
         })
         .then(response => response.json())
-        .then(memData => {
-            if(memData.created){
-                memory.MemoryID = memData.memid
-                console.log('creatememid : ' + memory.MemoryID + 'remoteid ' + memData.memid);
+        .then(result => {
+            if(result.success){
+                memory.memid = parseInt(result.data)
+                console.log('creatememid : ' + memory.memid + 'remoteid ' + result.data);
                 resolve('success')
             }  else {
-                console.log('creatememid : ' + memData.memid);
+                console.log('createMemoryID failed : ' + result.error);
                 reject('failed : unable to create memory')
             }
         })
     })
 }
+
+export function isSupportedImageFile(filename){
+    let ext = getExtension(filename).toLowerCase() 
+    let filetypes = ['jpeg','jpg','png']
+    let found = filetypes.indexOf(ext)
+    return !(found === -1) 
+}
+
+//---------------------------
+
+export function isSupportedVideoFile(filename){
+    let ext = getExtension(filename).toLowerCase() 
+    let filetypes = ['mov','mp4','mpeg']
+    let found = filetypes.indexOf(ext)
+    return !(found === -1) 
+}
+
+//---------------------------
+
+export function getExtension (filepath) {
+    let fileParts = filepath.split('.');
+    let filetype = fileParts[fileParts.length-1];
+    return filetype
+}
+
+//---------------------------
+
+export function getFilename (filepath) {
+    let parts = filepath.split('/')
+    let fname = parts[parts.length-1]
+    return fname
+}
+
+//---------------------------

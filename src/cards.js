@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {SwitchIcon} from './buttons'
 import VideoPlayer from './videoplayer'
 import Carousel from 'react-native-snap-carousel'
-import { getMemoryFiles } from './datapass'
+import * as mem from './datapass'
 
 
 import { 
@@ -34,11 +34,25 @@ class MemoryCard extends Component{
 
 //------------------------------------------------------------------------------------------------
 
+componentDidUpdate(prevProps, prevState){
+  let memory = this.props.memory
+  if(prevProps.memory.memid !== this.props.memory.memid){
+    mem.getMemoryFiles  ( memory.memid, (memfiles) =>{ 
+          this.setState({ files:memfiles })
+        })
+   // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })}) 
+  }
+
+}
+
+//------------------------------------------------------------------------------------------------
+
 async componentDidMount() {
 
-  getMemoryFiles  ( this.props.memory.memid, (memfiles) =>{ 
+  let memory = this.props.memory
+
+  mem.getMemoryFiles  ( memory.memid, (memfiles) =>{ 
         this.setState({ files:memfiles })
-        console.log('didMount : ' + this.props.memory.memid + ' memfile count ' + memfiles.length);
       })
  // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
 
@@ -121,21 +135,18 @@ getCarousel = () => {
 
 renderFileView  ({item,index})  {
 
-  //console.log('renderFileView source : ' + item.fileurl);
-  
-  
-  if(item.fileext == 'jpg' || item.fileext == 'jpeg'){
+  if( mem.isSupportedImageFile( mem.getFilename( item.fileurl ))){
     return (
       <Image
         style={styles.image}
         source={{ uri: item.thumburl }}
       />
       )      
-  }else if(item.fileext == 'mp4' || item.fileext == 'mov') {
+  }else if( mem.isSupportedVideoFile( mem.getFilename( item.fileurl ))) {
     return (
       <VideoPlayer 
         poster = {item.thumburl}
-        source = {item.fileurl}
+        source = {item.thumburl}
       />
     )
   }

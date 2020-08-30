@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import AsyncStorage from '@react-native-community/async-storage'
 import KeyboardShift from './keyboardShift';
-import {
-    postNewMemory,
-    mapUserClouds,
-    activeUser,
-    cleanupStorage} from './datapass'
+import * as mem from './datapass'
 
 import { 
     StyleSheet,   
@@ -37,7 +33,7 @@ import {
 class NewPost extends Component{
   constructor () {
     super();
-    this.setupClouds = this.setupClouds.bind(this);
+    this.setupCloudsAndPeople = this.setupCloudsAndPeople.bind(this);
     
   }
     
@@ -45,25 +41,41 @@ class NewPost extends Component{
     title:'',
     story:'',
     content:[],
-    people:[],
-    location:[],
-    clouds:[],
+    allPeople:[],
+    taggedPeople:[],
+    location:null,
+    allClouds:[],
+    taggedClouds:[],
     user:null
   } 
 
 //--------------------------------------------------------------------------
 
-setupClouds = (clouds) => {
+setupCloudsAndPeople = (clouds) => {
   
   if(Array.isArray(clouds)){
 
-    const firstitem = [{id:0,
+    const firstitem = [{
+      id:0,
       name:'Personal',
       administrator:this.state.userid,
-      createdon:null}] 
+      createdon:null
+      
+    }]
+     
     const newarray = firstitem.concat(clouds)
-    this.setState({clouds:newarray})
+    mem.getCloudPeople(clouds,null).then(people =>{ this.setState({allPeople:people,allClouds:newarray})})
+    
   }
+}
+
+//--------------------------------------------------------------------------
+
+refreshFeed = (memid) =>{
+  console.log('newPost.refreshFeed : ' +  memid )
+
+  // Now that the post has uploaded - need to push it onto the feed ??
+
 }
 
 //--------------------------------------------------------------------------
@@ -74,34 +86,24 @@ setupClouds = (clouds) => {
     
     const cloudarray = []
     const personarray = []
+    let me = this.state
 
-    this.state.clouds.map((cloud,i)=>{
-      if(cloud.id > 0){
-        cloudarray.push(cloud.id)  
-      }
+    cloudarray = me.taggedClouds.filter(cloud => { cloud.id !== 0 }) // all tagged clouds except the personal cloud
+
+    me.taggedPeople.map((person,i)=>{
+      personarray[i] = person.userid;    
+    })
       
-    })
+      mem.postNewMemory  (me.title, 
+                      me.story, 
+                      me.content, 
+                      personarray, 
+                      me.location[0], 
+                      cloudarray, 
+                      me.user.userid,
+                      this.refreshFeed)
 
-    this.state.people.map((person,i)=>{
-      personarray[i] = i;    // temporary - need to fix with real people ids
-    })
-    
-    
-
-    if(postNewMemory(this.state.title,
-                    this.state.story,
-                    this.state.content,
-                    personarray,
-                    this.state.location[0],
-                    cloudarray,
-                    this.state.user.userid))
-        { 
-          cleanupStorage()
-          console.log('New Memory Post Complete');
-          this.props.navigation.navigate('Feed')      
-          alert('We are uploading your post now. we will let you know when its done')     
-        }
-    
+      this.props.navigation.navigate('Feed')   
   
   }
 
@@ -110,19 +112,46 @@ setupClouds = (clouds) => {
 
   getLocation = () => {
     Keyboard.dismiss()
+    this.props.navigation.navigate('SearchLocation')
   }
 
-  getGroups = () => {
-    Keyboard.dismiss()
-  }
+// ---------------------------------------------------------------------------------  
 
-
-  getPeople = () => {
+  getClouds = () => {
     Keyboard.dismiss()
     
   }
-  
 
+// ---------------------------------------------------------------------------------
+
+  getPeople = () => {
+
+    Keyboard.dismiss()
+    this.props.navigation.navigate('SearchPeople',{
+      allPeople     : this.state.allPeople, 
+      taggedPeople  : this.state.taggedPeople
+    });
+    
+  }
+  
+// ---------------------------------------------------------------------------------
+  componentDidUpdate(){
+
+    if(this.props.route.params){
+      if(this.props.route.params.taggedPeople){
+        if(this.state.taggedPeople !== this.props.route.params.taggedPeople){  
+             
+          if(Array.isArray(this.props.route.params.taggedPeople)){          
+            this.setState({ taggedPeople:this.props.route.params.taggedPeople })
+          }
+        }
+      }if(this.props.route.params.location){
+        if(this.props.route.params.location !== this.state.location ){     
+          this.setState({ location:this.props.route.params.location })
+        }
+      } 
+    }
+  }
 
   // ---------------------------------------------------------------------------------
    // Loads the state of the New Post view
@@ -132,12 +161,13 @@ setupClouds = (clouds) => {
 
   async componentDidMount(){
     const store=[]
-    const user = await activeUser();
-    try{
-      console.log('newpost-didmount with user id : ' + user.userid);
+    const user = await mem.activeUser();
+    
+    try{      
       await AsyncStorage.getAllKeys()
       .then(keys => {
         console.log('newpost-didmount getallkeys : ' + keys);
+
         keys.map((key,index) => {
           if(key.includes('image-') || key.includes('video-') || key.includes('audio-')) 
           {
@@ -146,24 +176,22 @@ setupClouds = (clouds) => {
                   .then(item => {
                     this.getMatchingThumb(keys,key)
                     .then(thumb => {
-                      console.log('push content : file' + item + ' value ' + thumb);  
+                      console.log('push content : file' + mem.getFilename(item) + ' value ' + mem.getFilename(thumb));  
                       store.push({filepath:item,thumbnail:thumb})
                     })
-                  })
+                  }) 
               }
           }
         })
         console.log('content is array ' + Array.isArray(this.state.content));
         
         this.setState({
-          content:store,
-          people:['Choppy','Dummy','Bloke'],                           // need to change this
-          location:['UAP RT Foundry','Beacon, NY','New York State'],    // need to change this
+          content:store,                    
           user:user
         })
         
       })
-      mapUserClouds(user.userid,this.setupClouds)
+      mem.mapUserClouds(user.userid,this.setupCloudsAndPeople)
       
       
     }catch (e) {
@@ -174,12 +202,29 @@ setupClouds = (clouds) => {
 
 // ---------------------------------------------------------------------------------
 
+handleCloudTagPress = (cloudItem,buttonState) => {
+  
+  let exists = this.state.taggedClouds.includes(cloud => {cloud.id === cloudItem.id})
+
+  console.log('buttonState ' + buttonState + ' exits ' + exists );
+  
+  if( buttonState && !exists ) this.state.taggedClouds.push(cloudItem)
+
+  if( !buttonState && exists ){
+    let newarry = this.state.taggedClouds.filter( cloud => { cloud.id !== cloudItem.id})
+    this.state.taggedClouds = newarry
+  }
+  console.log(this.state.taggedClouds.map(cloud => {return cloud.id}));
+}
+
+// ---------------------------------------------------------------------------------
+
 getMatchingThumb = ( keys,targetKey ) => {
 
   return new Promise ((resolve,reject)=>{
     let targetKeyNumber = parseInt(targetKey.slice(-1))
     keys.map(key => {
-      if(key.includes('video-thumb')){
+      if(key.includes('thumb')){
         let thumbKeyNumber = parseInt(key.slice(-1))
         
         if(targetKeyNumber === thumbKeyNumber){
@@ -192,6 +237,23 @@ getMatchingThumb = ( keys,targetKey ) => {
 
 
 // ---------------------------------------------------------------------------------
+
+renderLocation =() =>{
+console.log('locaiton : ' + this.state.location);
+  if(this.state.location){
+    return (
+      <View style={styles.subtitle}>
+        <LocationTag 
+            key={this.state.location.locid}
+            title={this.state.location.firstname + ' ' + this.state.location.lastname}/>                  
+      </View>
+    )
+  }else{
+    return null
+  } 
+ 
+}
+// ---------------------------------------------------------------------------------
   
 
   render(){
@@ -201,15 +263,15 @@ getMatchingThumb = ( keys,targetKey ) => {
       <KeyboardShift >      
       <View style={styles.container} >
           
-          <Input 
+          <Input                                          // Title
             inputStyle={styles.titletext} 
             onChangeText = {(text) => {this.setState({title:text})}}
             placeholder='Create a title'
             placeholderTextColor='gray'
             
-          >{this.state.title}</Input>
+          >{this.state.title}</Input>                 
           
-          <View style={{ 
+          <View style={{                                  // Content Thumbs
                   flex: 0, 
                   flexDirection:'row', 
                   flexWrap: 'wrap',
@@ -222,24 +284,26 @@ getMatchingThumb = ( keys,targetKey ) => {
             { this.state.content.map((item,index) => (
             <View style={{
                     width: '30%', 
-                    height:120,
+                    height:200,
                     margin:5,
 
                   }} >
               <Image
-                key = {index}
-                style={{ height: '100%', width: '100%',borderRadius:10}}
-                source={{uri:item.thumbnail}}                  
-                resizeMode='cover'
+                key         = { index}
+                style       = { { height: '100%', width: '100%',borderRadius:10,borderWidth:1}}
+                source      = { {uri:item.thumbnail}}                  
+                resizeMode  = 'cover'
+                
 
               /> 
             </View>
             ))}
           </View>
-          <View>
+          
+          <View>                                          
             
-            <ListItem
-              title='Tag people'
+            <ListItem                                     // Tagged people list
+              title='People'
               leftIcon={{name:'face'}}
               topDivider
               bottomDivider
@@ -247,44 +311,42 @@ getMatchingThumb = ( keys,targetKey ) => {
               onPress={()=> this.getPeople()}
               subtitle={
                 <View style={styles.subtitle}>
-                  {this.state.people.map((person,index) =>(
+                  {this.state.taggedPeople.map((person,index) =>(
                     <SubTag 
-                      key={index}
-                      title={person}
-                      rightIcon={require('./images/x-symbol.png')}
+                      key               = { index }
+                      data              = { person }
+                      title             = { person.firstname + ' ' + person.lastname}
+                      rightIcon         = { require('./images/x-symbol.png')}
                     />
                   ))}
                 </View>}
             />
             <ListItem
-              title='Flag the location'
-              leftIcon={{name:'language'}}
+              title         = 'Location'
+              leftIcon      = { {name:'language'} }
               bottomDivider
               chevron
-              onPress={()=> this.getLocation()}
-              subtitle={
-                <View style={styles.subtitle}>
-                  {this.state.location.map((place,index) =>(
-                    <LocationTag 
-                      key={index}
-                      title={place}/>
-                  ))}
-                </View>}
+              onPress       = { ()=> this.getLocation() }
+              subtitle      = { this.renderLocation() }
 
             />
             <ListItem
-              title='Share post with'
+              title='Cloud'
               leftIcon={{name:'group'}}
               bottomDivider
               chevron
-              onPress={()=> this.getGroups()}
+              onPress={()=> this.getClouds()}
               subtitle={
                 <View style={styles.subtitle}>
-                  {this.state.clouds.map((cloud,index) =>(
+                  {this.state.allClouds.map((cloud,index) =>(
+                    
                     <SubTag 
-                      key={index}
-                      title={cloud.name}
-                      rightIcon={require('./images/x-symbol.png')}
+                      key                 = { index}
+                      data                = { cloud }
+                      greyOutOnTagPress   = { !(cloud.name === 'Personal') } // Cant turn off the Personal cloud
+                      buttonDown          = { true }  
+                      onTagPress          = { this.handleCloudTagPress}
+                      title               = { cloud.name}
                     />
                   ))}
                 </View>}

@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import Spinner from 'react-native-loading-spinner-overlay'
-import AsyncStorage from '@react-native-community/async-storage'
-import { AnimationFrameScheduler } from 'rxjs/internal/scheduler/AnimationFrameScheduler';
+
 
 
 
@@ -126,7 +125,7 @@ onSubmitSignUp = () => {
     render() {
 
         if(this.state.credentialError){
-            errorMessage = <Text style={styles.errorText}> Something went wrong with those credentials. We couldn't log you in </Text> 
+            errorMessage = <Text style={styles.errorText}> Something's wrong with those credential ? </Text> 
             
         }else{
             errorMessage = null
@@ -137,7 +136,7 @@ onSubmitSignUp = () => {
                 <View style={styles.container}>
                     <Spinner
                         visible={this.state.spinner}
-                        textContent={'Lets see now...'}
+                        textContent={'Login...'}
                         textStyle={styles.spinnerTextStyle}
                     />
                     <View style={{flexDirection:'row',width:'80%',alignContent:'center',}}> 

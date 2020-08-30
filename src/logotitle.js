@@ -12,7 +12,7 @@ class LogoTitle extends Component{
             <View style={styles.mainArea}>
                <Image
                   style={styles.logo}
-                  source={require('./images/memriio_logo.png')}
+                  source={require('./images/memrii_logo.png')}
                 />
             </View>
         )

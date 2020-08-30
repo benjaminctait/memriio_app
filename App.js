@@ -16,8 +16,8 @@ const Stack = createStackNavigator();
 class App extends Component{
   constructor () {
     super();
-    this.handleLogonIn = this.handleLogonIn.bind(this);
-    this.logCurrentUserOut = this.logCurrentUserOut.bind(this)
+    this.handleLogonIn      = this.handleLogonIn.bind(this);
+    this.logCurrentUserOut  = this.logCurrentUserOut.bind(this)
   }
 
   state = { 

@@ -41,19 +41,19 @@
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
-		00E356EE1AD99517003FC87E /* memriio_appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = memriio_appTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E356EE1AD99517003FC87E /* memriiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = memriiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* memriio_appTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = memriio_appTests.m; sourceTree = "<group>"; };
 		10A10831B19D9979DE6AFB24 /* Pods-memriio_app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app/Pods-memriio_app.debug.xcconfig"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* memriio_app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = memriio_app.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* memrii.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = memrii.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = memriio_app/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = memriio_app/AppDelegate.m; sourceTree = "<group>"; };
 		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = memriio_app/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = memriio_app/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = memriio_app/main.m; sourceTree = "<group>"; };
-		2D02E47B1E0B4A5D006451C7 /* memriio_app-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "memriio_app-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D02E4901E0B4A5D006451C7 /* memriio_app-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "memriio_app-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D02E47B1E0B4A5D006451C7 /* memrii-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "memrii-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D02E4901E0B4A5D006451C7 /* memrii-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "memrii-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		31C6DF40BE0AFEFA5EDC2A17 /* libPods-memriio_app-memriio_appTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-memriio_appTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		38531C98353D5EF7265E177E /* Pods-memriio_app-memriio_appTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-memriio_appTests.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-memriio_appTests/Pods-memriio_app-memriio_appTests.release.xcconfig"; sourceTree = "<group>"; };
 		3874254EBF95A81B4A796E84 /* Pods-memriio_app-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOSTests/Pods-memriio_app-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -189,10 +189,10 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* memriio_app.app */,
-				00E356EE1AD99517003FC87E /* memriio_appTests.xctest */,
-				2D02E47B1E0B4A5D006451C7 /* memriio_app-tvOS.app */,
-				2D02E4901E0B4A5D006451C7 /* memriio_app-tvOSTests.xctest */,
+				13B07F961A680F5B00A75B9A /* memrii.app */,
+				00E356EE1AD99517003FC87E /* memriiTests.xctest */,
+				2D02E47B1E0B4A5D006451C7 /* memrii-tvOS.app */,
+				2D02E4901E0B4A5D006451C7 /* memrii-tvOSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -200,9 +200,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		00E356ED1AD99517003FC87E /* memriio_appTests */ = {
+		00E356ED1AD99517003FC87E /* memriiTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "memriio_appTests" */;
+			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "memriiTests" */;
 			buildPhases = (
 				E497018EAD81DADE348A88C5 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
@@ -215,14 +215,14 @@
 			dependencies = (
 				00E356F51AD99517003FC87E /* PBXTargetDependency */,
 			);
-			name = memriio_appTests;
+			name = memriiTests;
 			productName = memriio_appTests;
-			productReference = 00E356EE1AD99517003FC87E /* memriio_appTests.xctest */;
+			productReference = 00E356EE1AD99517003FC87E /* memriiTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		13B07F861A680F5B00A75B9A /* memriio_app */ = {
+		13B07F861A680F5B00A75B9A /* memrii */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "memriio_app" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "memrii" */;
 			buildPhases = (
 				031954A12DB04A433EAE4C79 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
@@ -236,14 +236,14 @@
 			);
 			dependencies = (
 			);
-			name = memriio_app;
+			name = memrii;
 			productName = memriio_app;
-			productReference = 13B07F961A680F5B00A75B9A /* memriio_app.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* memrii.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2D02E47A1E0B4A5D006451C7 /* memriio_app-tvOS */ = {
+		2D02E47A1E0B4A5D006451C7 /* memrii-tvOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memriio_app-tvOS" */;
+			buildConfigurationList = 2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memrii-tvOS" */;
 			buildPhases = (
 				741B56FAC9986DB3B7B62127 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F122414F3F0027D42C /* Start Packager */,
@@ -256,14 +256,14 @@
 			);
 			dependencies = (
 			);
-			name = "memriio_app-tvOS";
+			name = "memrii-tvOS";
 			productName = "memriio_app-tvOS";
-			productReference = 2D02E47B1E0B4A5D006451C7 /* memriio_app-tvOS.app */;
+			productReference = 2D02E47B1E0B4A5D006451C7 /* memrii-tvOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2D02E48F1E0B4A5D006451C7 /* memriio_app-tvOSTests */ = {
+		2D02E48F1E0B4A5D006451C7 /* memrii-tvOSTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memriio_app-tvOSTests" */;
+			buildConfigurationList = 2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memrii-tvOSTests" */;
 			buildPhases = (
 				F665F0B7E21FD22B816BBEE7 /* [CP] Check Pods Manifest.lock */,
 				2D02E48C1E0B4A5D006451C7 /* Sources */,
@@ -275,9 +275,9 @@
 			dependencies = (
 				2D02E4921E0B4A5D006451C7 /* PBXTargetDependency */,
 			);
-			name = "memriio_app-tvOSTests";
+			name = "memrii-tvOSTests";
 			productName = "memriio_app-tvOSTests";
-			productReference = 2D02E4901E0B4A5D006451C7 /* memriio_app-tvOSTests.xctest */;
+			productReference = 2D02E4901E0B4A5D006451C7 /* memrii-tvOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -307,7 +307,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "memriio_app" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "memrii" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -320,10 +320,10 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* memriio_app */,
-				00E356ED1AD99517003FC87E /* memriio_appTests */,
-				2D02E47A1E0B4A5D006451C7 /* memriio_app-tvOS */,
-				2D02E48F1E0B4A5D006451C7 /* memriio_app-tvOSTests */,
+				13B07F861A680F5B00A75B9A /* memrii */,
+				00E356ED1AD99517003FC87E /* memriiTests */,
+				2D02E47A1E0B4A5D006451C7 /* memrii-tvOS */,
+				2D02E48F1E0B4A5D006451C7 /* memrii-tvOSTests */,
 			);
 		};
 /* End PBXProject section */
@@ -655,12 +655,12 @@
 /* Begin PBXTargetDependency section */
 		00E356F51AD99517003FC87E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 13B07F861A680F5B00A75B9A /* memriio_app */;
+			target = 13B07F861A680F5B00A75B9A /* memrii */;
 			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
 		};
 		2D02E4921E0B4A5D006451C7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2D02E47A1E0B4A5D006451C7 /* memriio_app-tvOS */;
+			target = 2D02E47A1E0B4A5D006451C7 /* memrii-tvOS */;
 			targetProxy = 2D02E4911E0B4A5D006451C7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -697,7 +697,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memriio_app.app/memriio_app";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memrii.app/memrii";
 			};
 			name = Debug;
 		};
@@ -717,7 +717,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memriio_app.app/memriio_app";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memrii.app/memrii";
 			};
 			name = Release;
 		};
@@ -741,8 +741,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = memriio_app;
+				PRODUCT_BUNDLE_IDENTIFIER = io.memrii.memrii;
+				PRODUCT_NAME = memrii;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -764,8 +764,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = memriio_app;
+				PRODUCT_BUNDLE_IDENTIFIER = io.memrii.memrii;
+				PRODUCT_NAME = memrii;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -849,7 +849,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.memriio_app-tvOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memriio_app-tvOS.app/memriio_app-tvOS";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memrii-tvOS.app/memrii-tvOS";
 				TVOS_DEPLOYMENT_TARGET = 10.1;
 			};
 			name = Debug;
@@ -876,7 +876,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.memriio_app-tvOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memriio_app-tvOS.app/memriio_app-tvOS";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/memrii-tvOS.app/memrii-tvOS";
 				TVOS_DEPLOYMENT_TARGET = 10.1;
 			};
 			name = Release;
@@ -997,7 +997,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "memriio_appTests" */ = {
+		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "memriiTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				00E356F61AD99517003FC87E /* Debug */,
@@ -1006,7 +1006,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "memriio_app" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "memrii" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -1015,7 +1015,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memriio_app-tvOS" */ = {
+		2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memrii-tvOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D02E4971E0B4A5E006451C7 /* Debug */,
@@ -1024,7 +1024,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memriio_app-tvOSTests" */ = {
+		2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memrii-tvOSTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D02E4991E0B4A5E006451C7 /* Debug */,
@@ -1033,7 +1033,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "memriio_app" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "memrii" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

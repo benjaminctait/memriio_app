@@ -26,6 +26,7 @@ import { VideoStartButton,VideoStopButton} from './buttons'
   // -------------------------------------------------------------------------------------------
 
   async componentDidMount() {
+    
     let tmp = this.props.source.split('/')
     this.setState( {poster:this.props.poster })
     getObjectSignedurl( tmp[tmp.length-1]).then(surl => {
