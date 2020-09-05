@@ -1,130 +1,138 @@
-
-import React, { Component } from 'react';
-import { NavigationContainer ,useNavigation } from '@react-navigation/native';
-import { createStackNavigator,CardStyleInterpolators } from '@react-navigation/stack';
-import HomeScreen from './src/homescr'
-import LogoTitle from './src/logotitle'
-import {SettingsButton} from './src/buttons'
-import AsyncStorage from '@react-native-community/async-storage'
-import Signin from './src/signin'
-import Settings from './src/settings.js'
+import React, {Component} from 'react';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  CardStyleInterpolators,
+} from '@react-navigation/stack';
+import HomeScreen from './src/homescr';
+import LogoTitle from './src/logotitle';
+import {SettingsButton} from './src/buttons';
+import AsyncStorage from '@react-native-community/async-storage';
+import Signin from './src/signin';
+import Settings from './src/settings.js';
 
 //import FlashMessage from "react-native-flash-message";
 
 const Stack = createStackNavigator();
 
-class App extends Component{
-  constructor () {
+class App extends Component {
+  constructor() {
     super();
-    this.handleLogonIn      = this.handleLogonIn.bind(this);
-    this.logCurrentUserOut  = this.logCurrentUserOut.bind(this)
+    this.handleLogonIn = this.handleLogonIn.bind(this);
+    this.logCurrentUserOut = this.logCurrentUserOut.bind(this);
   }
 
-  state = { 
-    email:'',
-    firstname:'',
-    familyname:'',
-    isLoggedIn:false,
-    userid:0
-  }
-  
-//--------------------------------------------------------------------------
-  
-  handleLogonIn = async (user) => {
-    console.log('handleLogonIn -> user ' + user.firstname + ' ' + user.lastname + ' id: ' + user.userid + ' email: ' + user.email); 
-    
-    await AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(true) )
-    await AsyncStorage.setItem( 'uaserid'  , JSON.stringify( user.userid ))
-    await AsyncStorage.setItem( 'firstname'  , user.firstname)
-    await AsyncStorage.setItem( 'lastname'  , user.lastname)
-    await AsyncStorage.setItem( 'email'  , user.email)
+  state = {
+    email: '',
+    firstname: '',
+    familyname: '',
+    isLoggedIn: false,
+    userid: 0,
+  };
+
+  //--------------------------------------------------------------------------
+
+  handleLogonIn = async user => {
+    console.log(
+      'handleLogonIn -> user ' +
+        user.firstname +
+        ' ' +
+        user.lastname +
+        ' id: ' +
+        user.userid +
+        ' email: ' +
+        user.email,
+    );
+
+    await AsyncStorage.setItem('userLoggedin', JSON.stringify(true));
+    await AsyncStorage.setItem('uaserid', JSON.stringify(user.userid));
+    await AsyncStorage.setItem('firstname', user.firstname);
+    await AsyncStorage.setItem('lastname', user.lastname);
+    await AsyncStorage.setItem('email', user.email);
 
     this.setState({
-        isLoggedIn:true,
-        userid:user.userid,
-        firstname:user.firstname,
-        familyname:user.lastname
-    })
+      isLoggedIn: true,
+      userid: user.userid,
+      firstname: user.firstname,
+      familyname: user.lastname,
+    });
+  };
 
+  //--------------------------------------------------------------------------
+
+  logCurrentUserOut = async () => {
+    if (this.state.isLoggedIn) {
+      AsyncStorage.setItem('userLoggedin', JSON.stringify(false));
+      AsyncStorage.setItem('uaserid', JSON.stringify(0));
+      AsyncStorage.setItem('firstname', '');
+      AsyncStorage.setItem('lastname', '');
+      AsyncStorage.setItem('email', '');
+      console.log(
+        'Logging user out : ' +
+          this.state.firstname +
+          ' id : ' +
+          this.state.userid,
+      );
+
+      this.setState({
+        isLoggedIn: false,
+        userid: 0,
+        firstname: '',
+        familyname: '',
+      });
+    } else {
+      console.log('No users currently logged in');
+    }
+  };
+
+  //--------------------------------------------------------------------------
+
+  async componentDidMount() {
+    const loggedin = await AsyncStorage.getItem('userLoggedin');
+    const uid = await AsyncStorage.getItem('uaserid');
+    if (loggedin) {
+      this.setState({isLoggedIn: loggedin, userid: uid});
+    }
   }
 
+  //--------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------
-
-logCurrentUserOut = async () => {
-
-  if(this.state.isLoggedIn){
-    AsyncStorage.setItem( 'userLoggedin'  , JSON.stringify(false) )
-    AsyncStorage.setItem( 'uaserid'  , JSON.stringify(0)) 
-    AsyncStorage.setItem( 'firstname'  , '')
-    AsyncStorage.setItem( 'lastname'  , '')
-    AsyncStorage.setItem( 'email'  , '')
-    console.log('Logging user out : ' + this.state.firstname + ' id : ' + this.state.userid);  
-
-    this.setState({
-      isLoggedIn:false,
-      userid:0,
-      firstname:'',
-      familyname:''
-  })
-  }else{
-    console.log('No users currently logged in'); 
-  }
-}
-
-//--------------------------------------------------------------------------
-
-async componentDidMount(){
-
-  const loggedin = await AsyncStorage.getItem('userLoggedin')
-  const uid = await AsyncStorage.getItem('uaserid')
-  if(loggedin){
-    this.setState({isLoggedIn:loggedin,userid:uid})
-  }
-
-}
-
-//--------------------------------------------------------------------------
-  
-  render(){
-   
-    if(this.state.isLoggedIn)
-    {
-      return(
+  render() {
+    if (this.state.isLoggedIn) {
+      return (
         <NavigationContainer>
           <Stack.Navigator>
-              <Stack.Screen
-                name="Home"
-                component={HomeScreen}
-                
-                options={({navigation}) => ({
-                  headerLeft: props => <LogoTitle {...props} />,
-                  headerTitle:'',
-                  headerRight: props => (
-                    <SettingsButton {...props} onPress={() => 
-                      navigation.navigate('Settings',{logoutcallback:this.logCurrentUserOut})
-                    
-                        
-                      }/>
-                  ),
-                })}
-              />
-              <Stack.Screen 
-                name="Settings"
-                component ={Settings}        
-                options ={{
-                  headerLeft: null,
-                  cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
-                }}
-              />
-
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={({navigation}) => ({
+                headerLeft: props => <LogoTitle {...props} />,
+                headerTitle: '',
+                headerRight: props => (
+                  <SettingsButton
+                    {...props}
+                    onPress={() =>
+                      navigation.navigate('Settings', {
+                        logoutcallback: this.logCurrentUserOut,
+                      })
+                    }
+                  />
+                ),
+              })}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={Settings}
+              options={{
+                headerLeft: null,
+                cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+              }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
-      )
-    }else{
-      return (
-        <Signin loguserin={this.handleLogonIn}/>
-      )
+      );
+    } else {
+      return <Signin loguserin={this.handleLogonIn} />;
     }
   }
 }
