@@ -192,7 +192,7 @@ class MemoryCard extends Component {
           transparent={true}
           visible={this.state.modalVisible}
           onRequestClose={() => {
-            this.setState({modalVisible: !this.state.modalVisible});
+            this.setState({modalVisible: false});
           }}>
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
@@ -203,7 +203,8 @@ class MemoryCard extends Component {
                   <Text
                     style={styles.textStyle}
                     onPress={() => {
-                      this.setState({modalVisible: !this.state.modalVisible});
+                      this.setState({modalVisible: false});
+                      console.log('back pressed');
                     }}>
                     {'<- Back'}
                   </Text>
