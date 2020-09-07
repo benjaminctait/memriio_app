@@ -3,6 +3,7 @@ import {SwitchIcon} from './buttons';
 import VideoPlayer from './videoplayer';
 import Carousel from 'react-native-snap-carousel';
 import * as mem from './datapass';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import {
   StyleSheet,
   View,
@@ -11,7 +12,6 @@ import {
   Dimensions,
   Modal,
   TouchableOpacity,
-  ImageBackground,
 } from 'react-native';
 
 class MemoryCard extends Component {
@@ -102,6 +102,7 @@ class MemoryCard extends Component {
   };
   showModel = item => {
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
+      // StatusBar.setHidden(true);
       this.setState({modalVisible: true, activeImage: item});
       console.log(this.state.activeImage, this.state.showModel, this.state);
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
@@ -194,6 +195,7 @@ class MemoryCard extends Component {
           onRequestClose={() => {
             this.setState({modalVisible: false});
           }}>
+<<<<<<< HEAD
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <ImageBackground
@@ -212,6 +214,25 @@ class MemoryCard extends Component {
               </ImageBackground>
             </View>
           </View>
+=======
+          <Text
+            style={styles.backButton}
+            onPress={() => {
+              this.setState({modalVisible: !this.state.modalVisible});
+            }}>
+            <Image
+              source={require('./images/back.png')}
+              style={styles.backButtonImage}
+            />
+          </Text>
+
+          <ImageViewer
+            imageUrls={[{url: this.state.activeImage.thumburl}]}
+            style={styles.imageFull}
+            renderHeader={() => {}}
+            renderIndicator={() => {}}
+          />
+>>>>>>> d7a3b20f464fb515414ef85ecfaa248d1f80fc30
         </Modal>
       </View>
     );
@@ -249,7 +270,7 @@ const styles = StyleSheet.create({
     height: 300,
     resizeMode: 'cover',
   },
-  imageFull: {width: '100%', height: '100%'},
+  imageFull: {width: '100%', height: '100%', zIndex: -1},
   absText: {
     position: 'absolute',
     top: 0,
@@ -258,9 +279,24 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
 
-  textStyle: {
+  backButton: {
     position: 'absolute',
-    color: 'red',
+    bottom: 10,
+    left: 10,
+    height: 100,
+  },
+  backButtonImage: {
+    width: 35,
+    height: 35,
+  },
+  close: {
+    margin: 5,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 25,
+    height: 25,
+    color: 'tomato',
   },
 
   titleText: {
