@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2D02E47A1E0B4A5D006451C7"
-               BuildableName = "memrii-tvOS.app"
-               BlueprintName = "memrii-tvOS"
-               ReferencedContainer = "container:memrii.xcodeproj">
+               BuildableName = "memriio_app-tvOS.app"
+               BlueprintName = "memriio_app-tvOS"
+               ReferencedContainer = "container:memriio_app.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2D02E48F1E0B4A5D006451C7"
-               BuildableName = "memrii-tvOSTests.xctest"
-               BlueprintName = "memrii-tvOSTests"
-               ReferencedContainer = "container:memrii.xcodeproj">
+               BuildableName = "memriio_app-tvOSTests.xctest"
+               BlueprintName = "memriio_app-tvOSTests"
+               ReferencedContainer = "container:memriio_app.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D02E47A1E0B4A5D006451C7"
-            BuildableName = "memrii-tvOS.app"
-            BlueprintName = "memrii-tvOS"
-            ReferencedContainer = "container:memrii.xcodeproj">
+            BuildableName = "memriio_app-tvOS.app"
+            BlueprintName = "memriio_app-tvOS"
+            ReferencedContainer = "container:memriio_app.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D02E47A1E0B4A5D006451C7"
-            BuildableName = "memrii-tvOS.app"
-            BlueprintName = "memrii-tvOS"
-            ReferencedContainer = "container:memrii.xcodeproj">
+            BuildableName = "memriio_app-tvOS.app"
+            BlueprintName = "memriio_app-tvOS"
+            ReferencedContainer = "container:memriio_app.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -195,26 +195,6 @@ class MemoryCard extends Component {
           onRequestClose={() => {
             this.setState({modalVisible: false});
           }}>
-<<<<<<< HEAD
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <ImageBackground
-                source={{uri: this.state.activeImage.thumburl}}
-                style={styles.imageFull}>
-                <View style={styles.absText}>
-                  <Text
-                    style={styles.textStyle}
-                    onPress={() => {
-                      this.setState({modalVisible: false});
-                      console.log('back pressed');
-                    }}>
-                    {'<- Back'}
-                  </Text>
-                </View>
-              </ImageBackground>
-            </View>
-          </View>
-=======
           <Text
             style={styles.backButton}
             onPress={() => {
@@ -232,7 +212,6 @@ class MemoryCard extends Component {
             renderHeader={() => {}}
             renderIndicator={() => {}}
           />
->>>>>>> d7a3b20f464fb515414ef85ecfaa248d1f80fc30
         </Modal>
       </View>
     );
