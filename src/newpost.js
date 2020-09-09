@@ -84,8 +84,8 @@ refreshFeed = (memid) =>{
     
     Keyboard.dismiss()
     
-    const cloudarray = []
-    const personarray = []
+    let cloudarray = []
+    let personarray = []
     let me = this.state
 
     cloudarray = me.taggedClouds.filter(cloud => { cloud.id !== 0 }) // all tagged clouds except the personal cloud
@@ -93,17 +93,18 @@ refreshFeed = (memid) =>{
     me.taggedPeople.map((person,i)=>{
       personarray[i] = person.userid;    
     })
-      
-      mem.postNewMemory  (me.title, 
-                      me.story, 
-                      me.content, 
-                      personarray, 
-                      me.location[0], 
-                      cloudarray, 
-                      me.user.userid,
-                      this.refreshFeed)
+    
+    
+    mem.postNewMemory  (me.title, 
+                    me.story, 
+                    me.content, 
+                    personarray, 
+                    me.location, 
+                    cloudarray, 
+                    me.user.userid,
+                    this.refreshFeed)
 
-      this.props.navigation.navigate('Feed')   
+    this.props.navigation.navigate('Feed')   
   
   }
 
