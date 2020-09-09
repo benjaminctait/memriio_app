@@ -35,19 +35,17 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   async componentDidMount() {
-    console.log('catpure did load called');
 
     await cleanupStorage();
     await AsyncStorage.getAllKeys().then(keys => {
-      console.log('capture-didmount getallkeys : ' + keys);
+      c
     });
   }
 
   //--------------------------------------------------------------------------------------
 
   startRecordingVideo = async () => {
-    console.log('startRecordingVideo vcount' + this.state.vcount);
-
+    
     if (this.camera) {
       try {
         this.setState({isRecordingVideo: true});
@@ -74,13 +72,13 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
   littlecallback = result => {
-    console.log('littlecallback' + result);
+    
     AsyncStorage.setItem('video- ' + this.state.vcount, result);
     createThumbnail({
       url: result,
       timeStamp: 10000,
     }).then(thumbnail => {
-      console.log('littlecallback thumbnail: ' + thumbnail.path);
+      
       AsyncStorage.setItem('video-thumb- ' + this.state.vcount, thumbnail.path);
     });
   };

@@ -29,7 +29,7 @@ class Register extends React.Component{
     }
 
     onRegisterClick = () => {
-        console.log('state',this.state);
+       
         
         fetch('https://memriio-api-0.herokuapp.com/register', {
             method: 'post',

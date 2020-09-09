@@ -434,7 +434,7 @@ export function getMemories_Clouds ( cloudids)  {
 
 export function getMemoryFiles (memid,callback)  
 {
-    console.log('getMemoryFiles for memory : ' + memid )
+    
     fetch('https://memriio-api-0.herokuapp.com/get_memfiles_memoryid', {
         method: 'post',headers: {
             'Content-Type':'application/json'},

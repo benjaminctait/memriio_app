@@ -199,14 +199,14 @@ render(){
       ))}     
     </ScrollView>
     }else if (memisArray && this.state.isLoading){
-      console.log(memisArray + ' : ' + this.state.isLoading);
+      
       feedview =
         <View style={styles.nomemory}>
           <Text style={styles.textMain}>Loading...</Text>
         </View>
     
     }else if (memisArray && !this.state.isLoading && memcount == 0){
-      console.log(memisArray + ' : ' + this.state.isLoading);
+      
       feedview =
         <View style={styles.nomemory}>
           <Text style={styles.textMain}>Im Empty !</Text>
@@ -231,17 +231,15 @@ render(){
         {feedview}
         <View style={styles.cloudarea}>
           {this.state.userClouds.map((cloud,index) => (
-            <SubTag  
-              title         =   { cloud.name }
-              data          =   { cloud }
-              key           =   { index }
-              rightIconUp   =   { require('./images/checked_blue.png')}
-              rightIconDown =   { require('./images/x-symbol.png')}
-              textStyle     =   { styles.ptagText }
-              tagStyle      =   { styles.ptag }
-              onTagPress    =   { this.handleCloudChange }
-              switchRightIconOnTagPress = {true}
+
+            <SubTag 
+              key                 = { index}
+              data                = { cloud }
+              title               = { cloud.name}
+              greyOutOnTagPress   = { true}              
+              onTagPress          = { this.handleCloudChange}              
             />
+
             ))}   
         </View> 
     </View>

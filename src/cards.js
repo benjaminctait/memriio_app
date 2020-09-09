@@ -37,7 +37,7 @@ class MemoryCard extends Component {
     let memory = this.props.memory;
     if (prevProps.memory.memid !== this.props.memory.memid) {
       mem.getMemoryFiles(memory.memid, memfiles => {
-        console.log('files:', memfiles);
+        
         this.setState({files: memfiles});
       });
       // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
@@ -104,7 +104,7 @@ class MemoryCard extends Component {
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
       // StatusBar.setHidden(true);
       this.setState({modalVisible: true, activeImage: item});
-      console.log(this.state.activeImage, this.state.showModel, this.state);
+      
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
       return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
     }
