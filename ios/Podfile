@@ -77,7 +77,7 @@ target 'memriio_app' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  pod 'react-native-mov-to-mp4', :path => '../node_modules/react-native-mov-to-mp4'
+  # pod 'react-native-mov-to-mp4', :path => '../node_modules/react-native-mov-to-mp4'
 
 
   target 'memriio_appTests' do

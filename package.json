@@ -27,6 +27,7 @@
     "form-data": "^3.0.0",
     "fs": "0.0.1-security",
     "lodash": "^4.17.15",
+    "native-base": "^2.13.14",
     "react": "^16.9.0",
     "react-native": "^0.62.1",
     "react-native-aws3": "0.0.9",

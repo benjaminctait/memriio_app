@@ -20,6 +20,7 @@ import {
 } from './buttons';
 
 import {StyleSheet, View} from 'react-native';
+import {H2} from 'native-base';
 
 class CaptureComponent extends Component {
   state = {
@@ -30,6 +31,8 @@ class CaptureComponent extends Component {
     vcount: 0,
     acount: 0,
     fcount: 0,
+    elapsed: 0,
+    takingPic: false,
   };
 
   //--------------------------------------------------------------------------------------
@@ -112,13 +115,16 @@ class CaptureComponent extends Component {
   takePicture = async () => {
     if (this.camera) {
       this.setState({vcount: this.state.vcount + 1});
+      this.setState({takingPic: true});
       console.log('capture.takePicture() ' + this.camera);
       try {
         const data = await this.camera.takePictureAsync();
         const fullpath = data.uri.split('//')[1];
         AsyncStorage.setItem('image-' + this.state.vcount, fullpath);
         AsyncStorage.setItem('image-thumb-' + this.state.vcount, fullpath);
+        console.log('pic taken successfuly:');
       } catch (err) {
+        console.log('error while taking pic:');
         alert(err);
       }
     }
@@ -142,6 +148,7 @@ class CaptureComponent extends Component {
     let bigButton;
     switch (this.state.mode) {
       case 'camera':
+        console.log('opening camera');
         bigButton = <CameraClickButton onPress={this.takePicture} />;
         break;
       case 'video':
@@ -200,6 +207,11 @@ class CaptureComponent extends Component {
           {bigButton}
           <PostButton onPress={() => this.showPost()} />
         </View>
+        {this.state.takingPic ? (
+          <View style={styles.capturingStyle}>
+            <H2 transparent>Capturing Picture...</H2>
+          </View>
+        ) : null}
       </View>
     );
   }
