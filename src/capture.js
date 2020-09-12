@@ -18,8 +18,10 @@ import {
   IconButtonAudio,
   IconButtonFile,
 } from './buttons';
+import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, Platform, Text} from 'react-native';
+let filePath = '';
 
 class CaptureComponent extends Component {
   state = {
@@ -30,22 +32,56 @@ class CaptureComponent extends Component {
     vcount: 0,
     acount: 0,
     fcount: 0,
+    currentTime: 0.0,
+    recording: false,
+    paused: false,
+    stoppedRecording: false,
+    finished: false,
+    audioPath: AudioUtils.DocumentDirectoryPath + '/test.aac',
+    hasPermission: undefined,
   };
 
   //--------------------------------------------------------------------------------------
 
   async componentDidMount() {
-
     await cleanupStorage();
-    await AsyncStorage.getAllKeys().then(keys => {
-      c
+    await AsyncStorage.getAllKeys().then((keys) => {});
+    AudioRecorder.requestAuthorization().then((isAuthorised) => {
+      this.setState({hasPermission: isAuthorised});
+
+      if (!isAuthorised) {
+        return;
+      }
+
+      this.prepareRecordingPath(this.state.audioPath);
+
+      AudioRecorder.onProgress = (data) => {
+        this.setState({currentTime: Math.floor(data.currentTime)});
+        console.log('data :', data);
+        let decibels =
+          10 *
+          Math.log10(data.currentPeakMetering / data.currentMetering) *
+          -0.25;
+        console.log('decibles :', decibels);
+      };
+
+      AudioRecorder.onFinished = (data) => {
+        // Android callback comes in the form of a promise instead.
+        console.log('on finished');
+        if (Platform.OS === 'ios') {
+          this._finishRecording(
+            data.status === 'OK',
+            data.audioFileURL,
+            data.audioFileSize,
+          );
+        }
+      };
     });
   }
 
   //--------------------------------------------------------------------------------------
 
   startRecordingVideo = async () => {
-    
     if (this.camera) {
       try {
         this.setState({isRecordingVideo: true});
@@ -71,14 +107,12 @@ class CaptureComponent extends Component {
   };
 
   //--------------------------------------------------------------------------------------
-  littlecallback = result => {
-    
+  littlecallback = (result) => {
     AsyncStorage.setItem('video- ' + this.state.vcount, result);
     createThumbnail({
       url: result,
       timeStamp: 10000,
-    }).then(thumbnail => {
-      
+    }).then((thumbnail) => {
       AsyncStorage.setItem('video-thumb- ' + this.state.vcount, thumbnail.path);
     });
   };
@@ -95,14 +129,96 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
+  prepareRecordingPath(audioPath) {
+    AudioRecorder.prepareRecordingAtPath(audioPath, {
+      SampleRate: 22050,
+      Channels: 1,
+      AudioQuality: 'High',
+      AudioEncoding: 'aac',
+      AudioEncodingBitRate: 32000,
+      MeteringEnabled: true,
+    });
+  }
+  //--------------------------------------------------------------------------------------
+
   startRecordingAudio = async () => {
-    alert('start audio');
+    this.setState({isRecordingAudio: true});
+    // if (this.state.recording) {
+    //   console.warn('Already recording!');
+    //   return;
+    // }
+
+    if (!this.state.hasPermission) {
+      console.warn("Can't record, no permission granted!");
+      return;
+    }
+
+    if (this.state.stoppedRecording) {
+      this.prepareRecordingPath(this.state.audioPath);
+    }
+
+    this.setState({recording: true, paused: false});
+
+    try {
+      filePath = await AudioRecorder.startRecording();
+    } catch (error) {
+      console.error(error);
+    }
+    // alert('start audio');
   };
 
   //--------------------------------------------------------------------------------------
 
+  _finishRecording(didSucceed, filePathNew, fileSize) {
+    this.setState({finished: didSucceed});
+    console.log(
+      `Finished recording of duration ${
+        this.state.currentTime
+      } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
+    );
+    let audioThumb = require('./images/file.png');
+    this.state.acount++;
+    AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
+    AsyncStorage.setItem(
+      'audio-thumb-' + this.state.acount,
+      './images/file.png',
+    );
+  }
+  //--------------------------------------------------------------------------------------
+
   stopRecordingAudio = async () => {
-    alert('stop audio');
+    this.setState({isRecordingAudio: false});
+    // if (!this.state.recording) {
+    //   console.warn("Can't stop, not recording!");
+    //   return;
+    // }
+
+    this.setState({stoppedRecording: true, recording: false, paused: false});
+
+    try {
+      filePath = await AudioRecorder.stopRecording();
+      console.log('recording path', filePath);
+
+      // if (Platform.OS === 'android') {
+      //   await this._finishRecording(true, filePath);
+      // }
+      // return filePath;
+      this.setState({finished: true});
+      console.log(
+        `Finished recording of duration ${this.state.currentTime} seconds at path: ${filePath} `,
+      );
+      let audioThumb = require('./images/audioThumb.png');
+      // this.state.acount++;
+      this.setState({acount: this.state.acount + 1});
+      AsyncStorage.setItem('audio-' + this.state.acount, filePath);
+      AsyncStorage.setItem(
+        'audio-thumb-' + this.state.acount,
+        './images/file.png',
+      );
+    } catch (error) {
+      console.error(error);
+    }
+    // alert('stop audio');
   };
 
   //--------------------------------------------------------------------------------------
@@ -124,7 +240,7 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
-  showMode = modeName => {
+  showMode = (modeName) => {
     this.setState({mode: modeName});
   };
 
@@ -163,16 +279,24 @@ class CaptureComponent extends Component {
 
     return (
       <View style={styles.container}>
-        <RNCamera
-          ref={ref => {
-            this.camera = ref;
-          }}
-          style={styles.preview}
-          type={RNCamera.Constants.Type.back}
-          flashMode={RNCamera.Constants.flashMode}
-          autoFocus={RNCamera.Constants.AutoFocus.on}
-          playSoundOnCapture={true}
-        />
+        {!this.state.isRecordingAudio ? (
+          <RNCamera
+            ref={(ref) => {
+              this.camera = ref;
+            }}
+            style={styles.preview}
+            type={RNCamera.Constants.Type.back}
+            flashMode={RNCamera.Constants.flashMode}
+            autoFocus={RNCamera.Constants.AutoFocus.on}
+            playSoundOnCapture={true}
+          />
+        ) : (
+          <View style={styles.audioContainer}>
+            <View style={styles.controls}>
+              <Text style={styles.progressText}>{this.state.currentTime}s</Text>
+            </View>
+          </View>
+        )}
 
         <View style={styles.modeButtons}>
           <IconButtonCamera
@@ -231,6 +355,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     margin: 5,
     width: '80%',
+  },
+  audioContainer: {
+    flex: 1,
+    backgroundColor: '#2b608a',
+  },
+  controls: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  progressText: {
+    paddingTop: 50,
+    fontSize: 50,
+    color: '#fff',
   },
 });
 

@@ -4,6 +4,7 @@ import VideoPlayer from './videoplayer';
 import Carousel from 'react-native-snap-carousel';
 import * as mem from './datapass';
 import ImageViewer from 'react-native-image-zoom-viewer';
+import ReactAudioPlayer from 'react-audio-player';
 import {
   StyleSheet,
   View,
@@ -36,8 +37,7 @@ class MemoryCard extends Component {
   componentDidUpdate(prevProps, prevState) {
     let memory = this.props.memory;
     if (prevProps.memory.memid !== this.props.memory.memid) {
-      mem.getMemoryFiles(memory.memid, memfiles => {
-        
+      mem.getMemoryFiles(memory.memid, (memfiles) => {
         this.setState({files: memfiles});
       });
       // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
@@ -49,7 +49,7 @@ class MemoryCard extends Component {
   async componentDidMount() {
     let memory = this.props.memory;
 
-    mem.getMemoryFiles(memory.memid, memfiles => {
+    mem.getMemoryFiles(memory.memid, (memfiles) => {
       this.setState({files: memfiles});
     });
     // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
@@ -100,13 +100,14 @@ class MemoryCard extends Component {
       );
     }
   };
-  showModel = item => {
+  showModel = (item) => {
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
       // StatusBar.setHidden(true);
       this.setState({modalVisible: true, activeImage: item});
-      
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
       return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
+    } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
+      return <VideoPlayer poster={item.fileurl} source={item.fileurl} />;
     }
   };
 
@@ -119,12 +120,12 @@ class MemoryCard extends Component {
       <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center'}}>
         <Carousel
           layout={'tinder'}
-          ref={ref => (this.carousel = ref)}
+          ref={(ref) => (this.carousel = ref)}
           data={this.state.files}
           sliderWidth={width}
           itemWidth={width}
           renderItem={this.renderFileView}
-          onSnapToItem={index => this.setState({activeIndex: index})}
+          onSnapToItem={(index) => this.setState({activeIndex: index})}
           scrollEnabled={this.state.scrollable}
         />
       </View>
@@ -146,6 +147,11 @@ class MemoryCard extends Component {
       );
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
       return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
+    } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
+      return (
+        <VideoPlayer poster={item.fileurl} source={item.fileurl} />
+        // <ReactAudioPlayer src={item.fileurl} autoPlay={false} controls={true} />
+      );
     }
   };
 
