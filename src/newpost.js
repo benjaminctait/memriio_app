@@ -91,7 +91,7 @@ class NewPost extends Component {
       this.refreshFeed,
     );
 
-    console.log('new mem :');
+    console.log('new mem :', newMemCreated);
     this.props.navigation.navigate('Feed');
   };
 

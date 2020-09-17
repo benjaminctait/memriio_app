@@ -171,13 +171,13 @@ class CaptureComponent extends Component {
 
   _finishRecording(didSucceed, filePathNew, fileSize) {
     this.setState({finished: didSucceed});
-    console.log('in _finish recording');
     console.log(
       `Finished recording of duration ${
         this.state.currentTime
       } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
     );
-    this.setState({acount: this.state.acount + 1});
+    let audioThumb = require('./images/file.png');
+    this.state.acount++;
     AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
     AsyncStorage.setItem(
       'audio-thumb-' + this.state.acount,
@@ -188,15 +188,37 @@ class CaptureComponent extends Component {
 
   stopRecordingAudio = async () => {
     this.setState({isRecordingAudio: false});
+    // if (!this.state.recording) {
+    //   console.warn("Can't stop, not recording!");
+    //   return;
+    // }
 
     this.setState({stoppedRecording: true, recording: false, paused: false});
 
     try {
       filePath = await AudioRecorder.stopRecording();
+      console.log('recording path', filePath);
+
+      // if (Platform.OS === 'android') {
+      //   await this._finishRecording(true, filePath);
+      // }
+      // return filePath;
       this.setState({finished: true});
+      console.log(
+        `Finished recording of duration ${this.state.currentTime} seconds at path: ${filePath} `,
+      );
+      let audioThumb = require('./images/audioThumb.png');
+      // this.state.acount++;
+      this.setState({acount: this.state.acount + 1});
+      AsyncStorage.setItem('audio-' + this.state.acount, filePath);
+      AsyncStorage.setItem(
+        'audio-thumb-' + this.state.acount,
+        './images/file.png',
+      );
     } catch (error) {
       console.error(error);
     }
+    // alert('stop audio');
   };
 
   //--------------------------------------------------------------------------------------
