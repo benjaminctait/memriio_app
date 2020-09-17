@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
 import {RNCamera} from 'react-native-camera';
 import AsyncStorage from '@react-native-community/async-storage';
-import {cleanupStorage} from './datapass';
+import {cleanupStorage, millisecsToHMSM} from './datapass';
 import MovtoMp4 from 'react-native-mov-to-mp4';
 import {createThumbnail} from 'react-native-create-thumbnail';
+
 
 import {
   CameraClickButton,
@@ -20,7 +21,7 @@ import {
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
-import {StyleSheet, View, Platform, Text} from 'react-native';
+import {StyleSheet, View, Platform, Text,Image} from 'react-native';
 let filePath = '';
 
 class CaptureComponent extends Component {
@@ -36,8 +37,7 @@ class CaptureComponent extends Component {
     recording: false,
     paused: false,
     stoppedRecording: false,
-    finished: false,
-    audioPath: AudioUtils.DocumentDirectoryPath + '/test.aac',
+    finished: false,    
     hasPermission: undefined,
   };
 
@@ -45,29 +45,27 @@ class CaptureComponent extends Component {
 
   async componentDidMount() {
     await cleanupStorage();
-    await AsyncStorage.getAllKeys().then((keys) => {});
+    
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       this.setState({hasPermission: isAuthorised});
 
       if (!isAuthorised) {
         return;
       }
-
-      this.prepareRecordingPath(this.state.audioPath);
-
+      
       AudioRecorder.onProgress = (data) => {
-        this.setState({currentTime: Math.floor(data.currentTime)});
-        console.log('data :', data);
+        this.setState({ currentTime: data.currentTime  });
+        
         let decibels =
           10 *
           Math.log10(data.currentPeakMetering / data.currentMetering) *
           -0.25;
-        console.log('decibles :', decibels);
+        console.log('time : ' + this.state.currentTime + ' decibles : ', decibels  );
       };
 
       AudioRecorder.onFinished = (data) => {
         // Android callback comes in the form of a promise instead.
-        console.log('on finished');
+        
         if (Platform.OS === 'ios') {
           this._finishRecording(
             data.status === 'OK',
@@ -80,7 +78,7 @@ class CaptureComponent extends Component {
   }
 
   //--------------------------------------------------------------------------------------
-
+ 
   startRecordingVideo = async () => {
     if (this.camera) {
       try {
@@ -130,12 +128,13 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   prepareRecordingPath(audioPath) {
+    
     AudioRecorder.prepareRecordingAtPath(audioPath, {
       SampleRate: 22050,
       Channels: 1,
       AudioQuality: 'High',
       AudioEncoding: 'aac',
-      AudioEncodingBitRate: 32000,
+      AudioEncodingBitRate: 32000,      
       MeteringEnabled: true,
     });
   }
@@ -154,7 +153,8 @@ class CaptureComponent extends Component {
     }
 
     if (this.state.stoppedRecording) {
-      this.prepareRecordingPath(this.state.audioPath);
+      let uniqueAudioPath = AudioUtils.DocumentDirectoryPath + '/audioFile_' + this.state.acount + '.aac'
+      this.prepareRecordingPath(uniqueAudioPath);
     }
 
     this.setState({recording: true, paused: false});
@@ -164,32 +164,26 @@ class CaptureComponent extends Component {
     } catch (error) {
       console.error(error);
     }
-    // alert('start audio');
+   
   };
 
   //--------------------------------------------------------------------------------------
 
   _finishRecording(didSucceed, filePathNew, fileSize) {
-    this.setState({finished: didSucceed});
-    console.log('in _finish recording');
-    console.log(
-      `Finished recording of duration ${
-        this.state.currentTime
-      } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
-    );
-    this.setState({acount: this.state.acount + 1});
-    AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
-    AsyncStorage.setItem(
-      'audio-thumb-' + this.state.acount,
-      './images/file.png',
-    );
+
+    console.log(`Audio duration ${ this.state.currentTime } path: ${filePathNew} size ${fileSize || 0} bytes`);
+
+    this.setState({acount: this.state.acount + 1,finished: didSucceed, currentTime: 0.0},()=>{
+      AsyncStorage.setItem('audio-' + this.state.acount, filePathNew)
+      AsyncStorage.setItem('audio-thumb-' + this.state.acount,'./images/file.png')
+    })    
+    
   }
   //--------------------------------------------------------------------------------------
 
-  stopRecordingAudio = async () => {
-    this.setState({isRecordingAudio: false});
+  stopRecordingAudio = async () => {  
 
-    this.setState({stoppedRecording: true, recording: false, paused: false});
+    this.setState({isRecordingAudio: false, stoppedRecording: true, recording: false, paused: false});
 
     try {
       filePath = await AudioRecorder.stopRecording();
@@ -218,8 +212,20 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
+  goBackToFeed = () => {
+    cleanupStorage()
+    this.props.navigation.navigate('Feed')
+  }
+
+  //--------------------------------------------------------------------------------------
+
   showMode = (modeName) => {
-    this.setState({mode: modeName});
+    if(this.state.isRecordingAudio || this.state.isRecordingAudio){
+      return
+    }else{
+      this.setState({mode: modeName});
+    }
+    
   };
 
   //--------------------------------------------------------------------------------------
@@ -231,12 +237,32 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   render() {
-    let bigButton;
+    let bigButton,content;
     switch (this.state.mode) {
       case 'camera':
         bigButton = <CameraClickButton onPress={this.takePicture} />;
+        content   = <RNCamera
+                      ref={(ref) => {
+                        this.camera = ref;
+                      }}
+                      style={styles.preview}
+                      type={RNCamera.Constants.Type.back}
+                      flashMode={RNCamera.Constants.flashMode}
+                      autoFocus={RNCamera.Constants.AutoFocus.on}
+                      playSoundOnCapture={true}
+                    />
         break;
       case 'video':
+        content   = <RNCamera
+                        ref={(ref) => {
+                          this.camera = ref;
+                        }}
+                        style={styles.preview}
+                        type={RNCamera.Constants.Type.back}
+                        flashMode={RNCamera.Constants.flashMode}
+                        autoFocus={RNCamera.Constants.AutoFocus.on}
+                        playSoundOnCapture={true}
+                    />
         if (this.state.isRecordingVideo) {
           bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />;
         } else {
@@ -246,8 +272,20 @@ class CaptureComponent extends Component {
       case 'audio':
         if (this.state.isRecordingAudio) {
           bigButton = <AudioStopButton onPress={this.stopRecordingAudio} />;
+          content   = <View style={styles.audioContainer}>
+                        <View style={styles.controls}>
+                          <Image style={styles.littleButton} source = {require('./images/mic.png')}/>
+                          <Text style={styles.progressText}>{millisecsToHMSM(this.state.currentTime*1000)}</Text>
+                        </View>
+                      </View>
         } else {
           bigButton = <AudioStartButton onPress={this.startRecordingAudio} />;
+          content   = <View style={styles.audioContainer}>
+                        <View style={styles.controls}>
+                          <Image style={styles.littleButton} source = {require('./images/mic.png')}/>
+                          <Text style={styles.progressText}>{millisecsToHMSM(this.state.currentTime*1000)}</Text>
+                        </View>
+                      </View>
         }
         break;
       case 'file':
@@ -257,25 +295,7 @@ class CaptureComponent extends Component {
 
     return (
       <View style={styles.container}>
-        {!this.state.isRecordingAudio ? (
-          <RNCamera
-            ref={(ref) => {
-              this.camera = ref;
-            }}
-            style={styles.preview}
-            type={RNCamera.Constants.Type.back}
-            flashMode={RNCamera.Constants.flashMode}
-            autoFocus={RNCamera.Constants.AutoFocus.on}
-            playSoundOnCapture={true}
-          />
-        ) : (
-          <View style={styles.audioContainer}>
-            <View style={styles.controls}>
-              <Text style={styles.progressText}>{this.state.currentTime}s</Text>
-            </View>
-          </View>
-        )}
-
+        {content}
         <View style={styles.modeButtons}>
           <IconButtonCamera
             onPress={() => this.showMode('camera')}
@@ -296,7 +316,7 @@ class CaptureComponent extends Component {
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.navigate('Feed')} />
+          <BackButton onPress={() => this.goBackToFeed()} />
           {bigButton}
           <PostButton onPress={() => this.showPost()} />
         </View>
@@ -336,7 +356,7 @@ const styles = StyleSheet.create({
   },
   audioContainer: {
     flex: 1,
-    backgroundColor: '#2b608a',
+    backgroundColor: 'black',
   },
   controls: {
     justifyContent: 'center',
@@ -344,9 +364,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressText: {
-    paddingTop: 50,
-    fontSize: 50,
-    color: '#fff',
+    paddingTop: 10,
+    fontSize: 20,
+    color: 'grey',
+  },
+  littleButton: {
+    height: 80,
+    width: 80,
+    alignSelf:'center',
+    backgroundColor: 'transparent',  
   },
 });
 

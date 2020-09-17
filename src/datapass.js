@@ -1112,3 +1112,13 @@ export function getFilename(filepath) {
 }
 
 //---------------------------
+
+export function millisecsToHMSM(milliseconds) {
+  var msecs   =((milliseconds % 1000)/10).toFixed(0);  
+  var minutes = Math.floor(milliseconds / 60000);
+  var seconds = ((milliseconds % 60000) / 1000).toFixed(0);
+  return (minutes < 10 ? '0' : '') + minutes + ':' 
+          + (seconds < 10 ? '0' : '') + seconds + ':' 
+          + (msecs < 10 ? '0' : '') + msecs;
+  
+}
