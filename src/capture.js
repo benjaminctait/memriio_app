@@ -175,7 +175,7 @@ class CaptureComponent extends Component {
 
     this.setState({acount: this.state.acount + 1,finished: didSucceed, currentTime: 0.0},()=>{
       AsyncStorage.setItem('audio-' + this.state.acount, filePathNew)
-      AsyncStorage.setItem('audio-thumb-' + this.state.acount,'./images/file.png')
+      AsyncStorage.setItem('audio-thumb-' + this.state.acount,'./images/audioThumb.png')
     })    
     
   }

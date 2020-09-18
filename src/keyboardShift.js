@@ -40,14 +40,13 @@ export default class KeyboardShift extends Component {
     const { height: windowHeight } = Dimensions.get('window');
     const keyboardHeight = event.endCoordinates.height;
     const currentlyFocusedField = TextInputState.currentlyFocusedField();
+    
     UIManager.measure(currentlyFocusedField, (originX, originY, width, height, pageX, pageY) => {
       const fieldHeight = height;
-      const fieldTop = pageY;
-      const gap = (windowHeight - keyboardHeight) - (fieldTop + fieldHeight);
+      const fieldTop    = pageY;
+      const gap         = (windowHeight - keyboardHeight) - (fieldTop + fieldHeight);
       if (gap >= 0) {
-        
         return;
-        
       }
       Animated.timing(
         this.state.shift,

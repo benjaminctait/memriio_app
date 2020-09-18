@@ -325,30 +325,48 @@ class PersonListItem extends Component{
 
   render(){
     const {person,tagged} = this.props
-    let bgc = 'white'
-    if(tagged) bgc = 'grey'
+    let checked = null
+   
+      if(tagged) {
+        checked = <View style={{ justifyContent: 'flex-end'}}>
+                    <Image
+                      style={{ width: 30, height: 30,  margin: 5 }}
+                      source={
+                        person.avatar  ? {uri: person.avatar} : require('./images/checked_blue.png')
+                      }
+                      resizeMethod={'resize'}
+                    />
+                  </View>
+        
+      }
+
       return(
           <TouchableOpacity onPress={this.handleOnPress}>
             <View
               style={{
                 flexDirection: 'row',
-                flex: 1,
-                borderTopColor:'grey',
-                backgroundColor:bgc,
+                borderTopColor:'grey',                
                 borderTopWidth:1,
               }}
               >
+              
               <Image
-                style={{ width: 40, height: 40, borderRadius: 20,borderColor:'black', margin: 5}}
-                source={ null }
+                style={{ width: 30, height: 30, borderRadius: 20,borderColor:'black', margin: 5}}
+                source={
+                  person.avatar  ? {uri: person.avatar} : require('./images/lego_head.png')
+                }
                 resizeMethod={'resize'}
               />
+              
               <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
                 <Text                   
                   style={{ fontSize:15 }}              
                 >{`${person.firstname} ${person.lastname}`}
                 </Text>
               </View>
+              
+              {checked}
+              
             </View> 
         </TouchableOpacity>     
       )
