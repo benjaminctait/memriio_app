@@ -10,6 +10,12 @@ import {SettingsButton} from './src/buttons';
 import AsyncStorage from '@react-native-community/async-storage';
 import Signin from './src/signin';
 import Settings from './src/settings.js';
+import {YellowBox} from 'react-native';
+
+YellowBox.ignoreWarnings([
+  'Animated: `useNativeDriver` was not specified.',
+  '[RNCamera initializeAudioCaptureSessionInput]',
+]);
 
 //import FlashMessage from "react-native-flash-message";
 
@@ -32,7 +38,7 @@ class App extends Component {
 
   //--------------------------------------------------------------------------
 
-  handleLogonIn = async user => {
+  handleLogonIn = async (user) => {
     console.log(
       'handleLogonIn -> user ' +
         user.firstname +
@@ -106,9 +112,9 @@ class App extends Component {
               name="Home"
               component={HomeScreen}
               options={({navigation}) => ({
-                headerLeft: props => <LogoTitle {...props} />,
+                headerLeft: (props) => <LogoTitle {...props} />,
                 headerTitle: '',
-                headerRight: props => (
+                headerRight: (props) => (
                   <SettingsButton
                     {...props}
                     onPress={() =>

@@ -21,6 +21,10 @@ import {
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
 import {StyleSheet, View, Platform, Text} from 'react-native';
+import RNSoundLevel from 'react-native-sound-level';
+import AnimatedWave from 'react-native-animated-wave';
+
+import Sound from 'react-native-sound';
 let filePath = '';
 
 class CaptureComponent extends Component {
@@ -39,6 +43,7 @@ class CaptureComponent extends Component {
     finished: false,
     audioPath: AudioUtils.DocumentDirectoryPath + '/test.aac',
     hasPermission: undefined,
+    decibles: 0,
   };
 
   //--------------------------------------------------------------------------------------
@@ -57,12 +62,29 @@ class CaptureComponent extends Component {
 
       AudioRecorder.onProgress = (data) => {
         this.setState({currentTime: Math.floor(data.currentTime)});
-        console.log('data :', data);
-        let decibels =
-          10 *
-          Math.log10(data.currentPeakMetering / data.currentMetering) *
-          -0.25;
-        console.log('decibles :', decibels);
+        let decibles;
+        if (Platform.OS === 'android') {
+          RNSoundLevel.onNewFrame = (soundData) => {
+            // see "Returned data" section below
+            console.log('Sound level info', soundData);
+            decibles =
+              10 * Math.log10(soundData.value / (soundData.value + 5)) * 0.25;
+            console.log('decibles raw', decibles);
+
+            if (!isNaN(decibles)) {
+              this.setState({decibles: 100 + decibles * 10});
+            }
+          };
+        } else {
+          console.log('data :', data);
+          decibles =
+            10 *
+            Math.log10(data.currentPeakMetering / data.currentMetering) *
+            -0.25;
+          decibles = 100 + decibles * 100;
+          this.setState({decibles: decibles});
+        }
+        console.log('decibles :', this.state.decibles);
       };
 
       AudioRecorder.onFinished = (data) => {
@@ -74,6 +96,9 @@ class CaptureComponent extends Component {
             data.audioFileURL,
             data.audioFileSize,
           );
+        }
+        if (Platform.OS === 'android') {
+          RNSoundLevel.stop();
         }
       };
     });
@@ -143,11 +168,6 @@ class CaptureComponent extends Component {
 
   startRecordingAudio = async () => {
     this.setState({isRecordingAudio: true});
-    // if (this.state.recording) {
-    //   console.warn('Already recording!');
-    //   return;
-    // }
-
     if (!this.state.hasPermission) {
       console.warn("Can't record, no permission granted!");
       return;
@@ -161,6 +181,9 @@ class CaptureComponent extends Component {
 
     try {
       filePath = await AudioRecorder.startRecording();
+      if (Platform.OS === 'android') {
+        RNSoundLevel.start();
+      }
     } catch (error) {
       console.error(error);
     }
@@ -169,15 +192,16 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
-  _finishRecording(didSucceed, filePathNew, fileSize) {
+  async _finishRecording(didSucceed, filePathNew, fileSize) {
     this.setState({finished: didSucceed});
     console.log(
       `Finished recording of duration ${
         this.state.currentTime
       } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
     );
+    await cleanupStorage();
     let audioThumb = require('./images/file.png');
-    this.state.acount++;
+    this.setState({acount: this.state.acount + 1});
     AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
     AsyncStorage.setItem(
       'audio-thumb-' + this.state.acount,
@@ -196,25 +220,18 @@ class CaptureComponent extends Component {
     this.setState({stoppedRecording: true, recording: false, paused: false});
 
     try {
-      filePath = await AudioRecorder.stopRecording();
+      const filePathNew = await AudioRecorder.stopRecording();
       console.log('recording path', filePath);
 
-      // if (Platform.OS === 'android') {
-      //   await this._finishRecording(true, filePath);
-      // }
-      // return filePath;
       this.setState({finished: true});
       console.log(
-        `Finished recording of duration ${this.state.currentTime} seconds at path: ${filePath} `,
+        `Finished recording of duration ${this.state.currentTime} seconds at path: ${filePathNew} `,
       );
-      let audioThumb = require('./images/audioThumb.png');
-      // this.state.acount++;
-      this.setState({acount: this.state.acount + 1});
-      AsyncStorage.setItem('audio-' + this.state.acount, filePath);
-      AsyncStorage.setItem(
-        'audio-thumb-' + this.state.acount,
-        './images/file.png',
-      );
+
+      if (Platform.OS === 'android') {
+        await this._finishRecording(true, filePathNew);
+      }
+      return filePathNew;
     } catch (error) {
       console.error(error);
     }
@@ -293,6 +310,14 @@ class CaptureComponent extends Component {
         ) : (
           <View style={styles.audioContainer}>
             <View style={styles.controls}>
+              <AnimatedWave
+                sizeOvan={this.state.decibles}
+                // onPress={() => alert("Hello")}
+                numberlayer={3}
+                colorOvan={'#bebebe'}
+                zoom={3}
+              />
+
               <Text style={styles.progressText}>{this.state.currentTime}s</Text>
             </View>
           </View>
