@@ -40,7 +40,7 @@ class CaptureComponent extends Component {
     currentTime: 0.0,
     recording: false,
     paused: false,
-    stoppedRecording: false,
+    stoppedRecording: true,
     finished: false,
     hasPermission: undefined,
     decibles: 0,
@@ -333,6 +333,13 @@ class CaptureComponent extends Component {
                 <Image
                   style={styles.littleButton}
                   source={require('./images/mic.png')}
+                />
+                <AnimatedWave
+                  sizeOvan={
+                    this.state.decibles > 120 ? 120 : this.state.decibles
+                  }
+                  colorOvan={'#bebebe'}
+                  zoom={2}
                 />
 
                 <Text style={styles.progressText}>
