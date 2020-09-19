@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 
-import {StyleSheet, View, Image, TextInput, Keyboard} from 'react-native';
+import {StyleSheet, View, Image, TextInput, Keyboard,ScrollView} from 'react-native';
 
 import {
   CameraClickButton,
@@ -261,55 +261,25 @@ class NewPost extends Component {
   // ---------------------------------------------------------------------------------
 
   render() {
+    let itemcount = this.state.content.length
     return (
       <KeyboardShift>
         <View style={styles.container}>
           <Input // Title
             inputStyle={styles.titletext}
-            onChangeText={(text) => {
-              this.setState({title: text});
-            }}
-            placeholder="Create a title"
-            placeholderTextColor="gray">
-            {this.state.title}
-          </Input>
-
-          <View
-            style={{
-              // Content Thumbs
-              flex: 0,
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              marginTop: 10,
-              marginBottom: 10,
-            }}>
-            {this.state.content.map((item, index) => (
-              <View
-                style={{
-                  width: '30%',
-                  height: 200,
-                  margin: 5,
-                }}>
-                <Image
-                  key={index}
-                  style={{
-                    height: '100%',
-                    width: '100%',
-                    borderRadius: 10,
-                    borderWidth: 1,
-                  }}
-                  source={
-                    item.isAudio
-                      ? require('./images/audioThumb.png')
-                      : {uri: item.thumbnail}
-                  }
-                  resizeMode="cover"
-                />
-              </View>
-            ))}
-          </View>
-
+            onChangeText={(text) => { this.setState( { title: text } )}}
+            placeholder=  "Title.."
+            placeholderTextColor="gray"
+            
+          />
+          
+          <Input // Description
+            inputStyle={styles.titletext}
+            placeholder="Description.."
+            placeholderTextColor="grey"
+            onChangeText={(text) => {this.setState( { story: text } )}}
+          />
+          
           <View>
             <ListItem // Tagged people list
               title="People"
@@ -331,7 +301,7 @@ class NewPost extends Component {
                 </View>
               }
             />
-            <ListItem
+            <ListItem // Location
               title="Location"
               leftIcon={{name: 'language'}}
               bottomDivider
@@ -339,7 +309,7 @@ class NewPost extends Component {
               onPress={() => this.getLocation()}
               subtitle={this.renderLocation()}
             />
-            <ListItem
+            <ListItem // Clouds
               title="Cloud"
               leftIcon={{name: 'group'}}
               bottomDivider
@@ -360,19 +330,43 @@ class NewPost extends Component {
                 </View>
               }
             />
-            <View style={styles.textAreaContainer}>
-              <TextInput
-                style={styles.textArea}
-                placeholder="What's this post about then ?"
-                placeholderTextColor="grey"
-                numberOfLines={5}
-                multiline={true}
-                onChangeText={(text) => {
-                  this.setState({story: text});
-                }}
-              />
-            </View>
+            
           </View>
+          <ScrollView
+              horizontal={true}
+              contentContainerStyle={{ width: `${100 * itemcount}%` }}
+              showsHorizontalScrollIndicator={true}
+              scrollEventThrottle={200}
+              decelerationRate="fast"
+              pagingEnabled
+            >
+            {this.state.content.map((item, index) => (
+              <View
+                style={{
+                  width: '30%',
+                  height: 200,
+                  width: 100,
+                  margin: 5,
+                  marginTop: 10,
+                }}>
+                <Image
+                  key={index}
+                  style={{
+                    height: '100%',
+                    width: '100%',
+                    borderRadius: 10,
+                    borderWidth: 1,
+                  }}
+                  source={
+                    item.isAudio
+                      ? require('./images/audioThumb.png')
+                      : {uri: item.thumbnail}
+                  }
+                  resizeMode="cover"
+                />
+              </View>
+            ))}
+         </ScrollView>
         </View>
 
         <View style={styles.mainButtons}>

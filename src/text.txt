@@ -1,66 +1,115 @@
-uploadNewMemoryX = async () => {
-    
-    console.log('uploadNewMemory');
-    
-    uploadFile(memory.files[0])
-    .then(response => {
-        if(response){
-            memory.remoteURLS.push(response)
-            console.log('uploadNewMemory - first uploaded : ' + response);
-            createMemoryID()
-            .then(response => {
-                if(response == 'success'){
-                    console.log('uploadNewMemory - memory id created : ' + response);
-                    addFileToMemory(memory.remoteURLS[0],true).then(response => {
-                        console.log('uploadNewMemory - hero associated : ' + response)
-                        addRemaingFilestoMemory()
-                        addPeopletoMemory()     
-                        addGroupstoMemory()
-                    })
-                    return true           
-                }else{
-                    return false
-                }
-            })
-                
-        }else{
-            console.log('failed to upload first file : ' + memory.files[0]);
-            return false
-        }
-    })
+render() {
+    return (
+      <KeyboardShift>
+        <View style={styles.container}>
+          <Input // Title
+            inputStyle={styles.titletext}
+            onChangeText={(text) => { this.setState( { title: text } )}}
+            placeholder=  "Title.."
+            placeholderTextColor="gray"
+            
+          />
+          
+          <Input // Description
+            inputStyle={styles.titletext}
+            placeholder="Description.."
+            placeholderTextColor="grey"
+            onChangeText={(text) => {this.setState( { story: text } )}}
+          />
+          
+          <View>
+            <ListItem // Tagged people list
+              title="People"
+              leftIcon={{name: 'face'}}
+              topDivider
+              bottomDivider
+              chevron
+              onPress={() => this.getPeople()}
+              subtitle={
+                <View style={styles.subtitle}>
+                  {this.state.taggedPeople.map((person, index) => (
+                    <SubTag
+                      key={index}
+                      data={person}
+                      title={person.firstname + ' ' + person.lastname}
+                      rightIcon={require('./images/x-symbol.png')}
+                    />
+                  ))}
+                </View>
+              }
+            />
+            <ListItem // Location
+              title="Location"
+              leftIcon={{name: 'language'}}
+              bottomDivider
+              chevron
+              onPress={() => this.getLocation()}
+              subtitle={this.renderLocation()}
+            />
+            <ListItem // Clouds
+              title="Cloud"
+              leftIcon={{name: 'group'}}
+              bottomDivider
+              chevron
+              onPress={() => this.getClouds()}
+              subtitle={
+                <View style={styles.subtitle}>
+                  {this.state.allClouds.map((cloud, index) => (
+                    <SubTag
+                      key={index}
+                      data={cloud}
+                      greyOutOnTagPress={!(cloud.name === 'Personal')} // Cant turn off the Personal cloud
+                      buttonDown={true}
+                      onTagPress={this.handleCloudTagPress}
+                      title={cloud.name}
+                    />
+                  ))}
+                </View>
+              }
+            />
+            
+          </View>
+          <View  // Content Thumbs
+            style={{
+              flex: 0,
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              marginTop: 10,
+              marginBottom: 10,
+            }}>
+            {this.state.content.map((item, index) => (
+              <View
+                style={{
+                  width: '30%',
+                  height: 200,
+                  margin: 5,
+                }}>
+                <Image
+                  key={index}
+                  style={{
+                    height: '100%',
+                    width: '100%',
+                    borderRadius: 10,
+                    borderWidth: 1,
+                  }}
+                  source={
+                    item.isAudio
+                      ? require('./images/audioThumb.png')
+                      : {uri: item.thumbnail}
+                  }
+                  resizeMode="cover"
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.mainButtons}>
+          <BackButton onPress={() => this.props.navigation.goBack(null)} />
+          <PostButton onPress={() => this.sendPost()} />
+        </View>
+      </KeyboardShift>
+    );
+  }
 }
-
-// add remaining files to memory ------------------------------------------------
-
-// add people to memory ------------------------------------------------
-
-addPeopletoMemory = () => {
-
-    memory.people.map((person,index) => {
-         addPersontoMemory(person)
-                .then(response => {
-                    if(response == 'success'){
-                        
-            }else{
-
-            }
-        })
-    })
-    
-}   
-// add people to memory ------------------------------------------------
-
-addGroupstoMemory = () => {
-
-    memory.groups.map((groupid,index) => {
-         addGrouptoMemory(groupid)
-                .then(response => {
-                    if(response == 'success'){
-                        
-            }else{
-
-            }
-        })
-    })
-}   
-// ------------------------------------------------------------------------------

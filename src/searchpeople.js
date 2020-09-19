@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import KeyboardShift from './keyboardShift';
+
 
 import { 
     StyleSheet,
@@ -44,8 +44,7 @@ handlePersonClick = (person) => {
     params.taggedPeople.push   ( person )
     
   }
-  this.inputRef.current.clear()
-  this.inputRef.current.focus()
+  this.inputRef.current.clear()  
   this.setState({ searchText:'' })
     
 }
@@ -69,7 +68,8 @@ filterPeopleList = () => {
   let allPeeps  = this.props.route.params.allPeople
  
   if(this.state.searchText !== '' ){
-    return allPeeps.filter((p)=>{ return( p.firstname.includes(stxt) || p.lastname.includes(stxt))})
+    return allPeeps.filter((p)=>{ 
+      return( p.firstname.includes(stxt) || p.lastname.includes(stxt))})
   }else{
     return allPeeps
   }
@@ -79,6 +79,7 @@ filterPeopleList = () => {
 //--------------------------------------------------------------------------------
 
 renderItem = ({ item  }) => (
+  
   <PersonListItem 
     key     = { item.userid }
     tagged  = { this.itemIsTagged(item.userid) }
@@ -99,34 +100,33 @@ goBack =() =>{
 
 render(){
 
-  
   return(
-    <KeyboardShift >      
-      <View style={styles.container}>
+    <View style={styles.container}>
 
-        <View style={styles.listArea}>
-          <FlatList   
-            keyExtractor={item => item.userid}
-            data = {this.filterPeopleList()}
-            renderItem  = { this.renderItem }
-          />
-        </View>
-        
-        <View  style={styles.searchArea}>
-            <Input 
-              ref = {this.inputRef}
-              style={styles.textMain} 
-              placeholder= 'Search..'
-              onChangeText={value => this.handleTextChange(value)}
-            />
-        </View>
-
-
-        <View style={styles.buttonArea}>                    
-          <BackButton onPress={ this.goBack} />
-        </View>
+      <View  style={styles.searchArea}>
+        <Input 
+          ref = {this.inputRef}
+          style={styles.searchfield} 
+          placeholder= 'Search..'
+          placeholderTextColor = 'grey'
+          onChangeText={value => this.handleTextChange(value)}
+        />
       </View>
-    </KeyboardShift >      
+
+      <View style={styles.listArea}>
+        <FlatList   
+          keyExtractor={item => item.userid}
+          data = {this.filterPeopleList()}
+          renderItem  = { this.renderItem }
+        />
+      </View>
+
+      <View style={styles.buttonArea}>                    
+        <BackButton onPress={ this.goBack} />
+      </View>
+          
+        
+    </View>    
   )
 }
 
@@ -157,7 +157,20 @@ const styles = StyleSheet.create({
       
       fontSize:12,
     },
-
+    searchfield: {
+      marginTop: 5,
+      marginBottom: 2,
+      marginLeft: 2,
+      marginRight: 2,
+      paddingTop: 8,
+      paddingBottom: 8,
+      paddingLeft: 8,
+      backgroundColor: 'white',
+      fontSize: 18,
+      borderWidth: 1,
+      borderRadius: 5,
+      borderColor: 'gray',
+    },
     
     textMain:{
       alignItems:'center',

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {RNCamera} from 'react-native-camera';
 import AsyncStorage from '@react-native-community/async-storage';
-import {cleanupStorage} from './datapass';
+import {cleanupStorage, millisecsToHMSM} from './datapass';
 import MovtoMp4 from 'react-native-mov-to-mp4';
 import {createThumbnail} from 'react-native-create-thumbnail';
 
@@ -20,7 +20,8 @@ import {
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
-import {StyleSheet, View, Platform, Text} from 'react-native';
+import {StyleSheet, View, Platform, Text, Image} from 'react-native';
+
 import RNSoundLevel from 'react-native-sound-level';
 import AnimatedWave from 'react-native-animated-wave';
 
@@ -41,7 +42,6 @@ class CaptureComponent extends Component {
     paused: false,
     stoppedRecording: false,
     finished: false,
-    audioPath: AudioUtils.DocumentDirectoryPath + '/test.aac',
     hasPermission: undefined,
     decibles: 0,
   };
@@ -50,15 +50,13 @@ class CaptureComponent extends Component {
 
   async componentDidMount() {
     await cleanupStorage();
-    await AsyncStorage.getAllKeys().then((keys) => {});
+
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       this.setState({hasPermission: isAuthorised});
 
       if (!isAuthorised) {
         return;
       }
-
-      this.prepareRecordingPath(this.state.audioPath);
 
       AudioRecorder.onProgress = (data) => {
         this.setState({currentTime: Math.floor(data.currentTime)});
@@ -89,7 +87,7 @@ class CaptureComponent extends Component {
 
       AudioRecorder.onFinished = (data) => {
         // Android callback comes in the form of a promise instead.
-        console.log('on finished');
+
         if (Platform.OS === 'ios') {
           this._finishRecording(
             data.status === 'OK',
@@ -174,7 +172,12 @@ class CaptureComponent extends Component {
     }
 
     if (this.state.stoppedRecording) {
-      this.prepareRecordingPath(this.state.audioPath);
+      let uniqueAudioPath =
+        AudioUtils.DocumentDirectoryPath +
+        '/audioFile_' +
+        this.state.acount +
+        '.aac';
+      this.prepareRecordingPath(uniqueAudioPath);
     }
 
     this.setState({recording: true, paused: false});
@@ -187,7 +190,6 @@ class CaptureComponent extends Component {
     } catch (error) {
       console.error(error);
     }
-    // alert('start audio');
   };
 
   //--------------------------------------------------------------------------------------
@@ -217,7 +219,12 @@ class CaptureComponent extends Component {
     //   return;
     // }
 
-    this.setState({stoppedRecording: true, recording: false, paused: false});
+    this.setState({
+      isRecordingAudio: false,
+      stoppedRecording: true,
+      recording: false,
+      paused: false,
+    });
 
     try {
       const filePathNew = await AudioRecorder.stopRecording();
@@ -257,8 +264,19 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
+  goBackToFeed = () => {
+    cleanupStorage();
+    this.props.navigation.navigate('Feed');
+  };
+
+  //--------------------------------------------------------------------------------------
+
   showMode = (modeName) => {
-    this.setState({mode: modeName});
+    if (this.state.isRecordingAudio || this.state.isRecordingAudio) {
+      return;
+    } else {
+      this.setState({mode: modeName});
+    }
   };
 
   //--------------------------------------------------------------------------------------
@@ -270,33 +288,11 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   render() {
-    let bigButton;
+    let bigButton, content;
     switch (this.state.mode) {
       case 'camera':
         bigButton = <CameraClickButton onPress={this.takePicture} />;
-        break;
-      case 'video':
-        if (this.state.isRecordingVideo) {
-          bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />;
-        } else {
-          bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
-        }
-        break;
-      case 'audio':
-        if (this.state.isRecordingAudio) {
-          bigButton = <AudioStopButton onPress={this.stopRecordingAudio} />;
-        } else {
-          bigButton = <AudioStartButton onPress={this.startRecordingAudio} />;
-        }
-        break;
-      case 'file':
-        bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
-        break;
-    }
-
-    return (
-      <View style={styles.container}>
-        {!this.state.isRecordingAudio ? (
+        content = (
           <RNCamera
             ref={(ref) => {
               this.camera = ref;
@@ -307,22 +303,69 @@ class CaptureComponent extends Component {
             autoFocus={RNCamera.Constants.AutoFocus.on}
             playSoundOnCapture={true}
           />
-        ) : (
-          <View style={styles.audioContainer}>
-            <View style={styles.controls}>
-              <AnimatedWave
-                sizeOvan={this.state.decibles}
-                // onPress={() => alert("Hello")}
-                numberlayer={3}
-                colorOvan={'#bebebe'}
-                zoom={3}
-              />
+        );
+        break;
+      case 'video':
+        content = (
+          <RNCamera
+            ref={(ref) => {
+              this.camera = ref;
+            }}
+            style={styles.preview}
+            type={RNCamera.Constants.Type.back}
+            flashMode={RNCamera.Constants.flashMode}
+            autoFocus={RNCamera.Constants.AutoFocus.on}
+            playSoundOnCapture={true}
+          />
+        );
+        if (this.state.isRecordingVideo) {
+          bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />;
+        } else {
+          bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
+        }
+        break;
+      case 'audio':
+        if (this.state.isRecordingAudio) {
+          bigButton = <AudioStopButton onPress={this.stopRecordingAudio} />;
+          content = (
+            <View style={styles.audioContainer}>
+              <View style={styles.controls}>
+                <Image
+                  style={styles.littleButton}
+                  source={require('./images/mic.png')}
+                />
 
-              <Text style={styles.progressText}>{this.state.currentTime}s</Text>
+                <Text style={styles.progressText}>
+                  {millisecsToHMSM(this.state.currentTime * 1000)}
+                </Text>
+              </View>
             </View>
-          </View>
-        )}
+          );
+        } else {
+          bigButton = <AudioStartButton onPress={this.startRecordingAudio} />;
+          content = (
+            <View style={styles.audioContainer}>
+              <View style={styles.controls}>
+                <Image
+                  style={styles.littleButton}
+                  source={require('./images/mic.png')}
+                />
+                <Text style={styles.progressText}>
+                  {millisecsToHMSM(this.state.currentTime * 1000)}
+                </Text>
+              </View>
+            </View>
+          );
+        }
+        break;
+      case 'file':
+        bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
+        break;
+    }
 
+    return (
+      <View style={styles.container}>
+        {content}
         <View style={styles.modeButtons}>
           <IconButtonCamera
             onPress={() => this.showMode('camera')}
@@ -343,7 +386,7 @@ class CaptureComponent extends Component {
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.navigate('Feed')} />
+          <BackButton onPress={() => this.goBackToFeed()} />
           {bigButton}
           <PostButton onPress={() => this.showPost()} />
         </View>
@@ -383,7 +426,7 @@ const styles = StyleSheet.create({
   },
   audioContainer: {
     flex: 1,
-    backgroundColor: '#2b608a',
+    backgroundColor: 'black',
   },
   controls: {
     justifyContent: 'center',
@@ -391,9 +434,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressText: {
-    paddingTop: 50,
-    fontSize: 50,
-    color: '#fff',
+    paddingTop: 10,
+    fontSize: 20,
+    color: 'grey',
+  },
+  littleButton: {
+    height: 80,
+    width: 80,
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
   },
 });
 
