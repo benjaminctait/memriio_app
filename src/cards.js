@@ -135,6 +135,12 @@ class MemoryCard extends Component {
   //----------------------------------------------------------------
 
   renderFileView = ({item, index}) => {
+    console.log(
+      'audio url :',
+      mem.isSupportedAudioFile(mem.getFilename(item.fileurl))
+        ? item.fileurl
+        : '',
+    );
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
       return (
         <TouchableOpacity

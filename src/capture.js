@@ -5,7 +5,6 @@ import {cleanupStorage, millisecsToHMSM} from './datapass';
 import MovtoMp4 from 'react-native-mov-to-mp4';
 import {createThumbnail} from 'react-native-create-thumbnail';
 
-
 import {
   CameraClickButton,
   BackButton,
@@ -21,7 +20,12 @@ import {
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
-import {StyleSheet, View, Platform, Text,Image} from 'react-native';
+import {StyleSheet, View, Platform, Text, Image} from 'react-native';
+
+import RNSoundLevel from 'react-native-sound-level';
+import AnimatedWave from 'react-native-animated-wave';
+
+import Sound from 'react-native-sound';
 let filePath = '';
 
 class CaptureComponent extends Component {
@@ -36,36 +40,54 @@ class CaptureComponent extends Component {
     currentTime: 0.0,
     recording: false,
     paused: false,
-    stoppedRecording: false,
-    finished: false,    
+    stoppedRecording: true,
+    finished: false,
     hasPermission: undefined,
+    decibles: 0,
   };
 
   //--------------------------------------------------------------------------------------
 
   async componentDidMount() {
     await cleanupStorage();
-    
+
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       this.setState({hasPermission: isAuthorised});
 
       if (!isAuthorised) {
         return;
       }
-      
+
       AudioRecorder.onProgress = (data) => {
-        this.setState({ currentTime: data.currentTime  });
-        
-        let decibels =
-          10 *
-          Math.log10(data.currentPeakMetering / data.currentMetering) *
-          -0.25;
-        console.log('time : ' + this.state.currentTime + ' decibles : ', decibels  );
+        this.setState({currentTime: Math.floor(data.currentTime)});
+        let decibles;
+        if (Platform.OS === 'android') {
+          RNSoundLevel.onNewFrame = (soundData) => {
+            // see "Returned data" section below
+            console.log('Sound level info', soundData);
+            decibles =
+              10 * Math.log10(soundData.value / (soundData.value + 5)) * 0.25;
+            console.log('decibles raw', decibles);
+
+            if (!isNaN(decibles)) {
+              this.setState({decibles: 100 + decibles * 10});
+            }
+          };
+        } else {
+          console.log('data :', data);
+          decibles =
+            10 *
+            Math.log10(data.currentPeakMetering / data.currentMetering) *
+            -0.25;
+          decibles = 100 + decibles * 100;
+          this.setState({decibles: decibles});
+        }
+        console.log('decibles :', this.state.decibles);
       };
 
       AudioRecorder.onFinished = (data) => {
         // Android callback comes in the form of a promise instead.
-        
+
         if (Platform.OS === 'ios') {
           this._finishRecording(
             data.status === 'OK',
@@ -73,12 +95,15 @@ class CaptureComponent extends Component {
             data.audioFileSize,
           );
         }
+        if (Platform.OS === 'android') {
+          RNSoundLevel.stop();
+        }
       };
     });
   }
 
   //--------------------------------------------------------------------------------------
- 
+
   startRecordingVideo = async () => {
     if (this.camera) {
       try {
@@ -128,13 +153,12 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   prepareRecordingPath(audioPath) {
-    
     AudioRecorder.prepareRecordingAtPath(audioPath, {
       SampleRate: 22050,
       Channels: 1,
       AudioQuality: 'High',
       AudioEncoding: 'aac',
-      AudioEncodingBitRate: 32000,      
+      AudioEncodingBitRate: 32000,
       MeteringEnabled: true,
     });
   }
@@ -142,18 +166,17 @@ class CaptureComponent extends Component {
 
   startRecordingAudio = async () => {
     this.setState({isRecordingAudio: true});
-    // if (this.state.recording) {
-    //   console.warn('Already recording!');
-    //   return;
-    // }
-
     if (!this.state.hasPermission) {
       console.warn("Can't record, no permission granted!");
       return;
     }
 
     if (this.state.stoppedRecording) {
-      let uniqueAudioPath = AudioUtils.DocumentDirectoryPath + '/audioFile_' + this.state.acount + '.aac'
+      let uniqueAudioPath =
+        AudioUtils.DocumentDirectoryPath +
+        '/audioFile_' +
+        this.state.acount +
+        '.aac';
       this.prepareRecordingPath(uniqueAudioPath);
     }
 
@@ -161,36 +184,65 @@ class CaptureComponent extends Component {
 
     try {
       filePath = await AudioRecorder.startRecording();
+      if (Platform.OS === 'android') {
+        RNSoundLevel.start();
+      }
     } catch (error) {
       console.error(error);
     }
-   
   };
 
   //--------------------------------------------------------------------------------------
 
-  _finishRecording(didSucceed, filePathNew, fileSize) {
-
-    console.log(`Audio duration ${ this.state.currentTime } path: ${filePathNew} size ${fileSize || 0} bytes`);
-
-    this.setState({acount: this.state.acount + 1,finished: didSucceed, currentTime: 0.0},()=>{
-      AsyncStorage.setItem('audio-' + this.state.acount, filePathNew)
-      AsyncStorage.setItem('audio-thumb-' + this.state.acount,'./images/audioThumb.png')
-    })    
-    
+  async _finishRecording(didSucceed, filePathNew, fileSize) {
+    this.setState({finished: didSucceed});
+    console.log(
+      `Finished recording of duration ${
+        this.state.currentTime
+      } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
+    );
+    await cleanupStorage();
+    let audioThumb = require('./images/file.png');
+    this.setState({acount: this.state.acount + 1});
+    AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
+    AsyncStorage.setItem(
+      'audio-thumb-' + this.state.acount,
+      './images/file.png',
+    );
   }
   //--------------------------------------------------------------------------------------
 
-  stopRecordingAudio = async () => {  
+  stopRecordingAudio = async () => {
+    this.setState({isRecordingAudio: false});
+    // if (!this.state.recording) {
+    //   console.warn("Can't stop, not recording!");
+    //   return;
+    // }
 
-    this.setState({isRecordingAudio: false, stoppedRecording: true, recording: false, paused: false});
+    this.setState({
+      isRecordingAudio: false,
+      stoppedRecording: true,
+      recording: false,
+      paused: false,
+    });
 
     try {
-      filePath = await AudioRecorder.stopRecording();
+      const filePathNew = await AudioRecorder.stopRecording();
+      console.log('recording path', filePath);
+
       this.setState({finished: true});
+      console.log(
+        `Finished recording of duration ${this.state.currentTime} seconds at path: ${filePathNew} `,
+      );
+
+      if (Platform.OS === 'android') {
+        await this._finishRecording(true, filePathNew);
+      }
+      return filePathNew;
     } catch (error) {
       console.error(error);
     }
+    // alert('stop audio');
   };
 
   //--------------------------------------------------------------------------------------
@@ -213,19 +265,18 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   goBackToFeed = () => {
-    cleanupStorage()
-    this.props.navigation.navigate('Feed')
-  }
+    cleanupStorage();
+    this.props.navigation.navigate('Feed');
+  };
 
   //--------------------------------------------------------------------------------------
 
   showMode = (modeName) => {
-    if(this.state.isRecordingAudio || this.state.isRecordingAudio){
-      return
-    }else{
+    if (this.state.isRecordingAudio || this.state.isRecordingAudio) {
+      return;
+    } else {
       this.setState({mode: modeName});
     }
-    
   };
 
   //--------------------------------------------------------------------------------------
@@ -237,32 +288,36 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   render() {
-    let bigButton,content;
+    let bigButton, content;
     switch (this.state.mode) {
       case 'camera':
         bigButton = <CameraClickButton onPress={this.takePicture} />;
-        content   = <RNCamera
-                      ref={(ref) => {
-                        this.camera = ref;
-                      }}
-                      style={styles.preview}
-                      type={RNCamera.Constants.Type.back}
-                      flashMode={RNCamera.Constants.flashMode}
-                      autoFocus={RNCamera.Constants.AutoFocus.on}
-                      playSoundOnCapture={true}
-                    />
+        content = (
+          <RNCamera
+            ref={(ref) => {
+              this.camera = ref;
+            }}
+            style={styles.preview}
+            type={RNCamera.Constants.Type.back}
+            flashMode={RNCamera.Constants.flashMode}
+            autoFocus={RNCamera.Constants.AutoFocus.on}
+            playSoundOnCapture={true}
+          />
+        );
         break;
       case 'video':
-        content   = <RNCamera
-                        ref={(ref) => {
-                          this.camera = ref;
-                        }}
-                        style={styles.preview}
-                        type={RNCamera.Constants.Type.back}
-                        flashMode={RNCamera.Constants.flashMode}
-                        autoFocus={RNCamera.Constants.AutoFocus.on}
-                        playSoundOnCapture={true}
-                    />
+        content = (
+          <RNCamera
+            ref={(ref) => {
+              this.camera = ref;
+            }}
+            style={styles.preview}
+            type={RNCamera.Constants.Type.back}
+            flashMode={RNCamera.Constants.flashMode}
+            autoFocus={RNCamera.Constants.AutoFocus.on}
+            playSoundOnCapture={true}
+          />
+        );
         if (this.state.isRecordingVideo) {
           bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />;
         } else {
@@ -272,20 +327,42 @@ class CaptureComponent extends Component {
       case 'audio':
         if (this.state.isRecordingAudio) {
           bigButton = <AudioStopButton onPress={this.stopRecordingAudio} />;
-          content   = <View style={styles.audioContainer}>
-                        <View style={styles.controls}>
-                          <Image style={styles.littleButton} source = {require('./images/mic.png')}/>
-                          <Text style={styles.progressText}>{millisecsToHMSM(this.state.currentTime*1000)}</Text>
-                        </View>
-                      </View>
+          content = (
+            <View style={styles.audioContainer}>
+              <View style={styles.controls}>
+                <Image
+                  style={styles.littleButton}
+                  source={require('./images/mic.png')}
+                />
+                <AnimatedWave
+                  sizeOvan={
+                    this.state.decibles > 120 ? 120 : this.state.decibles
+                  }
+                  colorOvan={'#bebebe'}
+                  zoom={2}
+                />
+
+                <Text style={styles.progressText}>
+                  {millisecsToHMSM(this.state.currentTime * 1000)}
+                </Text>
+              </View>
+            </View>
+          );
         } else {
           bigButton = <AudioStartButton onPress={this.startRecordingAudio} />;
-          content   = <View style={styles.audioContainer}>
-                        <View style={styles.controls}>
-                          <Image style={styles.littleButton} source = {require('./images/mic.png')}/>
-                          <Text style={styles.progressText}>{millisecsToHMSM(this.state.currentTime*1000)}</Text>
-                        </View>
-                      </View>
+          content = (
+            <View style={styles.audioContainer}>
+              <View style={styles.controls}>
+                <Image
+                  style={styles.littleButton}
+                  source={require('./images/mic.png')}
+                />
+                <Text style={styles.progressText}>
+                  {millisecsToHMSM(this.state.currentTime * 1000)}
+                </Text>
+              </View>
+            </View>
+          );
         }
         break;
       case 'file':
@@ -371,8 +448,8 @@ const styles = StyleSheet.create({
   littleButton: {
     height: 80,
     width: 80,
-    alignSelf:'center',
-    backgroundColor: 'transparent',  
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
   },
 });
 
