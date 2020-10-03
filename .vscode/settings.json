@@ -1,0 +1,18 @@
+{
+    "cSpell.words": [
+        "ADSIC"
+    ],
+    "workbench.editor.enablePreview": false,
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/build":true,
+        "**/coverage":true,
+        "**/test":true,
+        "**/tools":true,
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "eslint.autoFixOnSave": true
+}

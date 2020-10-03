@@ -67,10 +67,13 @@ class CaptureComponent extends Component {
             console.log('Sound level info', soundData);
             decibles =
               10 * Math.log10(soundData.value / (soundData.value + 5)) * 0.25;
-            console.log('decibles raw', decibles);
+            // console.log('decibles raw', decibles);
 
             if (!isNaN(decibles)) {
-              this.setState({decibles: 100 + decibles * 10});
+              // this.setState({decibles: 100 + Math.ceil(decibles * 10)});
+              this.setState({decibles: soundData.value + 160});
+
+              console.log('setting state decibles:', this.state.decibles);
             }
           };
         } else {
@@ -284,6 +287,11 @@ class CaptureComponent extends Component {
   showPost = () => {
     this.props.navigation.navigate('NewPost');
   };
+  getCircleStyle = () => {
+    let style = {};
+
+    return style;
+  };
 
   //--------------------------------------------------------------------------------------
 
@@ -334,13 +342,15 @@ class CaptureComponent extends Component {
                   style={styles.littleButton}
                   source={require('./images/mic.png')}
                 />
-                <AnimatedWave
-                  sizeOvan={
-                    this.state.decibles > 120 ? 120 : this.state.decibles
-                  }
+                <View style={styles.circleContainer}>
+                  <View style={styles.CircleShapeView} />
+                </View>
+
+                {/* <Text style={styles.progressText}>{this.state.decibles}</Text> */}
+                {/* <AnimatedWave
                   colorOvan={'#bebebe'}
                   zoom={2}
-                />
+                /> */}
 
                 <Text style={styles.progressText}>
                   {millisecsToHMSM(this.state.currentTime * 1000)}
@@ -450,6 +460,18 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
     backgroundColor: 'transparent',
+  },
+  CircleShapeView: {
+    width: 150,
+    height: 150,
+    borderRadius: 150 / 2,
+    backgroundColor: '#00BCD4',
+  },
+  circleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 10,
   },
 });
 
