@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {cleanupStorage, millisecsToHMSM} from './datapass';
 import MovtoMp4 from 'react-native-mov-to-mp4';
 import {createThumbnail} from 'react-native-create-thumbnail';
+import CameraRoll from '@react-native-community/cameraroll';
 
 import {
   CameraClickButton,
@@ -20,10 +21,19 @@ import {
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
-import {StyleSheet, View, Platform, Text, Image} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Platform,
+  Text,
+  Image,
+  PermissionsAndroid,
+  ScrollView,
+} from 'react-native';
 
 import RNSoundLevel from 'react-native-sound-level';
 import AnimatedWave from 'react-native-animated-wave';
+import CameraRollPicker from 'react-native-camera-roll-picker';
 
 import Sound from 'react-native-sound';
 let filePath = '';
@@ -44,6 +54,7 @@ class CaptureComponent extends Component {
     finished: false,
     hasPermission: undefined,
     decibles: 0,
+    photos: [],
   };
 
   //--------------------------------------------------------------------------------------
@@ -202,7 +213,6 @@ class CaptureComponent extends Component {
       } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
     );
     await cleanupStorage();
-    let audioThumb = require('./images/file.png');
     this.setState({acount: this.state.acount + 1});
     AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
     AsyncStorage.setItem(
@@ -214,11 +224,6 @@ class CaptureComponent extends Component {
 
   stopRecordingAudio = async () => {
     this.setState({isRecordingAudio: false});
-    // if (!this.state.recording) {
-    //   console.warn("Can't stop, not recording!");
-    //   return;
-    // }
-
     this.setState({
       isRecordingAudio: false,
       stoppedRecording: true,
@@ -242,7 +247,6 @@ class CaptureComponent extends Component {
     } catch (error) {
       console.error(error);
     }
-    // alert('stop audio');
   };
 
   //--------------------------------------------------------------------------------------
@@ -286,7 +290,27 @@ class CaptureComponent extends Component {
   };
 
   //--------------------------------------------------------------------------------------
-
+  handleGetPhotossPress = async () => {
+    this.showMode('file');
+    if (Platform.OS === 'android' && !(await this.hasAndroidPermission())) {
+      return;
+    }
+    return true;
+  };
+  hasAndroidPermission = async () => {
+    const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+    const hasPermission = await PermissionsAndroid.check(permission);
+    if (hasPermission) {
+      return true;
+    }
+    const status = await PermissionsAndroid.request(permission);
+    return status === 'granted';
+  };
+  //--------------------------------------------------------------------------------------
+  getSelectedImages = async (images) => {
+    this.setState({photos: images});
+  };
+  //--------------------------------------------------------------------------------------
   render() {
     let bigButton, content;
     switch (this.state.mode) {
@@ -366,7 +390,20 @@ class CaptureComponent extends Component {
         }
         break;
       case 'file':
-        bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
+        bigButton = (
+          <View>
+            <Text style={styles.photosCountText}>
+              {this.state.photos.length
+                ? `${this.state.photos.length} file(s) selected`
+                : 'No files selected'}
+            </Text>
+          </View>
+        );
+        content = (
+          <View style={styles.photosContainer}>
+            <CameraRollPicker callback={this.getSelectedImages} />
+          </View>
+        );
         break;
     }
 
@@ -387,7 +424,7 @@ class CaptureComponent extends Component {
             selected={this.state.mode == 'audio'}
           />
           <IconButtonFile
-            onPress={() => this.showMode('file')}
+            onPress={() => this.handleGetPhotossPress()}
             selected={this.state.mode == 'file'}
           />
         </View>
@@ -450,6 +487,15 @@ const styles = StyleSheet.create({
     width: 80,
     alignSelf: 'center',
     backgroundColor: 'transparent',
+  },
+  photosContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  photosCountText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: 'grey',
   },
 });
 
