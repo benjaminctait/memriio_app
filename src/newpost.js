@@ -3,7 +3,14 @@ import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 
-import {StyleSheet, View, Image, TextInput, Keyboard,ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Image,
+  TextInput,
+  Keyboard,
+  ScrollView,
+} from 'react-native';
 
 import {
   CameraClickButton,
@@ -205,7 +212,9 @@ class NewPost extends Component {
 
     console.log('buttonState ' + buttonState + ' exits ' + exists);
 
-    if (buttonState && !exists) this.state.taggedClouds.push(cloudItem);
+    if (buttonState && !exists) {
+      this.state.taggedClouds.push(cloudItem);
+    }
 
     if (!buttonState && exists) {
       let newarry = this.state.taggedClouds.filter((cloud) => {
@@ -261,25 +270,29 @@ class NewPost extends Component {
   // ---------------------------------------------------------------------------------
 
   render() {
-    let itemcount = this.state.content.length
+    let itemcount = this.state.content.length;
+    console.log('content :', this.state.content);
     return (
       <KeyboardShift>
         <View style={styles.container}>
           <Input // Title
             inputStyle={styles.titletext}
-            onChangeText={(text) => { this.setState( { title: text } )}}
-            placeholder=  "Title.."
+            onChangeText={(text) => {
+              this.setState({title: text});
+            }}
+            placeholder="Title.."
             placeholderTextColor="gray"
-            
           />
-          
+
           <Input // Description
             inputStyle={styles.titletext}
             placeholder="Description.."
             placeholderTextColor="grey"
-            onChangeText={(text) => {this.setState( { story: text } )}}
+            onChangeText={(text) => {
+              this.setState({story: text});
+            }}
           />
-          
+
           <View>
             <ListItem // Tagged people list
               title="People"
@@ -330,16 +343,14 @@ class NewPost extends Component {
                 </View>
               }
             />
-            
           </View>
           <ScrollView
-              horizontal={true}
-              contentContainerStyle={{ width: `${100 * itemcount}%` }}
-              showsHorizontalScrollIndicator={true}
-              scrollEventThrottle={200}
-              decelerationRate="fast"
-              pagingEnabled
-            >
+            horizontal={true}
+            contentContainerStyle={{width: `${100 * itemcount}%`}}
+            showsHorizontalScrollIndicator={true}
+            scrollEventThrottle={200}
+            decelerationRate="fast"
+            pagingEnabled>
             {this.state.content.map((item, index) => (
               <View
                 style={{
@@ -366,7 +377,7 @@ class NewPost extends Component {
                 />
               </View>
             ))}
-         </ScrollView>
+          </ScrollView>
         </View>
 
         <View style={styles.mainButtons}>
