@@ -257,6 +257,7 @@ class CaptureComponent extends Component {
       console.log('capture.takePicture() ' + this.camera);
       try {
         const data = await this.camera.takePictureAsync();
+        console.log('take picture data :', data);
         const fullpath = data.uri.split('//')[1];
         AsyncStorage.setItem('image-' + this.state.vcount, fullpath);
         AsyncStorage.setItem('image-thumb-' + this.state.vcount, fullpath);
@@ -309,6 +310,15 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
   getSelectedImages = async (images) => {
     this.setState({photos: images});
+    await cleanupStorage(); //remove previously stroed items to avoid duplicate
+    images.forEach((img, i) => {
+      console.log('image :', img);
+      if (img.uri) {
+        const fullpath = img.uri.split('//')[1];
+        AsyncStorage.setItem('image-' + i, fullpath);
+        AsyncStorage.setItem('image-thumb-' + i, img.uri);
+      }
+    });
   };
   //--------------------------------------------------------------------------------------
   render() {

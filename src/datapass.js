@@ -511,7 +511,9 @@ export function getCloudPeople(clouds, callback) {
               res.data.length +
               ' poeple records retuirned',
           );
-          if (callback) callback(res.data);
+          if (callback) {
+            callback(res.data);
+          }
           resolve(res.data);
         } else {
           console.log(
@@ -595,8 +597,12 @@ const getFileMime = (extension) => {
 
 const stry = (str) => {
   str = JSON.stringify(str);
-  if (str.charAt(0) === '"') str = str.substr(1, str.length - 1);
-  if (str.charAt(str.length - 1) === '"') str = str.substr(0, str.length - 1);
+  if (str.charAt(0) === '"') {
+    str = str.substr(1, str.length - 1);
+  }
+  if (str.charAt(str.length - 1) === '"') {
+    str = str.substr(0, str.length - 1);
+  }
   return str;
 };
 
@@ -720,9 +726,12 @@ const uploadAudioFile = (fileObj) => {
 
 const _uploadFiletoS3 = (sourceFile, targetFile) => {
   console.log('_uploadFileToS3 : ' + getFilename(sourceFile));
-  let fileParts = sourceFile.split('.');
+  let fileParts = sourceFile.toLowerCase().split('.');
+  console.log('fileParts : ', fileParts);
 
   let extension = fileParts[fileParts.length - 1];
+  console.log('extension : ', extension);
+
   let MIME = getFileMime(extension);
 
   const file = {
@@ -730,6 +739,7 @@ const _uploadFiletoS3 = (sourceFile, targetFile) => {
     name: targetFile,
     type: MIME,
   };
+  console.log('file to upload:', file);
 
   const options = {
     keyPrefix: '',
@@ -1098,7 +1108,7 @@ export function isSupportedAudioFile(filename) {
 //---------------------------
 
 export function getExtension(filepath) {
-  let fileParts = filepath.split('.');
+  let fileParts = filepath.toLowerCase().split('.');
   let filetype = fileParts[fileParts.length - 1];
   return filetype;
 }
@@ -1114,11 +1124,17 @@ export function getFilename(filepath) {
 //---------------------------
 
 export function millisecsToHMSM(milliseconds) {
-  var msecs   =((milliseconds % 1000)/10).toFixed(0);  
+  var msecs = ((milliseconds % 1000) / 10).toFixed(0);
   var minutes = Math.floor(milliseconds / 60000);
   var seconds = ((milliseconds % 60000) / 1000).toFixed(0);
-  return (minutes < 10 ? '0' : '') + minutes + ':' 
-          + (seconds < 10 ? '0' : '') + seconds + ':' 
-          + (msecs < 10 ? '0' : '') + msecs;
-  
+  return (
+    (minutes < 10 ? '0' : '') +
+    minutes +
+    ':' +
+    (seconds < 10 ? '0' : '') +
+    seconds +
+    ':' +
+    (msecs < 10 ? '0' : '') +
+    msecs
+  );
 }
