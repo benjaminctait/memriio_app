@@ -54,7 +54,7 @@ class CaptureComponent extends Component {
     finished: false,
     hasPermission: undefined,
     decibles: 0,
-    photos: [],
+    filesSelected: [],
   };
 
   //--------------------------------------------------------------------------------------
@@ -287,6 +287,7 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   showPost = () => {
+    console.log('new post navigation:');
     this.props.navigation.navigate('NewPost');
   };
 
@@ -309,14 +310,26 @@ class CaptureComponent extends Component {
   };
   //--------------------------------------------------------------------------------------
   getSelectedImages = async (images) => {
-    this.setState({photos: images});
-    await cleanupStorage(); //remove previously stroed items to avoid duplicate
+    this.setState({filesSelected: images});
+    await cleanupStorage({key: 'file-'}); //remove previously stroed files
     images.forEach((img, i) => {
       console.log('image :', img);
+
       if (img.uri) {
-        const fullpath = img.uri.split('//')[1];
-        AsyncStorage.setItem('image-' + i, fullpath);
-        AsyncStorage.setItem('image-thumb-' + i, img.uri);
+        if (img.type === 'video') {
+          const fullpath = img.uri.split('//')[1];
+          AsyncStorage.setItem('video-file-' + i, fullpath);
+          createThumbnail({
+            url: img.uri,
+            timeStamp: 10000,
+          }).then((thumbnail) => {
+            AsyncStorage.setItem('video-file-thumb- ' + i, thumbnail.path);
+          });
+        } else {
+          const fullpath = img.uri.split('//')[1];
+          AsyncStorage.setItem('image-file-' + i, fullpath);
+          AsyncStorage.setItem('image-file-thumb-' + i, img.uri);
+        }
       }
     });
   };
@@ -403,15 +416,19 @@ class CaptureComponent extends Component {
         bigButton = (
           <View>
             <Text style={styles.photosCountText}>
-              {this.state.photos.length
-                ? `${this.state.photos.length} file(s) selected`
+              {this.state.filesSelected.length
+                ? `${this.state.filesSelected.length} file(s) selected`
                 : 'No files selected'}
             </Text>
           </View>
         );
         content = (
           <View style={styles.photosContainer}>
-            <CameraRollPicker callback={this.getSelectedImages} />
+            <CameraRollPicker
+              callback={this.getSelectedImages}
+              assetType={'All'}
+              selected={this.state.filesSelected}
+            />
           </View>
         );
         break;
