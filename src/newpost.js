@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
-
+import Video from 'react-native-video';
 import {
   StyleSheet,
   View,
@@ -178,6 +178,12 @@ class NewPost extends Component {
                       thumbnail: thumb,
                       isAudio: true,
                     });
+                  } else if (key.includes('video-')) {
+                    store.push({
+                      filepath: item,
+                      thumbnail: thumb,
+                      isVideo: true,
+                    });
                   } else {
                     store.push({
                       filepath: item,
@@ -352,29 +358,28 @@ class NewPost extends Component {
             decelerationRate="fast"
             pagingEnabled>
             {this.state.content.map((item, index) => (
-              <View
-                style={{
-                  width: '30%',
-                  height: 200,
-                  width: 100,
-                  margin: 5,
-                  marginTop: 10,
-                }}>
-                <Image
-                  key={index}
-                  style={{
-                    height: '100%',
-                    width: '100%',
-                    borderRadius: 10,
-                    borderWidth: 1,
-                  }}
-                  source={
-                    item.isAudio
-                      ? require('./images/audioThumb.png')
-                      : {uri: item.thumbnail}
-                  }
-                  resizeMode="cover"
-                />
+              <View style={styles.thumbnailsContainer}>
+                {item.isVideo ? (
+                  <Video
+                    source={{uri: item.filepath}}
+                    paused={true}
+                    muted={false}
+                    controls={true}
+                    poster={item.thumbnail}
+                    style={styles.thumbnailStyle}
+                  />
+                ) : (
+                  <Image
+                    key={index}
+                    style={styles.thumbnailStyle}
+                    source={
+                      item.isAudio
+                        ? require('./images/audioThumb.png')
+                        : {uri: item.thumbnail}
+                    }
+                    resizeMode="cover"
+                  />
+                )}
               </View>
             ))}
           </ScrollView>
@@ -427,5 +432,17 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginRight: 5,
     fontSize: 8,
+  },
+  thumbnailsContainer: {
+    height: 200,
+    width: 100,
+    margin: 5,
+    marginTop: 10,
+  },
+  thumbnailStyle: {
+    height: '100%',
+    width: '100%',
+    borderRadius: 10,
+    borderWidth: 1,
   },
 });

@@ -185,11 +185,21 @@ const getSearchWords = () => {
 // post :  any key value pair where key contains 'image-','video-', 'audio-' will
 //         be removed from Storage
 
-export async function cleanupStorage() {
+export async function cleanupStorage(options) {
   console.log('function : cleanupStorage ');
-
+  const keys = await AsyncStorage.getAllKeys();
   try {
-    const keys = await AsyncStorage.getAllKeys();
+    if (options && options.key) {
+      keys.map((key) => {
+        if (key.includes(options.key)) {
+          console.log('Removing storage item : ' + key);
+          AsyncStorage.removeItem(key);
+        }
+      });
+      // Remove only selected key and return
+      return;
+    }
+
     keys.map((key) => {
       if (
         key.includes('image-') ||
