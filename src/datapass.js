@@ -61,7 +61,7 @@ export async function activeUser() {
   console.log('activeUser is anyone loggedin: ' + logged);
 
   if (logged) {
-    const userid = await AsyncStorage.getItem('uaserid');
+    const userid = await AsyncStorage.getItem('userid');
     const firstName = await AsyncStorage.getItem('firstname');
     const lastName = await AsyncStorage.getItem('lastname');
     const email = await AsyncStorage.getItem('email');
@@ -178,6 +178,35 @@ const getSearchWords = () => {
 
   return words;
 };
+
+// ---------------------------------------------------------------------------------
+
+export async function logStorageContent(){
+
+  const filearray = []
+  console.log('AsyncStorage Content');
+  console.log('Loggedin : ' + await AsyncStorage.getItem('userLoggedin'))
+  console.log('userid : ' + await AsyncStorage.getItem('userid'))
+  console.log('firstname : ' + await AsyncStorage.getItem('firstname'))
+  console.log('lastname : ' + await AsyncStorage.getItem('lastname'))
+  console.log('email : ' + await AsyncStorage.getItem('email')) 
+  console.log();
+
+  const keys = AsyncStorage.getAllKeys()
+  .then(keys => {
+    
+    keys.map(key =>{
+      if(key.includes('image') || key.includes('audio') || key.includes('video')){
+        AsyncStorage.getItem(key).then(value => {
+          console.log('key : '  + key + ' fileName : ' + getFilename( value ))
+        })
+      }
+      
+    })
+  })
+  
+
+}
 
 // ---------------------------------------------------------------------------------
 // Removes all content captured for the current post

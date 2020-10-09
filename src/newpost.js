@@ -155,7 +155,8 @@ class NewPost extends Component {
 
     try {
       await AsyncStorage.getAllKeys().then((keys) => {
-        console.log('newpost-didmount getallkeys : ' + keys);
+        console.log('newpost-didmount' );
+        console.log();
 
         keys.map((key, index) => {
           if (
@@ -167,9 +168,9 @@ class NewPost extends Component {
               AsyncStorage.getItem(key).then((item) => {
                 this.getMatchingThumb(keys, key).then((thumb) => {
                   console.log(
-                    'push content : file' +
+                    'push content - key : ' + key + ", file : " + 
                       mem.getFilename(item) +
-                      ' value ' +
+                      ', thumb : ' +
                       mem.getFilename(thumb),
                   );
                   if (key.includes('audio-')) {
@@ -239,6 +240,7 @@ class NewPost extends Component {
 
   getMatchingThumb = (keys, targetKey) => {
     return new Promise((resolve, reject) => {
+      console.log('matching thumb ' + targetKey);
       let targetKeyNumber = parseInt(targetKey.slice(-1));
       keys.map((key) => {
         if (key.includes('thumb')) {
@@ -277,7 +279,7 @@ class NewPost extends Component {
 
   render() {
     let itemcount = this.state.content.length;
-    console.log('content :', this.state.content);
+    //console.log('newpost content :', this.state.content);
     return (
       <KeyboardShift>
         <View style={styles.container}>

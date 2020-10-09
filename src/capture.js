@@ -1,7 +1,7 @@
-import React, {Component} from 'react';
+import React, {Component, memo} from 'react';
 import {RNCamera} from 'react-native-camera';
 import AsyncStorage from '@react-native-community/async-storage';
-import {cleanupStorage, millisecsToHMSM} from './datapass';
+import {cleanupStorage, millisecsToHMSM,logStorageContent} from './datapass';
 import MovtoMp4 from 'react-native-mov-to-mp4';
 import {createThumbnail} from 'react-native-create-thumbnail';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -43,9 +43,7 @@ class CaptureComponent extends Component {
     mode: 'camera',
     isRecordingVideo: false,
     isRecordingAudio: false,
-    icount: 0,
-    vcount: 0,
-    acount: 0,
+   
     fcount: 0,
     currentTime: 0.0,
     recording: false,
@@ -75,17 +73,17 @@ class CaptureComponent extends Component {
         if (Platform.OS === 'android') {
           RNSoundLevel.onNewFrame = (soundData) => {
             // see "Returned data" section below
-            console.log('Sound level info', soundData);
+            //console.log('Sound level info', soundData);
             decibles =
               10 * Math.log10(soundData.value / (soundData.value + 5)) * 0.25;
-            console.log('decibles raw', decibles);
+            //console.log('decibles raw', decibles);
 
             if (!isNaN(decibles)) {
               this.setState({decibles: 100 + decibles * 10});
             }
           };
         } else {
-          console.log('data :', data);
+          //console.log('data :', data);
           decibles =
             10 *
             Math.log10(data.currentPeakMetering / data.currentMetering) *
@@ -93,7 +91,7 @@ class CaptureComponent extends Component {
           decibles = 100 + decibles * 100;
           this.setState({decibles: decibles});
         }
-        console.log('decibles :', this.state.decibles);
+        //console.log('decibles :', this.state.decibles);
       };
 
       AudioRecorder.onFinished = (data) => {
@@ -125,7 +123,7 @@ class CaptureComponent extends Component {
           const data = await promise;
           this.setState({
             isRecordingVideo: false,
-            vcount: this.state.vcount + 1,
+            fcount: this.state.fcount + 1,
           });
           let fname = Date.now().toString() + '.mp4';
           MovtoMp4.convertMovToMp4(
@@ -142,18 +140,18 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
   littlecallback = (result) => {
-    AsyncStorage.setItem('video- ' + this.state.vcount, result);
+    AsyncStorage.setItem('video- ' + this.state.fcount, result);
     createThumbnail({
       url: result,
       timeStamp: 10000,
     }).then((thumbnail) => {
-      AsyncStorage.setItem('video-thumb- ' + this.state.vcount, thumbnail.path);
+      AsyncStorage.setItem('video-thumb- ' + this.state.fcount, thumbnail.path);
     });
   };
 
   //--------------------------------------------------------------------------------------
   stopRecordingVideo = async () => {
-    console.log('stopRecordingVideo vcount' + this.camera);
+    console.log('stopRecordingVideo fcount' + this.camera);
 
     if (this.camera) {
       console.log('stopRecordingVideo : this.camera ' + this.camera);
@@ -180,13 +178,14 @@ class CaptureComponent extends Component {
     if (!this.state.hasPermission) {
       console.warn("Can't record, no permission granted!");
       return;
+
     }
 
     if (this.state.stoppedRecording) {
       let uniqueAudioPath =
         AudioUtils.DocumentDirectoryPath +
         '/audioFile_' +
-        this.state.acount +
+        this.state.fcount +
         '.aac';
       this.prepareRecordingPath(uniqueAudioPath);
     }
@@ -208,15 +207,15 @@ class CaptureComponent extends Component {
   async _finishRecording(didSucceed, filePathNew, fileSize) {
     this.setState({finished: didSucceed});
     console.log(
-      `Finished recording of duration ${
+      `Finished recording : duration ${
         this.state.currentTime
       } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
     );
-    await cleanupStorage();
-    this.setState({acount: this.state.acount + 1});
-    AsyncStorage.setItem('audio-' + this.state.acount, filePathNew);
+    
+    this.setState({fcount: this.state.fcount + 1});
+    AsyncStorage.setItem('audio-' + this.state.fcount, filePathNew);
     AsyncStorage.setItem(
-      'audio-thumb-' + this.state.acount,
+      'audio-thumb-' + this.state.fcount,
       './images/file.png',
     );
   }
@@ -231,15 +230,12 @@ class CaptureComponent extends Component {
       paused: false,
     });
 
+
     try {
       const filePathNew = await AudioRecorder.stopRecording();
       console.log('recording path', filePath);
 
       this.setState({finished: true});
-      console.log(
-        `Finished recording of duration ${this.state.currentTime} seconds at path: ${filePathNew} `,
-      );
-
       if (Platform.OS === 'android') {
         await this._finishRecording(true, filePathNew);
       }
@@ -253,16 +249,23 @@ class CaptureComponent extends Component {
 
   takePicture = async () => {
     if (this.camera) {
-      this.setState({vcount: this.state.vcount + 1});
+      
       console.log('capture.takePicture() ' + this.camera);
       try {
         const data = await this.camera.takePictureAsync();
-        console.log('take picture data :', data);
+        
         const fullpath = data.uri.split('//')[1];
-        AsyncStorage.setItem('image-' + this.state.vcount, fullpath);
-        AsyncStorage.setItem('image-thumb-' + this.state.vcount, fullpath);
+        AsyncStorage.setItem('image-' + (this.state.fcount + 1), fullpath);
+        AsyncStorage.setItem('image-thumb-' + (this.state.fcount + 1), fullpath);
+        console.log('takePicture :', data);
+        
+        logStorageContent()
+
+
       } catch (err) {
         alert(err);
+      } finally {
+        this.setState({fcount: this.state.fcount + 1});
       }
     }
   };
@@ -271,6 +274,7 @@ class CaptureComponent extends Component {
 
   goBackToFeed = () => {
     cleanupStorage();
+    // clear the sellection on the gallery
     this.props.navigation.navigate('Feed');
   };
 
@@ -318,17 +322,17 @@ class CaptureComponent extends Component {
       if (img.uri) {
         if (img.type === 'video') {
           const fullpath = img.uri.split('//')[1];
-          AsyncStorage.setItem('video-file-' + i, fullpath);
+          AsyncStorage.setItem('video-file-' + (this.state.fcount + i + 1), fullpath);
           createThumbnail({
             url: img.uri,
             timeStamp: 10000,
           }).then((thumbnail) => {
-            AsyncStorage.setItem('video-file-thumb- ' + i, thumbnail.path);
+            AsyncStorage.setItem('video-file-thumb- ' + (this.state.fcount + i + 1), thumbnail.path);
           });
         } else {
           const fullpath = img.uri.split('//')[1];
-          AsyncStorage.setItem('image-file-' + i, fullpath);
-          AsyncStorage.setItem('image-file-thumb-' + i, img.uri);
+          AsyncStorage.setItem('image-file-' + (this.state.fcount + i + 1), fullpath);
+          AsyncStorage.setItem('image-file-thumb-' + (this.state.fcount + i + 1), img.uri);
         }
       }
     });
@@ -368,6 +372,7 @@ class CaptureComponent extends Component {
         if (this.state.isRecordingVideo) {
           bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />;
         } else {
+
           bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
         }
         break;
