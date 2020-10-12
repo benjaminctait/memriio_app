@@ -117,20 +117,18 @@ class CaptureComponent extends Component {
     if (this.camera) {
       try {
         this.setState({isRecordingVideo: true});
-        const promise = await this.camera.recordAsync({});
+        const data = await this.camera.recordAsync({});
 
-        if (promise) {
-          const data = await promise;
+        if (data) {
+          
           this.setState({
             isRecordingVideo: false,
-            fcount: this.state.fcount + 1,
+            fcount: this.state.fcount + 1
           });
           let fname = Date.now().toString() + '.mp4';
-          MovtoMp4.convertMovToMp4(
-            data.uri,
-            fname,
-            this.littlecallback.bind(this),
-          );
+          console.log('BBC video : ' + data.uri);
+          this.littlecallback(data.uri)
+          
         }
       } catch (err) {
         alert('Video error' + err);
@@ -151,7 +149,7 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
   stopRecordingVideo = async () => {
-    console.log('stopRecordingVideo fcount' + this.camera);
+    console.log('stopRecordingVideo xxx' + this.camera);
 
     if (this.camera) {
       console.log('stopRecordingVideo : this.camera ' + this.camera);

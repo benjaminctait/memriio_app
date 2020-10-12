@@ -712,7 +712,7 @@ const uploadVideoFile = (fileObj) => {
       console.log(
         'uploadVideo pre transcode : targetFileName : ' + targetFileName,
       );
-      resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+      
       transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
         if (result.success) {
           console.log('uploadVideo post transcode : thumburl : ' + result.data);
