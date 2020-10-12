@@ -8,6 +8,8 @@ import {RNS3} from 'react-native-aws3';
 import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Platform} from 'react-native';
+import RNFS from 'react-native-fs';
+
 
 const memory = {
   title: '', // short title of the memory : string
@@ -19,6 +21,25 @@ const memory = {
   userid: 0, // id of the current user : int
   memid: 0, // id of the newly created memory : int
 };
+
+// -------------------------------------------------------------------------------
+
+export async function  heicToJpg ( heicPath ){
+  console.log(
+    'datapass.heicToJpg : heicPath : ' + heicPath,
+  );
+  const dest = `${RNFS.TemporaryDirectoryPath}${Math.random().toString(36).substring(7)}.jpg`;  
+
+  return new Promise((resolve, reject) => {
+     RNFS.copyAssetsFileIOS(heicPath, dest, 0, 0)
+     .then(absolutePath =>{
+        resolve(absolutePath)
+     })
+     .catch(err =>{
+        reject(err)
+     })
+    })
+}
 
 // create a new emory cloud  -----------------------------------------------------
 
@@ -1122,7 +1143,7 @@ const createMemoryID = () => {
 
 export function isSupportedImageFile(filename) {
   let ext = getExtension(filename).toLowerCase();
-  let filetypes = ['jpeg', 'jpg', 'png'];
+  let filetypes = ['jpeg', 'jpg', 'png','heic'];
   let found = filetypes.indexOf(ext);
   return !(found === -1);
 }

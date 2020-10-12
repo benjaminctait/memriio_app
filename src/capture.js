@@ -1,8 +1,8 @@
 import React, {Component, memo} from 'react';
 import {RNCamera} from 'react-native-camera';
 import AsyncStorage from '@react-native-community/async-storage';
-import {cleanupStorage, millisecsToHMSM,logStorageContent} from './datapass';
-import MovtoMp4 from 'react-native-mov-to-mp4';
+import {cleanupStorage, millisecsToHMSM,logStorageContent,heicToJpg} from './datapass';
+
 import {createThumbnail} from 'react-native-create-thumbnail';
 import CameraRoll from '@react-native-community/cameraroll';
 
@@ -328,9 +328,11 @@ class CaptureComponent extends Component {
             AsyncStorage.setItem('video-file-thumb- ' + (this.state.fcount + i + 1), thumbnail.path);
           });
         } else {
-          const fullpath = img.uri.split('//')[1];
-          AsyncStorage.setItem('image-file-' + (this.state.fcount + i + 1), fullpath);
-          AsyncStorage.setItem('image-file-thumb-' + (this.state.fcount + i + 1), img.uri);
+          heicToJpg(img.uri)
+          .then(jpegPath => {            
+            AsyncStorage.setItem('image-file-' + (this.state.fcount + i + 1), jpegPath);
+            AsyncStorage.setItem('image-file-thumb-' + (this.state.fcount + i + 1), jpegPath);
+          })
         }
       }
     });
