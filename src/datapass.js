@@ -8,6 +8,7 @@ import {RNS3} from 'react-native-aws3';
 import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Platform} from 'react-native';
+import RNFS from 'react-native-fs';
 
 const memory = {
   title: '', // short title of the memory : string
@@ -19,6 +20,25 @@ const memory = {
   userid: 0, // id of the current user : int
   memid: 0, // id of the newly created memory : int
 };
+
+// -------------------------------------------------------------------------------
+
+export async function heicToJpg(heicPath) {
+  console.log('datapass.heicToJpg : heicPath : ' + heicPath);
+  const dest = `${RNFS.TemporaryDirectoryPath}${Math.random()
+    .toString(36)
+    .substring(7)}.jpg`;
+
+  return new Promise((resolve, reject) => {
+    RNFS.copyAssetsFileIOS(heicPath, dest, 0, 0)
+      .then((absolutePath) => {
+        resolve(absolutePath);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
 
 // create a new emory cloud  -----------------------------------------------------
 
@@ -61,7 +81,7 @@ export async function activeUser() {
   console.log('activeUser is anyone loggedin: ' + logged);
 
   if (logged) {
-    const userid = await AsyncStorage.getItem('uaserid');
+    const userid = await AsyncStorage.getItem('userid');
     const firstName = await AsyncStorage.getItem('firstname');
     const lastName = await AsyncStorage.getItem('lastname');
     const email = await AsyncStorage.getItem('email');
@@ -178,6 +198,33 @@ const getSearchWords = () => {
 
   return words;
 };
+
+// ---------------------------------------------------------------------------------
+
+export async function logStorageContent() {
+  const filearray = [];
+  console.log('AsyncStorage Content');
+  console.log('Loggedin : ' + (await AsyncStorage.getItem('userLoggedin')));
+  console.log('userid : ' + (await AsyncStorage.getItem('userid')));
+  console.log('firstname : ' + (await AsyncStorage.getItem('firstname')));
+  console.log('lastname : ' + (await AsyncStorage.getItem('lastname')));
+  console.log('email : ' + (await AsyncStorage.getItem('email')));
+  console.log();
+
+  const keys = AsyncStorage.getAllKeys().then((keys) => {
+    keys.map((key) => {
+      if (
+        key.includes('image') ||
+        key.includes('audio') ||
+        key.includes('video')
+      ) {
+        AsyncStorage.getItem(key).then((value) => {
+          console.log('key : ' + key + ' fileName : ' + getFilename(value));
+        });
+      }
+    });
+  });
+}
 
 // ---------------------------------------------------------------------------------
 // Removes all content captured for the current post
@@ -1127,7 +1174,7 @@ const createMemoryID = () => {
 
 export function isSupportedImageFile(filename) {
   let ext = getExtension(filename).toLowerCase();
-  let filetypes = ['jpeg', 'jpg', 'png'];
+  let filetypes = ['jpeg', 'jpg', 'png', 'heic'];
   let found = filetypes.indexOf(ext);
   return !(found === -1);
 }

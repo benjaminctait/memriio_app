@@ -51,7 +51,7 @@ class App extends Component {
     );
 
     await AsyncStorage.setItem('userLoggedin', JSON.stringify(true));
-    await AsyncStorage.setItem('uaserid', JSON.stringify(user.userid));
+    await AsyncStorage.setItem('userid', JSON.stringify(user.userid));
     await AsyncStorage.setItem('firstname', user.firstname);
     await AsyncStorage.setItem('lastname', user.lastname);
     await AsyncStorage.setItem('email', user.email);
@@ -69,7 +69,7 @@ class App extends Component {
   logCurrentUserOut = async () => {
     if (this.state.isLoggedIn) {
       AsyncStorage.setItem('userLoggedin', JSON.stringify(false));
-      AsyncStorage.setItem('uaserid', JSON.stringify(0));
+      AsyncStorage.setItem('userid', JSON.stringify(0));
       AsyncStorage.setItem('firstname', '');
       AsyncStorage.setItem('lastname', '');
       AsyncStorage.setItem('email', '');
@@ -95,7 +95,7 @@ class App extends Component {
 
   async componentDidMount() {
     const loggedin = await AsyncStorage.getItem('userLoggedin');
-    const uid = await AsyncStorage.getItem('uaserid');
+    const uid = await AsyncStorage.getItem('userid');
     if (loggedin) {
       this.setState({isLoggedIn: loggedin, userid: uid});
     }
