@@ -203,7 +203,7 @@ class NewPost extends Component {
           user: user,
         });
       });
-      mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
+      await mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
     } catch (e) {
       alert(e);
     }
@@ -239,18 +239,21 @@ class NewPost extends Component {
 
   getMatchingThumb = (keys, targetKey) => {
     return new Promise((resolve, reject) => {
-      let targetKeyNumber = parseInt(targetKey.slice(-1));
-      keys.map((key) => {
-        if (key.includes('thumb')) {
-          let thumbKeyNumber = parseInt(key.slice(-1));
-
-          if (targetKeyNumber === thumbKeyNumber) {
-            AsyncStorage.getItem(key).then((thumbPath) => {
-              resolve(thumbPath);
-            });
-          }
-        }
+      AsyncStorage.getItem(targetKey + '-thumb').then((thumbPath) => {
+        resolve(thumbPath);
       });
+      // let targetKeyNumber = parseInt(targetKey.slice(-1));
+      // keys.map((key) => {
+      //   if (key.includes('thumb')) {
+      //     let thumbKeyNumber = parseInt(key.slice(-1));
+
+      //     if (targetKeyNumber === thumbKeyNumber) {
+      //       AsyncStorage.getItem(targetKey+'-thumb').then((thumbPath) => {
+      //         resolve(thumbPath);
+      //       });
+      //     }
+      //   }
+      // });
     });
   };
 

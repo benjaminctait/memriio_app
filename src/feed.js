@@ -37,7 +37,9 @@ class Feed extends Component {
 
   handleSearchChange = (searchwords) => {
     let wordarray = [];
-    if (searchwords) wordarray = searchwords.toLowerCase().split(' ');
+    if (searchwords) {
+      wordarray = searchwords.toLowerCase().split(' ');
+    }
     let cloudids = this.getIncludedClouds();
     let userid = this.state.user.userid;
 
@@ -176,7 +178,9 @@ class Feed extends Component {
   getIncludedClouds = () => {
     let cloudids = [];
     this.state.cloudInclusions.map((cloud) => {
-      if (cloud.include) cloudids.push(cloud.cloudid);
+      if (cloud.include) {
+        cloudids.push(cloud.cloudid);
+      }
     });
     return cloudids;
   };
@@ -197,7 +201,9 @@ class Feed extends Component {
 
     let memcount = 0;
     let feedview = {};
-    if (memisArray) memcount = this.state.memories.length;
+    if (memisArray) {
+      memcount = this.state.memories.length;
+    }
 
     if (memisArray && !this.state.isLoading && memcount) {
       feedview = (
@@ -217,7 +223,8 @@ class Feed extends Component {
               description={mem.description}
               story={mem.story}
               createdon={mem.createdon}
-              userid={mem.userid}></MemoryCard>
+              userid={mem.userid}
+            />
           ))}
         </ScrollView>
       );

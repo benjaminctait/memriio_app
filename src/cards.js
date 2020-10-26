@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
 import {SwitchIcon} from './buttons';
 import VideoPlayer from './videoplayer';
-import Carousel from 'react-native-snap-carousel';
+import Carousel, {Pagination} from 'react-native-snap-carousel';
 import * as mem from './datapass';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import ReactAudioPlayer from 'react-audio-player';
+import sliderStyles, {colors} from './styles/index.style';
+import {sliderWidth, itemWidth} from './styles/SliderEntry.style';
+import audioThumbSrc from './images/audioThumb.png';
 import {
   StyleSheet,
   View,
@@ -50,8 +53,10 @@ class MemoryCard extends Component {
     let memory = this.props.memory;
 
     mem.getMemoryFiles(memory.memid, (memfiles) => {
+      console.log('Mem files:', memory.memid, memfiles);
       this.setState({files: memfiles});
     });
+
     // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
   }
 
@@ -124,24 +129,36 @@ class MemoryCard extends Component {
           data={this.state.files}
           sliderWidth={width}
           itemWidth={width}
+          hasParallaxImages={true}
+          firstItem={1}
+          inactiveSlideScale={0.94}
+          inactiveSlideOpacity={0.7}
+          // inactiveSlideShift={20}
+          containerCustomStyle={sliderStyles.slider}
+          contentContainerCustomStyle={sliderStyles.sliderContentContainer}
           renderItem={this.renderFileView}
           onSnapToItem={(index) => this.setState({activeIndex: index})}
           scrollEnabled={this.state.scrollable}
         />
+        <Pagination
+          dotsLength={this.state.files.length}
+          activeDotIndex={1}
+          containerStyle={sliderStyles.paginationContainer}
+          dotColor={'rgba(255, 255, 255, 0.92)'}
+          dotStyle={sliderStyles.paginationDot}
+          inactiveDotColor={colors.black}
+          inactiveDotOpacity={0.4}
+          inactiveDotScale={0.6}
+          carouselRef={this.carousel}
+          tappableDots={this.carousel}
+          sliderWidth={width}
+        />
       </View>
     );
   };
-
-  //----------------------------------------------------------------
-
   renderFileView = ({item, index}) => {
-    console.log(
-      'audio url :',
-      mem.isSupportedAudioFile(mem.getFilename(item.fileurl))
-        ? item.fileurl
-        : '',
-    );
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
+      // console.log('immage file', item.fileurl);
       return (
         <TouchableOpacity
           activeOpacity={0.5}
@@ -152,10 +169,14 @@ class MemoryCard extends Component {
         </TouchableOpacity>
       );
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-      return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
+      console.log('video file', item.fileurl);
+
+      return <VideoPlayer poster={item.thumburl} source={item.fileurl} />;
     } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
+      console.log('audio file', item.fileurl);
+
       return (
-        <VideoPlayer poster={item.fileurl} source={item.fileurl} />
+        <VideoPlayer source={item.fileurl} audioOnly={true} />
         // <ReactAudioPlayer src={item.fileurl} autoPlay={false} controls={true} />
       );
     }

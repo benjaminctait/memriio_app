@@ -28,7 +28,7 @@ export async function createMemoryCloud(cloudName, administratorID) {
   );
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/createcloud', {
+    fetch('https://memrii-api.herokuapp.com/createcloud', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -185,64 +185,71 @@ const getSearchWords = () => {
 // post :  any key value pair where key contains 'image-','video-', 'audio-' will
 //         be removed from Storage
 
-export async function cleanupStorage(options) {
-  console.log('function : cleanupStorage ');
+export async function cleanupStorage(options = {}) {
+  console.log('function : cleanupStorage ', options);
   const keys = await AsyncStorage.getAllKeys();
-  try {
-    if (options && options.key) {
-      keys.map((key) => {
-        if (key.includes(options.key)) {
-          console.log('Removing storage item : ' + key);
-          AsyncStorage.removeItem(key);
-        }
-      });
-      // Remove only selected key and return
-      return;
-    }
-
+  if (options && options.key) {
     keys.map((key) => {
-      if (
-        key.includes('image-') ||
-        key.includes('video-') ||
-        key.includes('audio-')
-      ) {
+      if (key.includes(options.key)) {
         console.log('Removing storage item : ' + key);
         AsyncStorage.removeItem(key);
       }
     });
-  } catch (e) {
-    console.log(e);
-    // am;
+    // Remove only selected key and return
+    return true;
   }
+  keys.map((key) => {
+    if (
+      key.includes('image-') ||
+      key.includes('video-') ||
+      key.includes('audio-')
+    ) {
+      console.log('Removing storage item : ' + key);
+      AsyncStorage.removeItem(key);
+    }
+  });
 }
 
 // retrieve all memories for user and cloudIDs where user is in that cloud --------------------
 
 export function mapUserClouds(userid, callback) {
-  fetch('https://memriio-api-0.herokuapp.com/get_clouds_userid', {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({userID: userid}),
-  })
-    .then((response) => response.json())
-    .then((res) => {
-      if (res.success) {
-        console.log('server response : ' + res.success);
-        console.log('server data : ' + res.data);
-        callback(res.data);
-      } else {
-        console.log('server response : ' + res.success + ' with ' + res.error);
-      }
-    });
+  try {
+    fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
+      method: 'post',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({userID: userid}),
+    })
+      .then((response) => {
+        // console.log('response from api :', response);
+        // return JSON.parse(response);
+        return response.json();
+      })
+      .then((res) => {
+        console.log('json response', res);
+        if (res.success) {
+          console.log('server response : ' + res.success);
+          console.log('server data : ' + res.data);
+          callback(res.data);
+        } else {
+          console.log(
+            'server response : ' + res.success + ' with ' + res.error,
+            res,
+          );
+        }
+      });
+  } catch (e) {
+    console.log('api error getting clouds:', e);
+  }
 }
 
 //---------------------------------------------------------------------------------------------
 
 export function searchMemories(userid, cloudids, searchwords, callback) {
   fetch(
-    'https://memriio-api-0.herokuapp.com/get_memories_userid_keywords_cloudids',
+    'https://memrii-api.herokuapp.com/get_memories_userid_keywords_cloudids',
     {
       method: 'post',
       headers: {
@@ -270,7 +277,7 @@ export function getMemories_PersonalOnly_Unshared(userid, searchwords) {
   if (searchwords) {
     return new Promise((resolve, reject) => {
       fetch(
-        'https://memriio-api-0.herokuapp.com/get_memories_userid_keywords_noclouds_unshared',
+        'https://memrii-api.herokuapp.com/get_memories_userid_keywords_noclouds_unshared',
         {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
@@ -290,7 +297,7 @@ export function getMemories_PersonalOnly_Unshared(userid, searchwords) {
   } else {
     return new Promise((resolve, reject) => {
       fetch(
-        'https://memriio-api-0.herokuapp.com/get_memories_userid_noclouds_unshared',
+        'https://memrii-api.herokuapp.com/get_memories_userid_noclouds_unshared',
         {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
@@ -321,11 +328,11 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
       searchwords,
   );
 
-  if (isNonEmptyArray(searchwords)) {
+  if (searchwords.length > 0) {
     console.log('getMemories_PersonalOnly_All - with searchwords');
     return new Promise((resolve, reject) => {
       fetch(
-        'https://memriio-api-0.herokuapp.com/get_memories_keywords_user_noclouds',
+        'https://memrii-api.herokuapp.com/get_memories_keywords_user_noclouds',
         {
           method: 'post',
           headers: {'Content-Type': 'application/json'},
@@ -347,16 +354,13 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
   } else {
     console.log('getMemories_PersonalOnly_All - no searchwords');
     return new Promise((resolve, reject) => {
-      fetch(
-        'https://memriio-api-0.herokuapp.com/get_memories_userid_noclouds',
-        {
-          method: 'post',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            userid: userid,
-          }),
-        },
-      )
+      fetch('https://memrii-api.herokuapp.com/get_memories_userid_noclouds', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          userid: userid,
+        }),
+      })
         .then((response) => response.json())
         .then((res) => {
           if (res.success) {
@@ -377,7 +381,7 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
 export function getMemories_User_Words_Clouds(userid, words, cloudids) {
   return new Promise((resolve, reject) => {
     fetch(
-      'https://memriio-api-0.herokuapp.com/get_memories_userid_keywords_cloudids',
+      'https://memrii-api.herokuapp.com/get_memories_userid_keywords_cloudids',
       {
         method: 'post',
         headers: {'Content-Type': 'application/json'},
@@ -407,7 +411,7 @@ export function getMemories_User_Clouds(userid, cloudids) {
   );
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_cloudids', {
+    fetch('https://memrii-api.herokuapp.com/get_memories_userid_cloudids', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -434,7 +438,7 @@ export function getMemories_Words_Clouds(cloudids, words) {
   );
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/get_memories_keywords_clouds', {
+    fetch('https://memrii-api.herokuapp.com/get_memories_keywords_clouds', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -459,7 +463,7 @@ export function getMemories_Clouds(cloudids) {
   console.log('getMemories_Clouds - cloudids : ' + cloudids);
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/get_memories_cloudids', {
+    fetch('https://memrii-api.herokuapp.com/get_memories_cloudids', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -480,7 +484,7 @@ export function getMemories_Clouds(cloudids) {
 //-------------------------------------------------------------------------------
 
 export function getMemoryFiles(memid, callback) {
-  fetch('https://memriio-api-0.herokuapp.com/get_memfiles_memoryid', {
+  fetch('https://memrii-api.herokuapp.com/get_memfiles_memoryid', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -506,7 +510,7 @@ export function getCloudPeople(clouds, callback) {
   );
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/get_cloud_people_clouds', {
+    fetch('https://memrii-api.herokuapp.com/get_cloud_people_clouds', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -542,7 +546,7 @@ export function getCloudPeople(clouds, callback) {
 
 export function getMemoryPeople(memid, callback) {
   console.log('getMemoryPeople for memory : ' + memid);
-  fetch('https://memriio-api-0.herokuapp.com/get_associatedpeople_memoryid', {
+  fetch('https://memrii-api.herokuapp.com/get_associatedpeople_memoryid', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -563,7 +567,7 @@ export function getMemoryPeople(memid, callback) {
 
 export function getMemories(userID, cloudIDs, callback) {
   console.log('getMemories for user : ' + userID + ' in groups ' + cloudIDs);
-  fetch('https://memriio-api-0.herokuapp.com/get_memories_userid_cloudids', {
+  fetch('https://memrii-api.herokuapp.com/get_memories_userid_cloudids', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
@@ -592,6 +596,9 @@ const getFileMime = (extension) => {
       break;
     case 'jpeg':
       mime = 'image/jpeg';
+      break;
+    case 'png':
+      mime = 'image/png';
       break;
     case 'mp4':
       mime = 'video/mp4';
@@ -623,9 +630,9 @@ const uploadImageFile = (fileObj) => {
   let filepath = stry(fileObj.filepath);
   let thumbnail = stry(fileObj.thumbnail);
   let origFileParts = filepath.split('.');
-  let origExtension = origFileParts[1];
+  let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
-  let thumbExtension = thumbFileParts[1];
+  let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
   let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
   let origS3URL = thumbS3URL;
   let targetFileName = commonfileName + '-original' + '.' + origExtension;
@@ -668,9 +675,9 @@ const uploadVideoFile = (fileObj) => {
   let filepath = stry(fileObj.filepath);
   let thumbnail = stry(fileObj.thumbnail);
   let origFileParts = filepath.split('.');
-  let origExtension = origFileParts[1];
+  let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
-  let thumbExtension = thumbFileParts[1];
+  let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
   let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
   let origS3URL = thumbS3URL;
   let vFolder = commonfileName + '-' + 0;
@@ -683,13 +690,25 @@ const uploadVideoFile = (fileObj) => {
       console.log(
         'uploadVideo pre transcode : targetFileName : ' + targetFileName,
       );
-      resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
-      transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
-        if (result.success) {
-          console.log('uploadVideo post transcode : thumburl : ' + result.data);
-          resolve({originalURL: origS3URL, thumbURL: result.data});
-        } else {
-          reject('failed to transcode video');
+      // resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+      processLowResImage(thumbnail, thumbExtension).then((response) => {
+        if (response != 'failure') {
+          let thumbTarget = commonfileName + '-thumb' + '.' + thumbExtension;
+          _uploadFiletoS3(response, thumbTarget).then((s3result) => {
+            if (s3result != 'failure') {
+              thumbS3URL = s3result;
+              transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
+                if (result.success) {
+                  console.log('uploadVideo post transcode  : ' + result.data);
+                  resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+                } else {
+                  reject('failed to transcode video');
+                }
+              });
+            } else {
+              reject(null);
+            }
+          });
         }
       });
     });
@@ -701,7 +720,7 @@ const uploadVideoFile = (fileObj) => {
 const uploadAudioFile = (fileObj) => {
   console.log('uploadAudioFile ---------------------------------- ');
   console.log('original: ' + getFilename(fileObj.filepath));
-  console.log('thumb: ' + getFilename(fileObj.thumbnail));
+  console.log('thumb: ' + getFilename(fileObj.thumbnail), fileObj.thumbnail);
   let thumbS3URL = '';
 
   let filepath = stry(fileObj.filepath);
@@ -709,25 +728,34 @@ const uploadAudioFile = (fileObj) => {
   let origFileParts = filepath.split('.');
   let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
-  let thumbExtension = thumbFileParts[1];
+  let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
   let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
   let origS3URL = thumbS3URL;
-  let vFolder = commonfileName + '-' + 0;
 
   return new Promise((resolve, reject) => {
     let targetFileName = commonfileName + '-0-audio' + '.' + origExtension;
     _uploadFiletoS3(filepath, targetFileName).then((result) => {
       origS3URL = result;
+      resolve({originalURL: origS3URL, thumbURL: 'thumbS3URL'});
 
-      console.log(
-        'uploadAudio pre transcode : targetFileName : ' + targetFileName,
-      );
-      if (result != 'failure') {
-        thumbS3URL = result;
-        resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
-      } else {
-        reject(null);
-      }
+      // console.log(
+      //   'uploadAudio pre transcode : targetFileName : ' + targetFileName,
+      // );
+      // if (result !== 'failure') {
+      //   let thumbTarget = commonfileName + '-thumb' + '.' + thumbExtension;
+      //   _uploadFiletoS3(require('./images/audioThumb.png'), thumbTarget).then(
+      //     (s3result) => {
+      //       if (s3result !== 'failure') {
+      //         thumbS3URL = s3result;
+      //         resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+      //       } else {
+      //         reject(null);
+      //       }
+      //     },
+      //   );
+      // } else {
+      //   reject(null);
+      // }
     });
   });
 };
@@ -735,6 +763,7 @@ const uploadAudioFile = (fileObj) => {
 //-------------------------------------------------------------------------------
 
 const _uploadFiletoS3 = (sourceFile, targetFile) => {
+  console.log('source file:', sourceFile);
   console.log('_uploadFileToS3 : ' + getFilename(sourceFile));
   let fileParts = sourceFile.toLowerCase().split('.');
   console.log('fileParts : ', fileParts);
@@ -745,7 +774,12 @@ const _uploadFiletoS3 = (sourceFile, targetFile) => {
   let MIME = getFileMime(extension);
 
   const file = {
-    uri: Platform.OS === 'android' ? `file://${sourceFile}` : sourceFile,
+    uri:
+      Platform.OS === 'android' &&
+      !sourceFile.includes('file://') &&
+      !sourceFile.startsWith('.')
+        ? `file://${sourceFile}`
+        : sourceFile,
     name: targetFile,
     type: MIME,
   };
@@ -783,7 +817,7 @@ const transcodeVideoToHLS = (awsMP4Filekey, awsFilePrefix) => {
   );
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/transcode_mp4_HLS_Playlist', {
+    fetch('https://memrii-api.herokuapp.com/transcode_mp4_HLS_Playlist', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -892,7 +926,7 @@ const addFileToMemory = (fileUrlObj, ishero) => {
   console.log('addFileToMemory : thumbURL ' + thumbURL);
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/associateFile', {
+    fetch('https://memrii-api.herokuapp.com/associateFile', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -932,7 +966,7 @@ const addFileToMemory = (fileUrlObj, ishero) => {
 
 export async function getObjectSignedurl(fileName) {
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/getObject_signedurl', {
+    fetch('https://memrii-api.herokuapp.com/getObject_signedurl', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -954,7 +988,7 @@ export async function getObjectSignedurl(fileName) {
 
 const addPersontoMemory = (personID) => {
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/associatePerson', {
+    fetch('https://memrii-api.herokuapp.com/associatePerson', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -982,7 +1016,7 @@ const addPersontoMemory = (personID) => {
 const addCloudtoMemory = (groupID) => {
   console.log('addCloudToMemory : ' + groupID);
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/associateGroup', {
+    fetch('https://memrii-api.herokuapp.com/associateGroup', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -1016,7 +1050,7 @@ export function setMemorySearchWords(searchwords) {
   );
 
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/set_searchwords_memid', {
+    fetch('https://memrii-api.herokuapp.com/set_searchwords_memid', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -1038,7 +1072,7 @@ export function setMemorySearchWords(searchwords) {
 
 const addKeywordtoMemory = (word) => {
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/associateKeyword', {
+    fetch('https://memrii-api.herokuapp.com/associateKeyword', {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
@@ -1065,7 +1099,7 @@ const addKeywordtoMemory = (word) => {
 
 const createMemoryID = () => {
   return new Promise((resolve, reject) => {
-    fetch('https://memriio-api-0.herokuapp.com/creatememory', {
+    fetch('https://memrii-api.herokuapp.com/creatememory', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
