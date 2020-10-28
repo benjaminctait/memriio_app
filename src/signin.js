@@ -52,7 +52,7 @@ class Signin extends Component {
         console.log('onSubmitSignIn ' +  this.state.email + ' ' + this.state.password);
         this.setState({spinner:true})
         
-        fetch('https://memriio-api-0.herokuapp.com/signin', {
+        fetch('https://memrii-api.herokuapp.com/signin', {
             method: 'post',
             headers: {'Content-Type':'application/json'},
             body:JSON.stringify({
@@ -89,7 +89,7 @@ onSubmitSignUp = () => {
     console.log('onSubmitSignUp ' + this.state.firstname + ' ' + this.state.lastname + ' ' + this.state.email + ' ' + this.state.password);
     this.setState({spinner:true})
     
-    fetch('https://memriio-api-0.herokuapp.com/register', {
+    fetch('https://memrii-api.herokuapp.com/register', {
         method: 'post',
         headers: {'Content-Type':'application/json'},
         body:JSON.stringify({
