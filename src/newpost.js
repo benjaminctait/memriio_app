@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Video from 'react-native-video';
+import Spinner from 'react-native-loading-spinner-overlay';
+
 import {
   StyleSheet,
   View,
@@ -40,6 +42,7 @@ class NewPost extends Component {
     allClouds: [],
     taggedClouds: [],
     user: null,
+    spinner: false,
   };
 
   //--------------------------------------------------------------------------
@@ -65,9 +68,8 @@ class NewPost extends Component {
   //--------------------------------------------------------------------------
 
   refreshFeed = (memid) => {
-    console.log('newPost.refreshFeed : ' + memid);
-
-    // Now that the post has uploaded - need to push it onto the feed ??
+    this.setState({spinner: false});
+    this.props.navigation.push('Home');
   };
 
   //--------------------------------------------------------------------------
@@ -86,6 +88,7 @@ class NewPost extends Component {
     me.taggedPeople.map((person, i) => {
       personarray[i] = person.userid;
     });
+    this.setState({spinner: true});
 
     await mem.postNewMemory(
       me.title,
@@ -97,9 +100,6 @@ class NewPost extends Component {
       me.user.userid,
       this.refreshFeed,
     );
-
-    console.log('new mem :');
-    this.props.navigation.navigate('Feed');
   };
 
   // ---------------------------------------------------------------------------------
@@ -243,6 +243,7 @@ class NewPost extends Component {
   getMatchingThumb = (keys, targetKey) => {
     return new Promise((resolve, reject) => {
       AsyncStorage.getItem(targetKey + '-thumb').then((thumbPath) => {
+        console.log('thumb for :', targetKey, thumbPath);
         resolve(thumbPath);
       });
       // let targetKeyNumber = parseInt(targetKey.slice(-1));
@@ -287,6 +288,11 @@ class NewPost extends Component {
     return (
       <KeyboardShift>
         <View style={styles.container}>
+          <Spinner
+            visible={this.state.spinner}
+            textContent={'Uploading memory...'}
+            textStyle={styles.spinnerTextStyle}
+          />
           <Input // Title
             inputStyle={styles.titletext}
             onChangeText={(text) => {
@@ -450,5 +456,8 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 10,
     borderWidth: 1,
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
   },
 });

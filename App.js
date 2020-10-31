@@ -11,6 +11,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Signin from './src/signin';
 import Settings from './src/settings.js';
 import {YellowBox} from 'react-native';
+import {StackNavigator} from 'react-navigation';
+import PlayerScreen from 'react-native-sound-playerview';
 
 YellowBox.ignoreWarnings([
   'Animated: `useNativeDriver` was not specified.',
@@ -134,6 +136,14 @@ class App extends Component {
                 cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
               }}
             />
+            <Stack.Screen
+              name="Audio"
+              options={{
+                headerLeft: null,
+                cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+              }}>
+              {(props) => <PlayerScreen {...props} />}
+            </Stack.Screen>
           </Stack.Navigator>
         </NavigationContainer>
       );

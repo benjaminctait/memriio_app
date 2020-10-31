@@ -147,6 +147,7 @@ class CaptureComponent extends Component {
       url: result,
       timeStamp: 10000,
     }).then((thumbnail) => {
+      console.log('setting video thumb,', thumbnail);
       AsyncStorage.setItem(`video-${this.state.fcount}-thumb`, thumbnail.path);
     });
   };
@@ -254,7 +255,7 @@ class CaptureComponent extends Component {
         const data = await this.camera.takePictureAsync();
 
         const fullpath = data.uri.split('//')[1];
-        AsyncStorage.setItem('image-' + this.state.fcount + 1, fullpath);
+        AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
         AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
         console.log('takePicture :', data);
 
@@ -321,7 +322,7 @@ class CaptureComponent extends Component {
         if (img.type === 'video') {
           const fullpath = img.uri.split('//')[1];
           AsyncStorage.setItem(
-            'video-file-' + (this.state.fcount + i + 1),
+            `video-file-${this.state.fcount + i + 1}`,
             fullpath,
           );
           createThumbnail({
@@ -334,16 +335,28 @@ class CaptureComponent extends Component {
             );
           });
         } else {
-          heicToJpg(img.uri).then((jpegPath) => {
+          if (Platform.OS === 'ios') {
+            heicToJpg(img.uri).then((jpegPath) => {
+              AsyncStorage.setItem(
+                `image-file-${this.state.fcount + i + 1}`,
+                jpegPath,
+              );
+              AsyncStorage.setItem(
+                `image-file-thumb-${this.state.fcount + i + 1}-thumb`,
+                jpegPath,
+              );
+            });
+          } else {
+            console.log('setting image file:', img.uri);
             AsyncStorage.setItem(
-              'image-file-' + (this.state.fcount + i + 1),
-              jpegPath,
+              `image-file-${this.state.fcount + i + 1}`,
+              img.uri,
             );
             AsyncStorage.setItem(
-              `image-file-thumb-${this.state.fcount + i + 1}-thumb`,
-              jpegPath,
+              `image-file-${this.state.fcount + i + 1}-thumb`,
+              img.uri,
             );
-          });
+          }
         }
       }
     });

@@ -154,6 +154,7 @@ class Feed extends Component {
   componentDidMount = async () => {
     this.state.user = await mem.activeUser();
     mem.mapUserClouds(this.state.user.userid, this.loadClouds);
+    this.refreshFeed();
   };
 
   //----------------------------------------------------------------------------------------------
@@ -224,6 +225,7 @@ class Feed extends Component {
               story={mem.story}
               createdon={mem.createdon}
               userid={mem.userid}
+              navigation={this.props.navigation}
             />
           ))}
         </ScrollView>
