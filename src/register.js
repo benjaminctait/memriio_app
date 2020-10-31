@@ -27,27 +27,33 @@ class Register extends React.Component {
     this.setState({newUserPassword: event.target.value});
   };
 
-  onRegisterClick = () => {
-    fetch('https://memriio-api-0.herokuapp.com/register', {
-      method: 'post',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        email: this.state.newUserEmail,
-        password: this.state.newUserPassword,
-        firstname: this.state.newUserFirstName,
-        lastname: this.state.newUserLastName,
-      }),
-    })
-      .then((response) => response.json())
-      .then((user) => {
-        if (user.userid) {
-          this.props.loadUser(user);
-          this.props.onRouteChange('home');
-        } else {
-          this.setState({newUserPassword: ''});
-          this.setState({newUserEmail: ''});
-          this.setState({newUserFirstName: ''});
-          this.setState({newUserLastName: ''});
+    onRegisterClick = () => {
+       
+        
+        fetch('https://memrii-api.herokuapp.com/register', {
+            method: 'post',
+            headers: {'Content-Type':'application/json'},
+            body:JSON.stringify({
+                    email:this.state.newUserEmail,
+                    password: this.state.newUserPassword,
+                    firstname: this.state.newUserFirstName,
+                    lastname: this.state.newUserLastName
+                })
+            })
+                .then(response => response.json())
+                .then(user => {
+                    
+                    
+                 if(user.userid){
+                    this.props.loadUser(user)
+                    this.props.onRouteChange('home')
+                 }else{
+                    this.setState({newUserPassword:''})   
+                    this.setState({newUserEmail:''})   
+                    this.setState({newUserFirstName:''})
+                    this.setState({newUserLastName:''})
+                 }
+             })
         }
       });
   };

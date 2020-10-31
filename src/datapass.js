@@ -260,36 +260,23 @@ export async function cleanupStorage(options = {}) {
 // retrieve all memories for user and cloudIDs where user is in that cloud --------------------
 
 export function mapUserClouds(userid, callback) {
-  try {
-    fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
-      method: 'post',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({userID: userid}),
-    })
-      .then((response) => {
-        // console.log('response from api :', response);
-        // return JSON.parse(response);
-        return response.json();
-      })
-      .then((res) => {
-        console.log('json response', res);
-        if (res.success) {
-          console.log('server response : ' + res.success);
-          console.log('server data : ' + res.data);
-          callback(res.data);
-        } else {
-          console.log(
-            'server response : ' + res.success + ' with ' + res.error,
-            res,
-          );
-        }
-      });
-  } catch (e) {
-    console.log('api error getting clouds:', e);
-  }
+  fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({userID: userid}),
+  })
+    .then((response) => response.json())
+    .then((res) => {
+      if (res.success) {
+        console.log('server response : ' + res.success);
+        console.log('server data : ' + res.data);
+        callback(res.data);
+      } else {
+        console.log('server response : ' + res.success + ' with ' + res.error);
+      }
+    });
 }
 
 //---------------------------------------------------------------------------------------------
