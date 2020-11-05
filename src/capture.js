@@ -1,7 +1,12 @@
 import React, {Component, memo} from 'react';
 import {RNCamera} from 'react-native-camera';
 import AsyncStorage from '@react-native-community/async-storage';
-import {cleanupStorage, millisecsToHMSM,logStorageContent,heicToJpg} from './datapass';
+import {
+  cleanupStorage,
+  millisecsToHMSM,
+  logStorageContent,
+  heicToJpg,
+} from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
 import CameraRoll from '@react-native-community/cameraroll';
@@ -43,7 +48,7 @@ class CaptureComponent extends Component {
     mode: 'camera',
     isRecordingVideo: false,
     isRecordingAudio: false,
-   
+
     fcount: 0,
     currentTime: 0.0,
     recording: false,
@@ -61,6 +66,7 @@ class CaptureComponent extends Component {
     await cleanupStorage();
 
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
+      console.log('audio authorization:', isAuthorised);
       this.setState({hasPermission: isAuthorised});
 
       if (!isAuthorised) {
@@ -120,15 +126,13 @@ class CaptureComponent extends Component {
         const data = await this.camera.recordAsync({});
 
         if (data) {
-          
           this.setState({
             isRecordingVideo: false,
-            fcount: this.state.fcount + 1
+            fcount: this.state.fcount + 1,
           });
           let fname = Date.now().toString() + '.mp4';
           console.log('BBC video : ' + data.uri);
-          this.littlecallback(data.uri)
-          
+          this.littlecallback(data.uri);
         }
       } catch (err) {
         alert('Video error' + err);
@@ -138,12 +142,13 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
   littlecallback = (result) => {
-    AsyncStorage.setItem('video- ' + this.state.fcount, result);
+    AsyncStorage.setItem('video-' + this.state.fcount, result);
     createThumbnail({
       url: result,
       timeStamp: 10000,
     }).then((thumbnail) => {
-      AsyncStorage.setItem('video-thumb- ' + this.state.fcount, thumbnail.path);
+      console.log('setting video thumb,', thumbnail);
+      AsyncStorage.setItem(`video-${this.state.fcount}-thumb`, thumbnail.path);
     });
   };
 
@@ -173,11 +178,10 @@ class CaptureComponent extends Component {
 
   startRecordingAudio = async () => {
     this.setState({isRecordingAudio: true});
-    if (!this.state.hasPermission) {
-      console.warn("Can't record, no permission granted!");
-      return;
-
-    }
+    // if (!this.state.hasPermission) {
+    //   console.warn("Can't record, no permission granted!");
+    //   return;
+    // }
 
     if (this.state.stoppedRecording) {
       let uniqueAudioPath =
@@ -209,11 +213,11 @@ class CaptureComponent extends Component {
         this.state.currentTime
       } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
     );
-    
+    await cleanupStorage({key: 'audio'});
     this.setState({fcount: this.state.fcount + 1});
     AsyncStorage.setItem('audio-' + this.state.fcount, filePathNew);
     AsyncStorage.setItem(
-      'audio-thumb-' + this.state.fcount,
+      `audio-${this.state.fcount}-thumb`,
       './images/file.png',
     );
   }
@@ -227,7 +231,6 @@ class CaptureComponent extends Component {
       recording: false,
       paused: false,
     });
-
 
     try {
       const filePathNew = await AudioRecorder.stopRecording();
@@ -247,19 +250,16 @@ class CaptureComponent extends Component {
 
   takePicture = async () => {
     if (this.camera) {
-      
       console.log('capture.takePicture() ' + this.camera);
       try {
         const data = await this.camera.takePictureAsync();
-        
+
         const fullpath = data.uri.split('//')[1];
-        AsyncStorage.setItem('image-' + (this.state.fcount + 1), fullpath);
-        AsyncStorage.setItem('image-thumb-' + (this.state.fcount + 1), fullpath);
+        AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
+        AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
         console.log('takePicture :', data);
-        
-        logStorageContent()
 
-
+        logStorageContent();
       } catch (err) {
         alert(err);
       } finally {
@@ -303,8 +303,8 @@ class CaptureComponent extends Component {
   };
   hasAndroidPermission = async () => {
     const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-    const hasPermission = await PermissionsAndroid.check(permission);
-    if (hasPermission) {
+    const getStoragePermission = await PermissionsAndroid.check(permission);
+    if (getStoragePermission) {
       return true;
     }
     const status = await PermissionsAndroid.request(permission);
@@ -313,6 +313,7 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
   getSelectedImages = async (images) => {
     this.setState({filesSelected: images});
+    console.log('getting selected images');
     await cleanupStorage({key: 'file-'}); //remove previously stroed files
     images.forEach((img, i) => {
       console.log('image :', img);
@@ -320,19 +321,42 @@ class CaptureComponent extends Component {
       if (img.uri) {
         if (img.type === 'video') {
           const fullpath = img.uri.split('//')[1];
-          AsyncStorage.setItem('video-file-' + (this.state.fcount + i + 1), fullpath);
+          AsyncStorage.setItem(
+            `video-file-${this.state.fcount + i + 1}`,
+            fullpath,
+          );
           createThumbnail({
             url: img.uri,
             timeStamp: 10000,
           }).then((thumbnail) => {
-            AsyncStorage.setItem('video-file-thumb- ' + (this.state.fcount + i + 1), thumbnail.path);
+            AsyncStorage.setItem(
+              `video-file-${this.state.fcount + i + 1}-thumb`,
+              thumbnail.path,
+            );
           });
         } else {
-          heicToJpg(img.uri)
-          .then(jpegPath => {            
-            AsyncStorage.setItem('image-file-' + (this.state.fcount + i + 1), jpegPath);
-            AsyncStorage.setItem('image-file-thumb-' + (this.state.fcount + i + 1), jpegPath);
-          })
+          if (Platform.OS === 'ios') {
+            heicToJpg(img.uri).then((jpegPath) => {
+              AsyncStorage.setItem(
+                `image-file-${this.state.fcount + i + 1}`,
+                jpegPath,
+              );
+              AsyncStorage.setItem(
+                `image-file-thumb-${this.state.fcount + i + 1}-thumb`,
+                jpegPath,
+              );
+            });
+          } else {
+            console.log('setting image file:', img.uri);
+            AsyncStorage.setItem(
+              `image-file-${this.state.fcount + i + 1}`,
+              img.uri,
+            );
+            AsyncStorage.setItem(
+              `image-file-${this.state.fcount + i + 1}-thumb`,
+              img.uri,
+            );
+          }
         }
       }
     });
@@ -372,7 +396,6 @@ class CaptureComponent extends Component {
         if (this.state.isRecordingVideo) {
           bigButton = <VideoStopButton onPress={this.stopRecordingVideo} />;
         } else {
-
           bigButton = <VideoStartButton onPress={this.startRecordingVideo} />;
         }
         break;

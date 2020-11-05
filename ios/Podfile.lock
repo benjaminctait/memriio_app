@@ -255,12 +255,14 @@ PODS:
     - React
   - react-native-safe-area-context (0.7.3):
     - React
+  - react-native-track-player (1.2.3):
+    - React
   - react-native-video (4.4.5):
     - React
     - react-native-video/Video (= 4.4.5)
   - react-native-video/Video (4.4.5):
     - React
-  - react-native-viewpager (4.1.6):
+  - react-native-viewpager (4.1.7):
     - React
   - React-RCTActionSheet (0.62.2):
     - React-Core/RCTActionSheetHeaders (= 0.62.2)
@@ -396,6 +398,7 @@ DEPENDENCIES:
   - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - react-native-mov-to-mp4 (from `../node_modules/react-native-mov-to-mp4`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-track-player (from `../node_modules/react-native-track-player`)
   - react-native-video (from `../node_modules/react-native-video`)
   - "react-native-viewpager (from `../node_modules/@react-native-community/viewpager`)"
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -483,6 +486,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-mov-to-mp4"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-track-player:
+    :path: "../node_modules/react-native-track-player"
   react-native-video:
     :path: "../node_modules/react-native-video"
   react-native-viewpager:
@@ -568,8 +573,9 @@ SPEC CHECKSUMS:
   react-native-image-resizer: b53bf95ad880100e20262687e41f76fdbc9df255
   react-native-mov-to-mp4: b63917cb6f96d4c264d8f5213db7961442dd4298
   react-native-safe-area-context: 8260e5157617df4b72865f44006797f895b2ada7
+  react-native-track-player: 84552605df7d90e199ff8b5deceddff58d658523
   react-native-video: aa527b0acb37f94c4491e70df0274cb26979405d
-  react-native-viewpager: 0dbb6df18e3d56a0eee2908c5401fadf9a6b57f8
+  react-native-viewpager: 05d1ac2862d1edd9b0ccb73590ef9716e409b1e9
   React-RCTActionSheet: f41ea8a811aac770e0cc6e0ad6b270c644ea8b7c
   React-RCTAnimation: 49ab98b1c1ff4445148b72a3d61554138565bad0
   React-RCTBlob: a332773f0ebc413a0ce85942a55b064471587a71
@@ -595,6 +601,6 @@ SPEC CHECKSUMS:
   Yoga: 3ebccbdd559724312790e7742142d062476b698e
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: cf2df50bed597fed3ac2024b3d2a773f10f66af7
+PODFILE CHECKSUM: 1f8ff266c2389edcd28a297da291e263bb0c172d
 
-COCOAPODS: 1.9.2
+COCOAPODS: 1.10.0.beta.2

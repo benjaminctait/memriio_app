@@ -10,7 +10,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {Platform} from 'react-native';
 import RNFS from 'react-native-fs';
 
-
 const memory = {
   title: '', // short title of the memory : string
   story: '', // text desciribing the memory : string
@@ -24,21 +23,21 @@ const memory = {
 
 // -------------------------------------------------------------------------------
 
-export async function  heicToJpg ( heicPath ){
-  console.log(
-    'datapass.heicToJpg : heicPath : ' + heicPath,
-  );
-  const dest = `${RNFS.TemporaryDirectoryPath}${Math.random().toString(36).substring(7)}.jpg`;  
+export async function heicToJpg(heicPath) {
+  console.log('datapass.heicToJpg : heicPath : ' + heicPath);
+  const dest = `${RNFS.TemporaryDirectoryPath}${Math.random()
+    .toString(36)
+    .substring(7)}.jpg`;
 
   return new Promise((resolve, reject) => {
-     RNFS.copyAssetsFileIOS(heicPath, dest, 0, 0)
-     .then(absolutePath =>{
-        resolve(absolutePath)
-     })
-     .catch(err =>{
-        reject(err)
-     })
-    })
+    RNFS.copyAssetsFileIOS(heicPath, dest, 0, 0)
+      .then((absolutePath) => {
+        resolve(absolutePath);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
 }
 
 // create a new emory cloud  -----------------------------------------------------
@@ -202,31 +201,29 @@ const getSearchWords = () => {
 
 // ---------------------------------------------------------------------------------
 
-export async function logStorageContent(){
-
-  const filearray = []
+export async function logStorageContent() {
+  const filearray = [];
   console.log('AsyncStorage Content');
-  console.log('Loggedin : ' + await AsyncStorage.getItem('userLoggedin'))
-  console.log('userid : ' + await AsyncStorage.getItem('userid'))
-  console.log('firstname : ' + await AsyncStorage.getItem('firstname'))
-  console.log('lastname : ' + await AsyncStorage.getItem('lastname'))
-  console.log('email : ' + await AsyncStorage.getItem('email')) 
+  console.log('Loggedin : ' + (await AsyncStorage.getItem('userLoggedin')));
+  console.log('userid : ' + (await AsyncStorage.getItem('userid')));
+  console.log('firstname : ' + (await AsyncStorage.getItem('firstname')));
+  console.log('lastname : ' + (await AsyncStorage.getItem('lastname')));
+  console.log('email : ' + (await AsyncStorage.getItem('email')));
   console.log();
 
-  const keys = AsyncStorage.getAllKeys()
-  .then(keys => {
-    
-    keys.map(key =>{
-      if(key.includes('image') || key.includes('audio') || key.includes('video')){
-        AsyncStorage.getItem(key).then(value => {
-          console.log('key : '  + key + ' fileName : ' + getFilename( value ))
-        })
+  const keys = AsyncStorage.getAllKeys().then((keys) => {
+    keys.map((key) => {
+      if (
+        key.includes('image') ||
+        key.includes('audio') ||
+        key.includes('video')
+      ) {
+        AsyncStorage.getItem(key).then((value) => {
+          console.log('key : ' + key + ' fileName : ' + getFilename(value));
+        });
       }
-      
-    })
-  })
-  
-
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------------
@@ -235,35 +232,29 @@ export async function logStorageContent(){
 // post :  any key value pair where key contains 'image-','video-', 'audio-' will
 //         be removed from Storage
 
-export async function cleanupStorage(options) {
-  console.log('function : cleanupStorage ');
+export async function cleanupStorage(options = {}) {
+  console.log('function : cleanupStorage ', options);
   const keys = await AsyncStorage.getAllKeys();
-  try {
-    if (options && options.key) {
-      keys.map((key) => {
-        if (key.includes(options.key)) {
-          console.log('Removing storage item : ' + key);
-          AsyncStorage.removeItem(key);
-        }
-      });
-      // Remove only selected key and return
-      return;
-    }
-
+  if (options && options.key) {
     keys.map((key) => {
-      if (
-        key.includes('image-') ||
-        key.includes('video-') ||
-        key.includes('audio-')
-      ) {
+      if (key.includes(options.key)) {
         console.log('Removing storage item : ' + key);
         AsyncStorage.removeItem(key);
       }
     });
-  } catch (e) {
-    console.log(e);
-    // am;
+    // Remove only selected key and return
+    return true;
   }
+  keys.map((key) => {
+    if (
+      key.includes('image-') ||
+      key.includes('video-') ||
+      key.includes('audio-')
+    ) {
+      console.log('Removing storage item : ' + key);
+      AsyncStorage.removeItem(key);
+    }
+  });
 }
 
 // retrieve all memories for user and cloudIDs where user is in that cloud --------------------
@@ -371,7 +362,7 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
       searchwords,
   );
 
-  if (isNonEmptyArray(searchwords)) {
+  if (searchwords.length > 0) {
     console.log('getMemories_PersonalOnly_All - with searchwords');
     return new Promise((resolve, reject) => {
       fetch(
@@ -397,16 +388,13 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
   } else {
     console.log('getMemories_PersonalOnly_All - no searchwords');
     return new Promise((resolve, reject) => {
-      fetch(
-        'https://memrii-api.herokuapp.com/get_memories_userid_noclouds',
-        {
-          method: 'post',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            userid: userid,
-          }),
-        },
-      )
+      fetch('https://memrii-api.herokuapp.com/get_memories_userid_noclouds', {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          userid: userid,
+        }),
+      })
         .then((response) => response.json())
         .then((res) => {
           if (res.success) {
@@ -643,6 +631,9 @@ const getFileMime = (extension) => {
     case 'jpeg':
       mime = 'image/jpeg';
       break;
+    case 'png':
+      mime = 'image/png';
+      break;
     case 'mp4':
       mime = 'video/mp4';
       break;
@@ -673,9 +664,9 @@ const uploadImageFile = (fileObj) => {
   let filepath = stry(fileObj.filepath);
   let thumbnail = stry(fileObj.thumbnail);
   let origFileParts = filepath.split('.');
-  let origExtension = origFileParts[1];
+  let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
-  let thumbExtension = thumbFileParts[1];
+  let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
   let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
   let origS3URL = thumbS3URL;
   let targetFileName = commonfileName + '-original' + '.' + origExtension;
@@ -718,9 +709,9 @@ const uploadVideoFile = (fileObj) => {
   let filepath = stry(fileObj.filepath);
   let thumbnail = stry(fileObj.thumbnail);
   let origFileParts = filepath.split('.');
-  let origExtension = origFileParts[1];
+  let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
-  let thumbExtension = thumbFileParts[1];
+  let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
   let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
   let origS3URL = thumbS3URL;
   let vFolder = commonfileName + '-' + 0;
@@ -733,13 +724,25 @@ const uploadVideoFile = (fileObj) => {
       console.log(
         'uploadVideo pre transcode : targetFileName : ' + targetFileName,
       );
-      
-      transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
-        if (result.success) {
-          console.log('uploadVideo post transcode : thumburl : ' + result.data);
-          resolve({originalURL: origS3URL, thumbURL: result.data});
-        } else {
-          reject('failed to transcode video');
+      // resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+      processLowResImage(thumbnail, thumbExtension).then((response) => {
+        if (response != 'failure') {
+          let thumbTarget = commonfileName + '-thumb' + '.' + thumbExtension;
+          _uploadFiletoS3(response, thumbTarget).then((s3result) => {
+            if (s3result != 'failure') {
+              thumbS3URL = s3result;
+              transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
+                if (result.success) {
+                  console.log('uploadVideo post transcode  : ' + result.data);
+                  resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+                } else {
+                  reject('failed to transcode video');
+                }
+              });
+            } else {
+              reject(null);
+            }
+          });
         }
       });
     });
@@ -751,7 +754,7 @@ const uploadVideoFile = (fileObj) => {
 const uploadAudioFile = (fileObj) => {
   console.log('uploadAudioFile ---------------------------------- ');
   console.log('original: ' + getFilename(fileObj.filepath));
-  console.log('thumb: ' + getFilename(fileObj.thumbnail));
+  console.log('thumb: ' + getFilename(fileObj.thumbnail), fileObj.thumbnail);
   let thumbS3URL = '';
 
   let filepath = stry(fileObj.filepath);
@@ -759,25 +762,34 @@ const uploadAudioFile = (fileObj) => {
   let origFileParts = filepath.split('.');
   let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
-  let thumbExtension = thumbFileParts[1];
+  let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
   let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
   let origS3URL = thumbS3URL;
-  let vFolder = commonfileName + '-' + 0;
 
   return new Promise((resolve, reject) => {
     let targetFileName = commonfileName + '-0-audio' + '.' + origExtension;
     _uploadFiletoS3(filepath, targetFileName).then((result) => {
       origS3URL = result;
+      resolve({originalURL: origS3URL, thumbURL: 'thumbS3URL'});
 
-      console.log(
-        'uploadAudio pre transcode : targetFileName : ' + targetFileName,
-      );
-      if (result != 'failure') {
-        thumbS3URL = result;
-        resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
-      } else {
-        reject(null);
-      }
+      // console.log(
+      //   'uploadAudio pre transcode : targetFileName : ' + targetFileName,
+      // );
+      // if (result !== 'failure') {
+      //   let thumbTarget = commonfileName + '-thumb' + '.' + thumbExtension;
+      //   _uploadFiletoS3(require('./images/audioThumb.png'), thumbTarget).then(
+      //     (s3result) => {
+      //       if (s3result !== 'failure') {
+      //         thumbS3URL = s3result;
+      //         resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+      //       } else {
+      //         reject(null);
+      //       }
+      //     },
+      //   );
+      // } else {
+      //   reject(null);
+      // }
     });
   });
 };
@@ -785,6 +797,7 @@ const uploadAudioFile = (fileObj) => {
 //-------------------------------------------------------------------------------
 
 const _uploadFiletoS3 = (sourceFile, targetFile) => {
+  console.log('source file:', sourceFile);
   console.log('_uploadFileToS3 : ' + getFilename(sourceFile));
   let fileParts = sourceFile.toLowerCase().split('.');
   console.log('fileParts : ', fileParts);
@@ -795,7 +808,12 @@ const _uploadFiletoS3 = (sourceFile, targetFile) => {
   let MIME = getFileMime(extension);
 
   const file = {
-    uri: Platform.OS === 'android' ? `file://${sourceFile}` : sourceFile,
+    uri:
+      Platform.OS === 'android' &&
+      !sourceFile.includes('file://') &&
+      !sourceFile.startsWith('.')
+        ? `file://${sourceFile}`
+        : sourceFile,
     name: targetFile,
     type: MIME,
   };
@@ -1143,7 +1161,7 @@ const createMemoryID = () => {
 
 export function isSupportedImageFile(filename) {
   let ext = getExtension(filename).toLowerCase();
-  let filetypes = ['jpeg', 'jpg', 'png','heic'];
+  let filetypes = ['jpeg', 'jpg', 'png', 'heic'];
   let found = filetypes.indexOf(ext);
   return !(found === -1);
 }
