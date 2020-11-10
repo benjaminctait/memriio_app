@@ -139,7 +139,7 @@ class App extends Component {
             <Stack.Screen
               name="Audio"
               options={{
-                headerLeft: null,
+                // headerLeft: null,
                 cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
               }}>
               {(props) => <PlayerScreen {...props} />}

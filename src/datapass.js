@@ -744,21 +744,25 @@ const uploadVideoFile = (fileObj) => {
           _uploadFiletoS3(response, thumbTarget).then((s3result) => {
             if (s3result != 'failure') {
               thumbS3URL = s3result;
-              transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
-                if (result.success) {
-                  console.log('uploadVideo post transcode  : ' + result.data);
-                  // resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
-                  resolve({
-                    originalURL: origS3URL,
-                    thumbURL: {
-                      thumb: result.data,
-                      displayurl: result.data,
-                    },
-                  });
-                } else {
-                  reject('failed to transcode video');
-                }
-              });
+              transcodeVideoToHLS(targetFileName, vFolder).then(
+                (videoTranscode) => {
+                  if (videoTranscode.success) {
+                    console.log(
+                      'uploadVideo post transcode  : ' + videoTranscode.data,
+                    );
+                    // resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+                    resolve({
+                      originalURL: origS3URL,
+                      thumbURL: {
+                        thumburl: thumbS3URL,
+                        displayurl: videoTranscode.data,
+                      },
+                    });
+                  } else {
+                    reject('failed to transcode video');
+                  }
+                },
+              );
             } else {
               reject(null);
             }
@@ -970,11 +974,13 @@ const processMediumResImage = async (filepath, filetype) => {
 const addFileToMemory = (fileUrlObj, ishero) => {
   console.log('addFileToMemory : +++++++++++++ ');
 
-  let {displayurl = ''} = fileUrlObj;
+  let {displayurl = ''} = fileUrlObj.thumbURL;
 
   const sourceURL = stry(fileUrlObj.originalURL);
   const thumbURL = stry(
-    fileUrlObj.thumbURL.thumb ? fileUrlObj.thumbURL.thumb : fileUrlObj.thumbURL,
+    fileUrlObj.thumbURL.thumburl
+      ? fileUrlObj.thumbURL.thumburl
+      : fileUrlObj.thumbURL,
   );
   displayurl = stry(displayurl);
 
