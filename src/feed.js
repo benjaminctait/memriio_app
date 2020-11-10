@@ -242,6 +242,12 @@ class Feed extends Component {
           <Text style={styles.textMain}>Im Empty !</Text>
         </View>
       );
+    } else if (this.state.isLoading) {
+      feedview = (
+        <View style={styles.nomemory}>
+          <Text style={styles.textMain}>Loading...</Text>
+        </View>
+      );
     } else {
       feedview = (
         <View style={styles.nomemory}>

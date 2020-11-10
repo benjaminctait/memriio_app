@@ -256,6 +256,19 @@ export async function cleanupStorage(options = {}) {
     }
   });
 }
+export async function getItems(options = {}) {
+  console.log('function : getItems ', options);
+  const keys = await AsyncStorage.getAllKeys();
+  let fileExist = false;
+  keys.forEach((key) => {
+    if (key.includes('image-file') || key.includes('video-file')) {
+      console.log('Removing storage item : ' + key);
+      AsyncStorage.removeItem(key);
+      fileExist = true;
+    }
+  });
+  return fileExist;
+}
 
 // retrieve all memories for user and cloudIDs where user is in that cloud --------------------
 
@@ -734,7 +747,14 @@ const uploadVideoFile = (fileObj) => {
               transcodeVideoToHLS(targetFileName, vFolder).then((result) => {
                 if (result.success) {
                   console.log('uploadVideo post transcode  : ' + result.data);
-                  resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+                  // resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+                  resolve({
+                    originalURL: origS3URL,
+                    thumbURL: {
+                      thumb: result.data,
+                      displayurl: result.data,
+                    },
+                  });
                 } else {
                   reject('failed to transcode video');
                 }
@@ -950,8 +970,13 @@ const processMediumResImage = async (filepath, filetype) => {
 const addFileToMemory = (fileUrlObj, ishero) => {
   console.log('addFileToMemory : +++++++++++++ ');
 
+  let {displayurl = ''} = fileUrlObj;
+
   const sourceURL = stry(fileUrlObj.originalURL);
-  const thumbURL = stry(fileUrlObj.thumbURL);
+  const thumbURL = stry(
+    fileUrlObj.thumbURL.thumb ? fileUrlObj.thumbURL.thumb : fileUrlObj.thumbURL,
+  );
+  displayurl = stry(displayurl);
 
   const sourceext = getExtension(sourceURL);
   const thumbext = getExtension(thumbURL);
@@ -972,6 +997,7 @@ const addFileToMemory = (fileUrlObj, ishero) => {
         thumburl: thumbURL,
         thumbext: thumbext,
         ishero: ishero,
+        displayurl,
       }),
     })
       .then((response) => response.json())

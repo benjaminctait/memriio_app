@@ -165,7 +165,12 @@ class MemoryCard extends Component {
         </TouchableOpacity>
       );
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-      return <VideoPlayer poster={item.thumburl} source={item.fileurl} />;
+      return (
+        <VideoPlayer
+          poster={item.thumburl}
+          source={item.displayurl ? item.displayurl : item.fileurl}
+        />
+      );
     } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
       return (
         <TouchableOpacity
