@@ -6,6 +6,7 @@ import {
   millisecsToHMSM,
   logStorageContent,
   heicToJpg,
+  getItems,
 } from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
@@ -64,6 +65,7 @@ class CaptureComponent extends Component {
 
   async componentDidMount() {
     await cleanupStorage();
+    // this.state.filesSelected
 
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       console.log('audio authorization:', isAuthorised);
