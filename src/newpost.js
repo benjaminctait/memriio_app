@@ -159,6 +159,7 @@ class NewPost extends Component {
         console.log();
 
         keys.map((key, index) => {
+          AsyncStorage.getItem(key).then((item) => console.log('async store for key ' + key + ' value ' ,item))
           if (
             key.includes('image-') ||
             key.includes('video-') ||

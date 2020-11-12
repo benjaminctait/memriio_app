@@ -262,8 +262,8 @@ PODS:
     - react-native-video/Video (= 4.4.5)
   - react-native-video/Video (4.4.5):
     - React
-  - react-native-viewpager (4.1.7):
-    - React
+  - react-native-viewpager (4.2.0):
+    - React-Core
   - React-RCTActionSheet (0.62.2):
     - React-Core/RCTActionSheetHeaders (= 0.62.2)
   - React-RCTAnimation (0.62.2):
@@ -335,8 +335,8 @@ PODS:
     - React
   - RNReanimated (1.13.1):
     - React
-  - RNScreens (2.11.0):
-    - React
+  - RNScreens (2.14.0):
+    - React-Core
   - RNSound (0.11.0):
     - React
     - RNSound/Core (= 0.11.0)
@@ -575,7 +575,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 8260e5157617df4b72865f44006797f895b2ada7
   react-native-track-player: 84552605df7d90e199ff8b5deceddff58d658523
   react-native-video: aa527b0acb37f94c4491e70df0274cb26979405d
-  react-native-viewpager: 05d1ac2862d1edd9b0ccb73590ef9716e409b1e9
+  react-native-viewpager: 9e0821106af207201c7f43eff1f1bc0628859c58
   React-RCTActionSheet: f41ea8a811aac770e0cc6e0ad6b270c644ea8b7c
   React-RCTAnimation: 49ab98b1c1ff4445148b72a3d61554138565bad0
   React-RCTBlob: a332773f0ebc413a0ce85942a55b064471587a71
@@ -592,7 +592,7 @@ SPEC CHECKSUMS:
   RNFS: 2bd9eb49dc82fa9676382f0585b992c424cd59df
   RNGestureHandler: 7a5833d0f788dbd107fbb913e09aa0c1ff333c39
   RNReanimated: dd8c286ab5dd4ba36d3a7fef8bff7e08711b5476
-  RNScreens: 0e91da98ab26d5d04c7b59a9b6bd694124caf88c
+  RNScreens: 2e278a90eb15092ed261d4f2271e3fc9b60d08d4
   RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNSoundLevel: a02f3bfbb81aeec256de4e41d7fc967b32e3faf1
   RNThumbnail: f5d3c6e18dd15213ce46e1f631be65d4c6fcb133
@@ -603,4 +603,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 1f8ff266c2389edcd28a297da291e263bb0c172d
 
-COCOAPODS: 1.10.0.beta.2
+COCOAPODS: 1.9.2
