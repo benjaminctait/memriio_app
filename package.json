@@ -36,7 +36,7 @@
     "react-native-audio": "^4.3.0",
     "react-native-aws3": "0.0.9",
     "react-native-camera": "^3.38.0",
-    "react-native-camera-roll-picker": "git://github.com/gronda-team/react-native-camera-roll-picker.git",
+    "react-native-camera-roll-picker": "git://github.com/suhailamir/react-native-camera-roll-picker.git",
     "react-native-create-thumbnail": "^1.2.1",
     "react-native-dotenv": "^0.2.0",
     "react-native-elements": "^1.2.7",

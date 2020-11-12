@@ -65,8 +65,6 @@ class CaptureComponent extends Component {
 
   async componentDidMount() {
     await cleanupStorage();
-    // this.state.filesSelected
-
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       console.log('audio authorization:', isAuthorised);
       this.setState({hasPermission: isAuthorised});
@@ -118,7 +116,6 @@ class CaptureComponent extends Component {
       };
     });
   }
-
   //--------------------------------------------------------------------------------------
 
   startRecordingVideo = async () => {
@@ -273,7 +270,7 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   goBackToFeed = () => {
-    cleanupStorage();
+    // cleanupStorage();
     // clear the sellection on the gallery
     this.props.navigation.navigate('Feed');
   };
