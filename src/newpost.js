@@ -80,22 +80,25 @@ class NewPost extends Component {
     let cloudarray = [];
     let personarray = [];
     let me = this.state;
-
-    cloudarray = me.taggedClouds.filter((cloud) => {
-      cloud.id !== 0;
-    }); // all tagged clouds except the personal cloud
-
+    
+    
+    let locationName = me.location.firstname + ' ' + me.location.lastname // a temporary treatment until we have gps implemented
+    me.taggedClouds.map(cloud =>{
+      if(cloud.id !== 0) cloudarray.push(parseInt(cloud.id)) }) // push all but the personal cloud
+  
+    
     me.taggedPeople.map((person, i) => {
       personarray[i] = person.userid;
     });
     this.setState({spinner: true});
 
+    
     await mem.postNewMemory(
       me.title,
       me.story,
       me.content,
       personarray,
-      me.location,
+      locationName,
       cloudarray,
       me.user.userid,
       this.refreshFeed,
@@ -216,23 +219,22 @@ class NewPost extends Component {
   // ---------------------------------------------------------------------------------
 
   handleCloudTagPress = (cloudItem, buttonState) => {
-    let exists = this.state.taggedClouds.includes((cloud) => {
-      cloud.id === cloudItem.id;
-    });
 
-    console.log('buttonState ' + buttonState + ' exits ' + exists);
+    let selectedClouds = this.state.taggedClouds.map((cloud) => { return cloud.id })
+    let newarray = []
+    let exists = selectedClouds.includes(cloudItem.id)
 
     if (buttonState && !exists) {
       this.state.taggedClouds.push(cloudItem);
     }
 
     if (!buttonState && exists) {
-      let newarry = this.state.taggedClouds.filter((cloud) => {
-        cloud.id !== cloudItem.id;
-      });
-      this.state.taggedClouds = newarry;
+    this.state.taggedClouds.map(cloud =>{
+      if(cloud.id !== cloudItem.id) newarray.push(cloud)})
+    this.state.taggedClouds = newarray  
     }
-    console.log(
+
+    console.log('handleCloudTagPress : taggedClouds.cloud.id ' ,
       this.state.taggedClouds.map((cloud) => {
         return cloud.id;
       }),

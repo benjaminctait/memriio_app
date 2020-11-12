@@ -205,7 +205,7 @@ class Feed extends Component {
     if (memisArray) {
       memcount = this.state.memories.length;
     }
-
+    console.log('feed:render:  loading ' + this.state.isLoading );
     if (memisArray && !this.state.isLoading && memcount) {
       feedview = (
         <ScrollView
@@ -239,7 +239,7 @@ class Feed extends Component {
     } else if (memisArray && !this.state.isLoading && memcount == 0) {
       feedview = (
         <View style={styles.nomemory}>
-          <Text style={styles.textMain}>Im Empty !</Text>
+          <Text style={styles.textMain}>No Results</Text>
         </View>
       );
     } else if (this.state.isLoading) {
@@ -251,7 +251,7 @@ class Feed extends Component {
     } else {
       feedview = (
         <View style={styles.nomemory}>
-          <Text style={styles.textMain}>No memories !</Text>
+          <Text style={styles.textMain}></Text>
         </View>
       );
     }
@@ -335,6 +335,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: 'gray',
+    color: 'black',
   },
   ptagText: {
     fontSize: 15,

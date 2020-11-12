@@ -114,6 +114,9 @@ export async function postNewMemory(
   userid,
   callback,
 ) {
+
+  console.log('postNewMemory:location ',location);
+
   memory.title = title;
   memory.story = story;
   memory.files = files;

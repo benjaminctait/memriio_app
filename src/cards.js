@@ -50,7 +50,7 @@ class MemoryCard extends Component {
     let memory = this.props.memory;
 
     mem.getMemoryFiles(memory.memid, (memfiles) => {
-      console.log('Mem files:', memory.memid, memfiles);
+      //console.log('Mem files:', memory.memid, memfiles);
       this.setState({files: memfiles});
     });
 
