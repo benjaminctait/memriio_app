@@ -23,6 +23,27 @@ const memory = {
 
 // -------------------------------------------------------------------------------
 
+export async function cameraRollPathToAbsolutePath (camRolluri){
+  console.log('datapass.cameraRollPathToAbsolutePath : camRolluri : ' + camRolluri);
+
+  const dest = `${RNFS.TemporaryDirectoryPath}${Math.random()
+    .toString(36)
+    .substring(7)}.mov`;
+
+  return new Promise((resolve, reject) => {
+    RNFS.copyAssetsFileIOS(camRolluri, dest, 0, 0)
+      .then((absolutePath) => {
+        resolve(absolutePath);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+
+}
+
+// -------------------------------------------------------------------------------
+
 export async function heicToJpg(heicPath) {
   console.log('datapass.heicToJpg : heicPath : ' + heicPath);
   const dest = `${RNFS.TemporaryDirectoryPath}${Math.random()

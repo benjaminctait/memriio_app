@@ -4,7 +4,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {
   cleanupStorage,
   millisecsToHMSM,
-  logStorageContent,
+  logStorageContent,  
+  cameraRollPathToAbsolutePath,
   heicToJpg,
   getItems,
 } from './datapass';
@@ -319,23 +320,25 @@ class CaptureComponent extends Component {
 
       if (img.uri) {
         if (img.type === 'video') {
-          const fullpath = img.uri.split('//')[1];
-          AsyncStorage.setItem(
-            `video-file-${this.state.fcount + i + 1}`,
-            fullpath,
-          );
-          createThumbnail({
-            url: img.uri,
-            timeStamp: 10000,
-          }).then((thumbnail) => {
+          cameraRollPathToAbsolutePath(img.uri).then(assetPath =>{
+            console.log('getSelectImages ',assetPath);
             AsyncStorage.setItem(
-              `video-file-${this.state.fcount + i + 1}-thumb`,
-              thumbnail.path,
+              `video-file-${this.state.fcount + i + 1}`,
+              assetPath,
             );
-          });
+            createThumbnail({
+              url: assetPath,
+              timeStamp: 10000,
+            }).then((thumbnail) => {
+              AsyncStorage.setItem(
+                `video-file-${this.state.fcount + i + 1}-thumb`,
+                thumbnail.path,
+              );
+            });
+          })
+          
         } else {
           if (Platform.OS === 'ios') {
-
 
             heicToJpg(img.uri).then((jpegPath) => {
               console.log('getSelectedImages : jpegPath ',jpegPath);
