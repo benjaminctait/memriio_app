@@ -713,6 +713,28 @@ const uploadImageFile = (fileObj) => {
 
 //-------------------------------------------------------------------------------
 
+export async function cameraRollPathToAbsolutePath(camRolluri) {
+  console.log(
+    'datapass.cameraRollPathToAbsolutePath : camRolluri : ' + camRolluri,
+  );
+
+  const dest = `${RNFS.TemporaryDirectoryPath}${Math.random()
+    .toString(36)
+    .substring(7)}.mov`;
+
+  return new Promise((resolve, reject) => {
+    RNFS.copyAssetsFileIOS(camRolluri, dest, 0, 0)
+      .then((absolutePath) => {
+        resolve(absolutePath);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+// -------------------------------------------------------------------------------
+
 const uploadVideoFile = (fileObj) => {
   console.log('uploadVideoFile ---------------------------------- ');
   console.log('original: ' + getFilename(fileObj.filepath));

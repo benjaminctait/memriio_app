@@ -7,6 +7,7 @@ import {
   logStorageContent,
   heicToJpg,
   getItems,
+  cameraRollPathToAbsolutePath,
 } from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
@@ -319,30 +320,62 @@ class CaptureComponent extends Component {
 
       if (img.uri) {
         if (img.type === 'video') {
-          const fullpath = img.uri.split('//')[1];
-          AsyncStorage.setItem(
-            `video-file-${this.state.fcount + i + 1}`,
-            fullpath,
-          );
-          createThumbnail({
-            url: img.uri,
-            timeStamp: 10000,
-          }).then((thumbnail) => {
+          if (Platform.OS === 'ios') {
+            cameraRollPathToAbsolutePath(img.uri).then((assetPath) => {
+              console.log('getSelectImages ', assetPath);
+              AsyncStorage.setItem(
+                `video-file-${this.state.fcount + i + 1}`,
+                assetPath,
+              );
+              createThumbnail({
+                url: assetPath,
+                timeStamp: 10000,
+              }).then((thumbnail) => {
+                AsyncStorage.setItem(
+                  `video-file-${this.state.fcount + i + 1}-thumb`,
+                  thumbnail.path,
+                );
+              });
+            });
+          } else {
+            const fullpath = img.uri.split('//')[1];
             AsyncStorage.setItem(
-              `video-file-${this.state.fcount + i + 1}-thumb`,
-              thumbnail.path,
+              `video-file-${this.state.fcount + i + 1}`,
+              fullpath,
             );
-          });
+
+            // cameraRollPathToAbsolutePath;
+            createThumbnail({
+              url: img.uri,
+              timeStamp: 10000,
+            }).then((thumbnail) => {
+              AsyncStorage.setItem(
+                `video-file-${this.state.fcount + i + 1}-thumb`,
+                thumbnail.path,
+              );
+            });
+          }
         } else {
           if (Platform.OS === 'ios') {
-            heicToJpg(img.uri).then((jpegPath) => {
+            // heicToJpg(img.uri).then((jpegPath) => {
+            //   AsyncStorage.setItem(
+            //     `image-file-${this.state.fcount + i + 1}`,
+            //     jpegPath,
+            //   );
+            //   AsyncStorage.setItem(
+            //     `image-file-${this.state.fcount + i + 1}-thumb`,
+            //     jpegPath,
+            //   );
+            // });
+            cameraRollPathToAbsolutePath(img.uri).then((assetPath) => {
+              console.log('getSelectImages ', assetPath);
               AsyncStorage.setItem(
                 `image-file-${this.state.fcount + i + 1}`,
-                jpegPath,
+                assetPath,
               );
               AsyncStorage.setItem(
-                `image-file-thumb-${this.state.fcount + i + 1}-thumb`,
-                jpegPath,
+                `image-file-${this.state.fcount + i + 1}-thumb`,
+                img.uri,
               );
             });
           } else {
