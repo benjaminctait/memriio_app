@@ -36,9 +36,22 @@ class MemoryCard extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     let memory = this.props.memory;
+    let mf = []
+    let hero = null  
+    
+
     if (prevProps.memory.memid !== this.props.memory.memid) {
       mem.getMemoryFiles(memory.memid, (memfiles) => {
-        this.setState({files: memfiles});
+        memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
+          if(mfile.ishero){
+            hero = mfile
+          }else{
+            mf.push(mfile)
+          } 
+        })      
+        if (hero ) mf.push(hero)   // push the hero last - displayed first
+        
+        this.setState({files: mf});
       });
       // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
     }
@@ -47,11 +60,24 @@ class MemoryCard extends Component {
   //------------------------------------------------------------------------------------------------
 
   async componentDidMount() {
-    let memory = this.props.memory;
+      let memory = this.props.memory;
+      let mf = []
+      let hero = null
 
-    mem.getMemoryFiles(memory.memid, (memfiles) => {
-      console.log('Mem files:', memory.memid, memfiles);
-      this.setState({files: memfiles});
+      mem.getMemoryFiles(memory.memid, (memfiles) => {
+
+      memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
+        if(mfile.ishero){
+          hero = mfile
+        }else{
+          mf.push(mfile)
+        } 
+      })      
+      if (hero) {  // push the hero last - displayed first
+        mf.push(hero)                 
+      }
+      this.setState({files: mf});
+
     });
 
     // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
@@ -154,6 +180,12 @@ class MemoryCard extends Component {
     );
   };
   renderFileView = ({item, index}) => {
+
+    // if (item.displayurl)
+    //   console.log('card renderFileView ',item.memid,item.displayurl, item.ishero );
+    // else
+    //   console.log('card renderFileView ',item.memid,item.thumburl,item.ishero  );
+
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
       return (
         <TouchableOpacity

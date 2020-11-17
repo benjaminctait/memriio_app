@@ -4,14 +4,14 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {
   cleanupStorage,
   millisecsToHMSM,
-  logStorageContent,
+  logStorageContent,  
+  cameraRollPathToAbsolutePath,
   heicToJpg,
   getItems,
   cameraRollPathToAbsolutePath,
 } from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
-import CameraRoll from '@react-native-community/cameraroll';
 
 import {
   CameraClickButton,
@@ -271,8 +271,9 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   goBackToFeed = () => {
-    // cleanupStorage();
-    // clear the sellection on the gallery
+    this.setState({filesSelected:[]})
+    cleanupStorage();
+    
     this.props.navigation.navigate('Feed');
   };
 
@@ -312,7 +313,7 @@ class CaptureComponent extends Component {
   };
   //--------------------------------------------------------------------------------------
   getSelectedImages = async (images) => {
-    this.setState({filesSelected: images});
+    this.state.filesSelected = images 
     console.log('getting selected images');
     await cleanupStorage({key: 'file-'}); //remove previously stroed files
     images.forEach((img, i) => {
@@ -489,6 +490,7 @@ class CaptureComponent extends Component {
           <View style={styles.photosContainer}>
             <CameraRollPicker
               callback={this.getSelectedImages}
+              groupTypes={'All'}
               assetType={'All'}
               selected={this.state.filesSelected}
             />
