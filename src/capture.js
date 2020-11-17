@@ -6,9 +6,6 @@ import {
   millisecsToHMSM,
   logStorageContent,  
   cameraRollPathToAbsolutePath,
-  heicToJpg,
-  getItems,
-  cameraRollPathToAbsolutePath,
 } from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
