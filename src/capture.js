@@ -321,7 +321,9 @@ class CaptureComponent extends Component {
       if (img.uri) {
         if (img.type === 'video') {
           if (Platform.OS === 'ios') {
-            cameraRollPathToAbsolutePath(img.uri).then((assetPath) => {
+
+            
+            cameraRollPathToAbsolutePath(img.uri , img.type ).then((assetPath) => {
               console.log('getSelectImages ', assetPath);
               AsyncStorage.setItem(
                 `video-file-${this.state.fcount + i + 1}`,
@@ -335,6 +337,7 @@ class CaptureComponent extends Component {
                   `video-file-${this.state.fcount + i + 1}-thumb`,
                   thumbnail.path,
                 );
+
               });
             });
           } else {
@@ -367,7 +370,7 @@ class CaptureComponent extends Component {
             //     jpegPath,
             //   );
             // });
-            cameraRollPathToAbsolutePath(img.uri).then((assetPath) => {
+            cameraRollPathToAbsolutePath(img.uri , img.type ).then((assetPath) => {
               console.log('getSelectImages ', assetPath);
               AsyncStorage.setItem(
                 `image-file-${this.state.fcount + i + 1}`,
