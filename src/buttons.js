@@ -270,6 +270,7 @@ getRightIcon = () => {
 
   render(){
     if(this.state.greyOutOnTagPress){
+      console.log('SUBTAG ',this.props.data,this.props.buttonDown);
       if(this.state.buttonDown){
         return(
         <TouchableOpacity onPress={this.onTagPress}>

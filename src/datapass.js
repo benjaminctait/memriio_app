@@ -64,11 +64,13 @@ export async function activeUser() {
   console.log('activeUser is anyone loggedin: ' + logged);
 
   if (logged) {
-    const userid = await AsyncStorage.getItem('userid');
-    const firstName = await AsyncStorage.getItem('firstname');
-    const lastName = await AsyncStorage.getItem('lastname');
-    const email = await AsyncStorage.getItem('email');
-    const user = {userid, firstName, lastName, email};
+    let userid          = await AsyncStorage.getItem('userid');
+    let firstName       = await AsyncStorage.getItem('firstname');
+    let lastName        = await AsyncStorage.getItem('lastname');
+    let email           = await AsyncStorage.getItem('email');
+    let activeClouds    = await AsyncStorage.getItem('activeclouds')
+
+    let user = {userid, firstName, lastName, email, activeClouds };
     console.log(
       'activeUser user: ' +
         user.firstName +
@@ -77,7 +79,9 @@ export async function activeUser() {
         ' id: ' +
         user.userid +
         ' email: ' +
-        user.email,
+        user.email + 
+        ' mobile clouds: ' +
+        user.activeClouds,
     );
     return user;
   } else {
@@ -160,7 +164,7 @@ const uploadNewMemory = (callBackOnSuccess) => {
 
       Promise.all(Promises).then((values) => {
         console.log(
-          'uploadNewMemory() - upload complete for memory id ' + memory.memid,
+          'uploadNewMemory() - UPLOAD COMPLETE for memory id ' + memory.memid,
         );
         callBackOnSuccess(memory.memid);
       });
@@ -187,16 +191,26 @@ const getSearchWords = () => {
 
 // ---------------------------------------------------------------------------------
 
-export async function logStorageContent() {
-  const filearray = [];
-  console.log('AsyncStorage Content');
-  console.log('Loggedin : ' + (await AsyncStorage.getItem('userLoggedin')));
-  console.log('userid : ' + (await AsyncStorage.getItem('userid')));
-  console.log('firstname : ' + (await AsyncStorage.getItem('firstname')));
-  console.log('lastname : ' + (await AsyncStorage.getItem('lastname')));
-  console.log('email : ' + (await AsyncStorage.getItem('email')));
-  console.log();
+export async function getItems(options = {}) {
+  console.log('function : getItems ', options);
+  const keys = await AsyncStorage.getAllKeys();
+  let fileExist = false;
+  keys.forEach((key) => {
+    if (key.includes('image-file') || key.includes('video-file')) {
+      console.log('Removing storage item : ' + key);
+      AsyncStorage.removeItem(key);
+      fileExist = true;
+    }
+  });
+  return fileExist;
+}
 
+// ---------------------------------------------------------------------------------
+
+export async function logStorageContent() {
+  let filearray = [];
+  let clouds = [];
+  
   const keys = AsyncStorage.getAllKeys().then((keys) => {
     keys.map((key) => {
       if (
@@ -205,11 +219,24 @@ export async function logStorageContent() {
         key.includes('video')
       ) {
         AsyncStorage.getItem(key).then((value) => {
-          console.log('key : ' + key + ' fileName : ' + getFilename(value));
+          filearray.push('key : ' + key + ' fileName : ' + getFilename(value));
         });
+      } else if ( key.includes('activecloud') ) {
+        AsyncStorage.getItem(key).then((value) => { clouds.push('key : ' + key + ' fileName : ' + value ) });
       }
+
     });
   });
+
+  console.log('AsyncStorage Content');
+  console.log();
+  console.log('Loggedin : ' + (await AsyncStorage.getItem('userLoggedin')));
+  console.log('userid : ' + (await AsyncStorage.getItem('userid')));
+  console.log('firstname : ' + (await AsyncStorage.getItem('firstname')));
+  console.log('lastname : ' + (await AsyncStorage.getItem('lastname')));
+  console.log('email : ' + (await AsyncStorage.getItem('email')));
+  filearray.map(file => console.log(file))
+  console.log('active clouds : ', clouds);
 }
 
 // ---------------------------------------------------------------------------------
@@ -242,21 +269,31 @@ export async function cleanupStorage(options = {}) {
     }
   });
 }
-export async function getItems(options = {}) {
-  console.log('function : getItems ', options);
+
+//---------------------------------------------------------
+
+export async function getSelectedCloudsAsArray(){
+
   const keys = await AsyncStorage.getAllKeys();
-  let fileExist = false;
-  keys.forEach((key) => {
-    if (key.includes('image-file') || key.includes('video-file')) {
-      console.log('Removing storage item : ' + key);
-      AsyncStorage.removeItem(key);
-      fileExist = true;
-    }
+  return new Promise((resolve,reject)=>{
+  let Promises = []  
+  let cids = []
+  
+  keys.map((key) => {
+    if (key.includes('activecloud')) {
+      Promises.push(AsyncStorage.getItem(key).then(value =>{ cids.push(parseInt(value)) }))
+    }})
+      
+  Promise.all(Promises).then((values) => {
+      
+      resolve(cids)
   });
-  return fileExist;
+  })
+  
+    
 }
 
-// retrieve all memories for user and cloudIDs where user is in that cloud --------------------
+// rretrieve all clouds that user id if a member of ------------------------
 
 export function mapUserClouds(userid, callback) {
   fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
@@ -700,9 +737,9 @@ const uploadImageFile = (fileObj) => {
 //-------------------------------------------------------------------------------
 
 export async function cameraRollPathToAbsolutePath(camRolluri,type=null) {
-  console.log(
-    'datapass.cameraRollPathToAbsolutePath : camRolluri : ' + camRolluri,
-  );
+  // console.log(
+  //   'datapass.cameraRollPathToAbsolutePath : camRolluri : ' + camRolluri,
+  // );
 
   let ext = camRolluri.split('&ext=')[1]
 
@@ -1168,6 +1205,58 @@ export function setMemorySearchWords(searchwords) {
         }
       });
   });
+}
+
+//------------------------------------------------------------
+
+export function postStatusEvent (userid,creditsToAdd,memid, message,cloudid ){
+
+  console.log('postStatusEvent : userid ' + userid 
+      + ' credits : ' + creditsToAdd 
+      + ' memory : ' + memid 
+      + ' message : ' + message
+      + ' cloudid : ' + cloudid )
+
+  fetch('https://memrii-api.herokuapp.com/register_status_credits', {
+      method: 'post',headers: {
+          'Content-Type':'application/json'},
+              body:JSON.stringify({userid:userid,statuscredits:creditsToAdd,memid:memid,description:message,cloudid:cloudid})})
+              .then(response => response.json())
+              .then(res => {
+                  if ( res.success ){
+                    console.log('postStatusEvent :server response : ' + res.success)
+                      return true
+                  }else{
+                    console.log('postStatusEvent :server response : ' + res.success + ' with ' + res.error)
+                      return false
+                  }
+              })
+}
+
+//------------------------------------------------------------
+
+export function postPointsEvent (userid,pointsToAdd,memid, message, cloudid ){
+
+  console.log('postPointsEvent : userid ' + userid 
+      + ' points : ' + pointsToAdd 
+      + ' memory : ' + memid 
+      + ' message : ' + message
+      + ' cloudid : ' + cloudid )
+
+  fetch('https://memrii-api.herokuapp.com/register_points', {
+      method: 'post',headers: {
+          'Content-Type':'application/json'},
+              body:JSON.stringify({ userid:userid , points:pointsToAdd , memid:memid , description:message , cloudid:cloudid })})
+              .then(response => response.json())
+              .then(res => {
+                  if ( res.success ){
+                      console.log('postPointsEvent :server response : ' + res.success)
+                      return true
+                  }else{
+                      console.log('postPointsEvent :server response : ' + res.success + ' with ' + res.error)
+                      return false
+                  }
+              })
 }
 
 //-------------------------------------------------------------------------------------------------------------------------

@@ -5,6 +5,9 @@ import * as mem from './datapass';
 import {StyleSheet, View, ScrollView, Text, RefreshControl} from 'react-native';
 import {TextInput} from 'react-native-gesture-handler';
 import {SubTag} from './buttons';
+import AsyncStorage from '@react-native-community/async-storage';
+
+
 
 class Feed extends Component {
   constructor(props) {
@@ -140,31 +143,57 @@ class Feed extends Component {
     };
     clouds.push(personal);
     clouds.reverse();
+    mem.getSelectedCloudsAsArray().then(cids => {
+      
+        clouds.map((cloud) => {
+          
+          if( cids.findIndex ( id => id == cloud.id ) !== -1 ){
+            this.state.cloudInclusions.push({cloudid: cloud.id, include: true});
+          }else{
+            this.state.cloudInclusions.push({cloudid: cloud.id, include: false});  
+          }
+          console.log('loadclouds : ', this.state.cloudInclusions );
+          cloudids.push(cloud.id);
+        });
+      })
+    
 
-    clouds.map((cloud) => {
-      this.state.cloudInclusions.push({cloudid: cloud.id, include: true});
-      cloudids.push(cloud.id);
-    });
     mem.getMemories(this.state.user.userid, cloudids, this.loadMemories);
+    this.handleSearchChange(this.state.searchwords);
     this.setState({userClouds: clouds});
+
   };
 
   //----------------------------------------------------------------------------------------------
 
   componentDidMount = async () => {
+    console.log(' FEED : DIDMOUNT ');
     this.state.user = await mem.activeUser();
     mem.mapUserClouds(this.state.user.userid, this.loadClouds);
     this.refreshFeed();
   };
 
   //----------------------------------------------------------------------------------------------
-  handleCloudChange = (cloud, shouldInclude) => {
+  handleCloudChange = async (cloud, shouldInclude) => {
     this.flushFeed();
+    let x = 0
+    let activeclouds = ''
+
+    await mem.cleanupStorage({key:'activecloud'})
     this.state.cloudInclusions.forEach((element) => {
       if (element.cloudid === cloud.id) {
         element.include = shouldInclude;
       }
     });
+    this.state.cloudInclusions.forEach((element) => {
+      if (element.include) {
+        let k = 'activecloud-'+ x++
+        AsyncStorage.setItem(k,element.cloudid.toString())
+        activeclouds += element.cloudid + ','
+      }
+    });
+
+    console.log('handleCloudChange : activeClouds : ',activeclouds)   
 
     this.handleSearchChange(this.state.searchwords);
   };
@@ -173,6 +202,23 @@ class Feed extends Component {
   flushFeed = () => {
     this.setState({isLoading: true});
   };
+
+  //----------------------------------------------------------------------------------------------
+
+  cloudIsActive = async (cloudid) => {
+    let include = false
+    this.state.cloudInclusions.map(cloud => { 
+      
+      if(cloud.cloudid == cloudid ){
+        if(cloud.include){
+          include = true
+        }
+      }
+    })
+
+    console.log('ACTIVE ? ', cloudid, include )
+    return include
+  }
 
   //----------------------------------------------------------------------------------------------
 
@@ -205,7 +251,7 @@ class Feed extends Component {
     if (memisArray) {
       memcount = this.state.memories.length;
     }
-    console.log('feed:render:  loading ' + this.state.isLoading );
+    
     if (memisArray && !this.state.isLoading && memcount) {
       feedview = (
         <ScrollView
@@ -270,14 +316,16 @@ class Feed extends Component {
         <View style={styles.cloudarea}>
           {this.state.userClouds.map((cloud, index) => (
             <SubTag
-              key={index}
-              data={cloud}
-              title={cloud.name}
-              greyOutOnTagPress={true}
-              onTagPress={this.handleCloudChange}
+              key               = { index }
+              data              = { cloud }
+              title             = { cloud.name}
+              buttonDown        = { this.cloudIsActive(cloud.id) }
+              greyOutOnTagPress = { true }
+              onTagPress        = { this.handleCloudChange }
             />
           ))}
         </View>
+       
       </View>
     );
   }

@@ -40,6 +40,7 @@
     "react-native-create-thumbnail": "^1.2.1",
     "react-native-dotenv": "^0.2.0",
     "react-native-elements": "^1.2.7",
+    "react-native-flash-message": "^0.1.17",
     "react-native-fs": "^2.16.6",
     "react-native-gallery-manager": "git://github.com/suhailamir/react-native-gallery-manager.git",
     "react-native-gesture-handler": "^1.8.0",

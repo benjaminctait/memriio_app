@@ -10,16 +10,14 @@ import {SettingsButton} from './src/buttons';
 import AsyncStorage from '@react-native-community/async-storage';
 import Signin from './src/signin';
 import Settings from './src/settings.js';
-import {YellowBox} from 'react-native';
+import {Text} from 'react-native';
 import {StackNavigator} from 'react-navigation';
 import PlayerScreen from 'react-native-sound-playerview';
+import FlashMessage from "react-native-flash-message";
 
-YellowBox.ignoreWarnings([
-  'Animated: `useNativeDriver` was not specified.',
-  '[RNCamera initializeAudioCaptureSessionInput]',
-]);
 
-//import FlashMessage from "react-native-flash-message";
+
+
 
 const Stack = createStackNavigator();
 
@@ -36,6 +34,7 @@ class App extends Component {
     familyname: '',
     isLoggedIn: false,
     userid: 0,
+    loadcomplete:false,
   };
 
   //--------------------------------------------------------------------------
@@ -99,14 +98,23 @@ class App extends Component {
     const loggedin = await AsyncStorage.getItem('userLoggedin');
     const uid = await AsyncStorage.getItem('userid');
     if (loggedin) {
-      this.setState({isLoggedIn: loggedin, userid: uid});
+      this.setState({isLoggedIn: loggedin, userid: uid,loadcomplete:true});
     }
   }
 
   //--------------------------------------------------------------------------
 
   render() {
-    if (this.state.isLoggedIn) {
+    if (this.state.loadcomplete) {
+      return this.renderApp()
+    } else {
+      return <Text >loading</Text>
+    }
+  }
+
+//--------------------------------------------------------------------------
+  renderApp() {
+    if (this.state.isLoggedIn ) {
       return (
         <NavigationContainer>
           <Stack.Navigator>
@@ -144,13 +152,16 @@ class App extends Component {
               }}>
               {(props) => <PlayerScreen {...props} />}
             </Stack.Screen>
+
           </Stack.Navigator>
+          <FlashMessage  />
         </NavigationContainer>
       );
     } else {
       return <Signin loguserin={this.handleLogonIn} />;
     }
   }
-}
 
+
+}
 export default App;

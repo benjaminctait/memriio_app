@@ -193,7 +193,7 @@ class MemoryCard extends Component {
           onPress={() => {
             this.showModel(item);
           }}>
-          <Image style={styles.image} source={{uri: item.thumburl}} />
+          <Image style={styles.image} source={{uri: item.thumburl, cache: 'force-cache' }} />
         </TouchableOpacity>
       );
     } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {

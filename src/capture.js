@@ -314,7 +314,7 @@ class CaptureComponent extends Component {
     console.log('getting selected images');
     await cleanupStorage({key: 'file-'}); //remove previously stroed files
     images.forEach((img, i) => {
-      console.log('image :', img);
+      //console.log('image :', img);
 
       if (img.uri) {
         if (img.type === 'video') {
@@ -322,7 +322,7 @@ class CaptureComponent extends Component {
 
             
             cameraRollPathToAbsolutePath(img.uri , img.type ).then((assetPath) => {
-              console.log('getSelectImages ', assetPath);
+              //console.log('getSelectImages ', assetPath);
               AsyncStorage.setItem(
                 `video-file-${this.state.fcount + i + 1}`,
                 assetPath,
@@ -344,8 +344,7 @@ class CaptureComponent extends Component {
               `video-file-${this.state.fcount + i + 1}`,
               fullpath,
             );
-
-            // cameraRollPathToAbsolutePath;
+           
             createThumbnail({
               url: img.uri,
               timeStamp: 10000,

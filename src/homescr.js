@@ -17,9 +17,7 @@ const BottomNav = createBottomTabNavigator();
 const RootNav = createStackNavigator();
 
 class Main extends Component {
-  refreshFeed = () => {
-    console.log('refreshFeed');
-  };
+ 
 
   render() {
     return (
@@ -57,13 +55,16 @@ class Main extends Component {
 
 class HomeScreen extends Component {
   testCallBack = () => {
-    console.log('HomeScreen.refreshFeed');
+    console.log('HOME SCREEN::: TEST CALLBACK');
   };
 
+  myprops = {
+    refresh:this.testCallBack,
+  }
   render() {
-    const props = {refreshFeed: () => this.testCallBack()};
+    
     return (
-      <RootNav.Navigator>
+      <RootNav.Navigator  screenProps={}>
         <RootNav.Screen
           name="Main"
           component={Main}
@@ -75,7 +76,7 @@ class HomeScreen extends Component {
         <RootNav.Screen
           name="NewPost"
           component={NewPost}
-          screenProps={props}
+          screenProps={{pushMemory:this.testCallBack}}
           options={{
             headerShown: false,
             cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
