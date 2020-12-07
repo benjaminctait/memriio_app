@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {
   cleanupStorage,
   millisecsToHMSM,
-  logStorageContent,  
+  logStorageContent,
   cameraRollPathToAbsolutePath,
 } from './datapass';
 
@@ -250,7 +250,6 @@ class CaptureComponent extends Component {
       console.log('capture.takePicture() ' + this.camera);
       try {
         const data = await this.camera.takePictureAsync();
-
         const fullpath = data.uri.split('//')[1];
         AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
         AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
@@ -268,9 +267,10 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   goBackToFeed = () => {
-    this.setState({filesSelected:[]})
+    console.log('removing files.....');
+    this.setState({filesSelected: [], fcount: 0});
     cleanupStorage();
-    
+
     this.props.navigation.navigate('Feed');
   };
 
@@ -310,7 +310,8 @@ class CaptureComponent extends Component {
   };
   //--------------------------------------------------------------------------------------
   getSelectedImages = async (images) => {
-    this.state.filesSelected = images 
+    // this.state.filesSelected = images;
+    this.setState({filesSelected: images});
     console.log('getting selected images');
     await cleanupStorage({key: 'file-'}); //remove previously stroed files
     images.forEach((img, i) => {
@@ -319,32 +320,31 @@ class CaptureComponent extends Component {
       if (img.uri) {
         if (img.type === 'video') {
           if (Platform.OS === 'ios') {
-
-            
-            cameraRollPathToAbsolutePath(img.uri , img.type ).then((assetPath) => {
-              //console.log('getSelectImages ', assetPath);
-              AsyncStorage.setItem(
-                `video-file-${this.state.fcount + i + 1}`,
-                assetPath,
-              );
-              createThumbnail({
-                url: assetPath,
-                timeStamp: 10000,
-              }).then((thumbnail) => {
+            cameraRollPathToAbsolutePath(img.uri, img.type).then(
+              (assetPath) => {
+                //console.log('getSelectImages ', assetPath);
                 AsyncStorage.setItem(
-                  `video-file-${this.state.fcount + i + 1}-thumb`,
-                  thumbnail.path,
+                  `video-file-${this.state.fcount + i + 1}`,
+                  assetPath,
                 );
-
-              });
-            });
+                createThumbnail({
+                  url: assetPath,
+                  timeStamp: 10000,
+                }).then((thumbnail) => {
+                  AsyncStorage.setItem(
+                    `video-file-${this.state.fcount + i + 1}-thumb`,
+                    thumbnail.path,
+                  );
+                });
+              },
+            );
           } else {
             const fullpath = img.uri.split('//')[1];
             AsyncStorage.setItem(
               `video-file-${this.state.fcount + i + 1}`,
               fullpath,
             );
-           
+
             createThumbnail({
               url: img.uri,
               timeStamp: 10000,
@@ -367,17 +367,19 @@ class CaptureComponent extends Component {
             //     jpegPath,
             //   );
             // });
-            cameraRollPathToAbsolutePath(img.uri , img.type ).then((assetPath) => {
-              console.log('getSelectImages ', assetPath);
-              AsyncStorage.setItem(
-                `image-file-${this.state.fcount + i + 1}`,
-                assetPath,
-              );
-              AsyncStorage.setItem(
-                `image-file-${this.state.fcount + i + 1}-thumb`,
-                img.uri,
-              );
-            });
+            cameraRollPathToAbsolutePath(img.uri, img.type).then(
+              (assetPath) => {
+                console.log('getSelectImages ', assetPath);
+                AsyncStorage.setItem(
+                  `image-file-${this.state.fcount + i + 1}`,
+                  assetPath,
+                );
+                AsyncStorage.setItem(
+                  `image-file-${this.state.fcount + i + 1}-thumb`,
+                  img.uri,
+                );
+              },
+            );
           } else {
             console.log('setting image file:', img.uri);
             AsyncStorage.setItem(
@@ -476,7 +478,7 @@ class CaptureComponent extends Component {
         bigButton = (
           <View>
             <Text style={styles.photosCountText}>
-              {this.state.filesSelected.length
+              {this.state.filesSelected.length > 0
                 ? `${this.state.filesSelected.length} file(s) selected`
                 : 'No files selected'}
             </Text>
