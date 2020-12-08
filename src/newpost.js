@@ -130,7 +130,7 @@ class NewPost extends Component {
     this.pushMemory(memid)
     if( Array.isArray ( this.state.taggedClouds ) && this.state.taggedClouds.length > 0 )
     {
-      let cid = this.state.taggedClouds.findIndex( cloud => parseInt(cloud.id) === 7 ) // search for UAP cloud only
+      let cid = this.state.taggedClouds.findIndex( cloud => parseInt(cloud.id) === 1 ) // search for UAP cloud only
       if(cid !== -1 )
         {
           cid = parseInt ( this.state.taggedClouds[cid].id ) // get the id of the UAP cloud
