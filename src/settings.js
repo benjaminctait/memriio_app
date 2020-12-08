@@ -70,39 +70,41 @@ setupClouds = (clouds) => {
       email:user.email,
       firstname:user.firstName,
       familyname:user.lastName,
-
+      points:0,
+      status:'',
+      statusGapInCredits:0,
+      statusGapInPosts:0,
+      nextStatusLevel:''
     })
-
+    
+    this.getPointsAndStatus()
     mapUserClouds(user.userid,this.setupClouds)
 
   }
 
+  
+
 //--------------------------------------------------------------------------
 
-createNewMemoryCloud = () => {
-  alert('Nothing')
-  //createMemoryCloud('Home',this.state.userid)
-}
+getPointsAndStatus = () => {
+   
+    this.setState(
+      { points:1500,
+        status:'Carbon',
+        statusGapInCredits:150,
+        statusGapInPosts:3,
+        nextStatusLevel:'Bronze'
+      })
 
+  }
 //--------------------------------------------------------------------------
     render(){
       
       
       
-      if(this.state.userid == 1){
-        
-        specialButton =  <Text 
-                          style={styles.labelText}
-                          onPress = {() =>{this.createNewMemoryCloud()}}
-                          >Create</Text>
-            
-      }else{
-        specialButton = null 
-      }  
       return( 
 
           
-    
           <KeyboardShift >      
           <View style={styles.container} >
                 
@@ -149,8 +151,6 @@ createNewMemoryCloud = () => {
                     
                   }}
                   bottomDivider
-                  chevron
-                  onPress={()=> this.getGroups()}
                   subtitle={
                     <View style={styles.subtitle}>
                       {this.state.clouds.map((cloud) =>(
@@ -166,6 +166,20 @@ createNewMemoryCloud = () => {
                     </View>
                   }
                   />
+                  <View style={styles.settingsItem}>
+                    <Text style={styles.pointsText}>Points and Status</Text>
+                    <View style={styles.pointsBox}>
+                      <Text style={styles.pointsText}>{`Points Balance \t\t ${this.state.points}`}</Text>
+                      <View style={{flex:0,flexDirection:'row'}}>
+                        <Text style={styles.pointsText}>{`Status \t\t\t\t ${this.state.status}\t` }</Text>
+                        <Text style={styles.pointsSubText}>{`(${this.state.statusGapInPosts}x posts to reach ${this.state.nextStatusLevel})`}</Text>
+                      </View>
+                      
+                      
+                     
+
+                    </View>
+                  </View>
                   
 
                   <View style={styles.settingsTextItem}>
@@ -179,15 +193,10 @@ createNewMemoryCloud = () => {
                         onPress = {() =>{this.props.route.params.logoutcallback()}}
                       >Logout</Text>
                     </TouchableOpacity>
-
-                    
                     
                   </View>
-
-                  <TouchableOpacity style={styles.xText}>
-                    {specialButton}
-                  </TouchableOpacity>
-
+                  
+                  
                 
               </View> 
            
@@ -223,8 +232,46 @@ const styles = StyleSheet.create({
       height:50,
       marginTop:20,
       marginBottom:20,
+      marginLeft:8,
       alignSelf:'center',
 
+    },
+
+    settingsItem:{
+      
+      width:'95%',      
+      marginTop:20,
+      marginBottom:20,
+      marginLeft:10,
+      alignSelf:'center',
+
+    },
+
+
+    pointsBox:{
+      marginTop:5,
+      marginLeft:5,
+      borderWidth:.5,
+      borderRadius:5,
+      borderColor:'blue',
+      backgroundColor:'#f5f5f5',
+      paddingBottom:8,     
+      width:'98%'
+    },
+
+    pointsText:{
+      marginTop:8,
+      marginBottom:5,
+      marginLeft:5,
+      color:'black',
+      fontSize:15,
+    },
+    pointsSubText:{
+      marginTop:11,
+      marginBottom:3,
+      marginLeft:5,
+      color:'#ed1874',
+      fontSize:12,
     },
 
     inputText:{
@@ -248,6 +295,7 @@ const styles = StyleSheet.create({
       marginBottom:2,
       fontSize:15,
     },
+    
     
     mainButtons: {
       flexDirection:'row',
