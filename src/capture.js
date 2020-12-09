@@ -32,7 +32,7 @@ import {
   Text,
   Image,
   PermissionsAndroid,
-  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 
 import RNSoundLevel from 'react-native-sound-level';
@@ -520,9 +520,15 @@ class CaptureComponent extends Component {
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.goBackToFeed()} />
+          
+          <TouchableOpacity onPress={this.goBackToFeed}>
+            <Text style={styles.PostButton} >{'Cancel'}</Text>
+          </TouchableOpacity>
           {bigButton}
-          <PostButton onPress={() => this.showPost()} />
+          
+          <TouchableOpacity onPress={this.showPost}>
+            <Text style={styles.PostButton} >{'  Post'} </Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -540,6 +546,16 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
+  PostButton:{
+    borderWidth:2,
+    borderRadius:10,
+    borderColor:'#7d7a7a',
+    color:'#c7c5c5',
+    
+    padding:4,
+
+  },
+
   mainButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -584,6 +600,7 @@ const styles = StyleSheet.create({
   },
   photosCountText: {
     textAlign: 'center',
+    height:70,
     fontSize: 18,
     color: 'grey',
   },

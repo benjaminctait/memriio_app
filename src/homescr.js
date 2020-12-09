@@ -19,7 +19,9 @@ const RootNav = createStackNavigator();
 class Main extends Component {
   render() {
     return (
+      
       <BottomNav.Navigator>
+        
         <BottomNav.Screen
           name="Feed"
           component={Feed}
@@ -61,7 +63,9 @@ class HomeScreen extends Component {
   };
   render() {
     return (
+
       <RootNav.Navigator>
+
         <RootNav.Screen
           name="Main"
           component={Main}

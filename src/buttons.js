@@ -75,26 +75,41 @@ class AudioStopButton extends Component{
 }
 
 class PostButton extends Component{
+  
+  
   render(){
-      return(
-          <TouchableOpacity onPress={this.props.onPress}>
+    let subtitle = null
+    if (this.props.Title){
+      subtitle = <Text style={styles.iconTextUp}>{this.props.Title}</Text>
+    }
+
+    return(
+        <TouchableOpacity onPress={this.props.onPress}>
           <Image
             style={styles.mediumButton}
-            source={require('./images/post.png')}
+            source={require('./images/upload.png')}
           />
+          {subtitle}
         </TouchableOpacity>
-      )
+    )
   }
+
 }
 
 class BackButton extends Component{
   render(){
+    let subtitle = null
+    if (this.props.Title){
+      subtitle = <Text style={styles.iconTextUp}>{this.props.Title}</Text>
+    }
+
       return(
           <TouchableOpacity onPress={this.props.onPress}>
           <Image
             style={styles.mediumButton}
             source={require('./images/back.png')}
           />
+          {subtitle}
         </TouchableOpacity>
       )
   }
@@ -105,13 +120,15 @@ class SettingsButton extends Component{
       return(
           <TouchableOpacity onPress={this.props.onPress} style={styles.settingsbutton}>
           <Image
-            style={styles.littleButton}
+            style={styles.mediumButton}
             source={require('./images/settings.png')}
           />
         </TouchableOpacity>
       )
   }
 }
+
+
 
 class IconButtonCamera extends Component{ 
   
@@ -266,12 +283,23 @@ getRightIcon = () => {
     )
   }
 }
+
+//-----------------------------------------------------------
+
+componentDidUpdate = (prevProps,prevState) =>{
+
+  if(this.props !== prevProps){
+    this.setState({buttonDown:this.props.buttonDown})
+  }
+}
+
 //-----------------------------------------------------------
 
   render(){
     if(this.state.greyOutOnTagPress){
-      console.log('SUBTAG ',this.props.data,this.props.buttonDown);
+      
       if(this.state.buttonDown){
+        
         return(
         <TouchableOpacity onPress={this.onTagPress}>
           <View style={styles.ptagGreyed}>
@@ -281,6 +309,7 @@ getRightIcon = () => {
         </TouchableOpacity>  
         )    
       }else{
+        
         return (
         <TouchableOpacity onPress={this.onTagPress}>
           <View style={[styles.ptag,this.props.tagStyle]}>
@@ -489,6 +518,7 @@ const styles = StyleSheet.create({
     mediumButton: {
       height: 30,
       width: 30,
+      alignSelf:'center',
       backgroundColor: 'transparent',
       
     },

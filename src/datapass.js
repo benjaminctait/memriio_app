@@ -89,7 +89,88 @@ export async function activeUser() {
   }
 }
 
-// post new memory -----------------------------------------------------
+// -----------------------------------------------------------------------
+
+export async function getPointsData( userid,cloudid ){
+  return new Promise((resolve,reject) => {
+    fetch(
+      'https://memrii-api.herokuapp.com/get_points_data',
+      {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          userid: userid,
+          cloudid: cloudid
+        }),
+      },
+    )
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+
+  })
+}
+
+// -----------------------------------------------------------------------
+
+
+export async function getUserDetails( userid ){
+  
+  return new Promise((resolve,reject) => {
+    fetch(
+      'https://memrii-api.herokuapp.com/getUser_userid',
+      {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          userid: userid
+        }),
+      },
+    )
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+
+  })
+}
+
+// -----------------------------------------------------------------------
+
+export async function getStatusLevels( cloudid ){
+  return new Promise((resolve,reject) => {
+    fetch(
+      'https://memrii-api.herokuapp.com/get_statuslevels',
+      {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          cloudid: cloudid
+        }),
+      },
+    )
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+
+  })
+}  
+
+// -----------------------------------------------------------------------
 
 export async function postNewMemory(
   title,
@@ -635,14 +716,14 @@ export function getMemoryPeople(memid, callback) {
 
 //---------------------------------------------------------------------------------
 
-export function getMemories(userID, cloudIDs, callback) {
-  console.log('getMemories for user : ' + userID + ' in groups ' + cloudIDs);
-  fetch('https://memrii-api.herokuapp.com/get_memories_userid_cloudids', {
+export function getMemories(cloudIDs, callback) {
+  console.log('getMemories for in clouds [' + cloudIDs + ']');
+  fetch('https://memrii-api.herokuapp.com/get_memories_cloudids', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({userid: userID, cloudids: cloudIDs}),
+    body: JSON.stringify({cloudids: cloudIDs}),
   })
     .then((response) => response.json())
     .then((response) => {

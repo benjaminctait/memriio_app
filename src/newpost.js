@@ -86,6 +86,7 @@ class NewPost extends Component {
       }
     }); // push all but the personal cloud
 
+
     me.taggedPeople.map((person, i) => {
       personarray[i] = person.userid;
     });
@@ -123,28 +124,20 @@ class NewPost extends Component {
   //--------------------------------------------------------------------------
 
   doPostLoad = (memid) => {
-    let uid = this.state.user.userid;
-    this.pushMemory(memid);
-    if (
-      Array.isArray(this.state.taggedClouds) &&
-      this.state.taggedClouds.length > 0
-    ) {
-      let cid = this.state.taggedClouds.findIndex(
-        (cloud) => parseInt(cloud.id) === 7,
-      ); // search for UAP cloud only
-      if (cid !== -1) {
-        cid = parseInt(this.state.taggedClouds[cid].id); // get the id of the UAP cloud
-        mem.postPointsEvent(uid, 50, memid, 'POINTS : Post new memory', cid);
-        mem.postStatusEvent(uid, 5, memid, 'STATUS : Post new memory', cid);
-        console.log(
-          'refreshFeed Points & status: user : ',
-          uid,
-          ' memid : ',
-          memid,
-          ' cloud : ',
-          cid,
-        );
-      }
+    
+    let uid = this.state.user.userid
+    this.pushMemory(memid)
+    if( Array.isArray ( this.state.taggedClouds ) && this.state.taggedClouds.length > 0 )
+    {
+      let cid = this.state.taggedClouds.findIndex( cloud => parseInt(cloud.id) === 1 ) // search for UAP cloud only
+      if(cid !== -1 )
+        {
+          cid = parseInt ( this.state.taggedClouds[cid].id ) // get the id of the UAP cloud
+          mem.postPointsEvent ( uid , 50 , memid , 'POINTS : Post new memory' , cid )
+          mem.postStatusEvent ( uid ,  5 , memid , 'STATUS : Post new memory' , cid )
+          console.log    ( 'refreshFeed Points & status: user : ', uid, ' memid : ', memid , ' cloud : ', cid )
+        }
+
     }
     showMessage({
       message: 'Memory posted ',
@@ -461,8 +454,10 @@ class NewPost extends Component {
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.goBack(null)} />
-          <PostButton onPress={() => this.sendPost()} />
+          <BackButton onPress={() => this.props.navigation.goBack(null)} 
+                      Title={'Capture'}/>
+          <PostButton onPress={() => this.sendPost()} 
+                      Title={'Upload'} />
         </View>
       </KeyboardShift>
     );
