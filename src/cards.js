@@ -5,6 +5,7 @@ import Carousel, {Pagination} from 'react-native-snap-carousel';
 import * as mem from './datapass';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import sliderStyles, {colors} from './styles/index.style';
+import { Avatar } from 'react-native-elements'
 import {
   StyleSheet,
   View,
@@ -13,7 +14,10 @@ import {
   Dimensions,
   Modal,
   TouchableOpacity,
+  TouchableWithoutFeedbackBase,
 } from 'react-native';
+
+
 
 class MemoryCard extends Component {
   constructor(props) {
@@ -31,6 +35,8 @@ class MemoryCard extends Component {
     scrollable: true,
     modalVisible: false,
     activeImage: {},
+    author:{},
+    
   };
   //------------------------------------------------------------------------------------------------
 
@@ -41,6 +47,7 @@ class MemoryCard extends Component {
     
 
     if (prevProps.memory.memid !== this.props.memory.memid) {
+      mem.getUserDetails(memory.userid).then(user => {this.setState({author:user})})
       mem.getMemoryFiles(memory.memid, (memfiles) => {
         memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
           if(mfile.ishero){
@@ -59,13 +66,15 @@ class MemoryCard extends Component {
 
   //------------------------------------------------------------------------------------------------
 
+  
   async componentDidMount() {
       let memory = this.props.memory;
       let mf = []
       let hero = null
-
+      
+      mem.getUserDetails(memory.userid).then(user => {this.setState({author:user})})
       mem.getMemoryFiles(memory.memid, (memfiles) => {
-
+      
       memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
         if(mfile.ishero){
           hero = mfile
@@ -226,9 +235,27 @@ class MemoryCard extends Component {
   render() {
     let lower = this.getLower();
     let fileview = this.getCarousel();
+    let initials = ''
+    let firstName = this.state.author.firstname
+    let lastName =  this.state.author.lastname
+    let authorname = firstName + ' ' + lastName
+    if(firstName){initials+=firstName[0]}
+    if(lastName){initials+=lastName[0]}
 
+    
     return (
       <View style={styles.card}>
+        <View style={styles.author}>
+          <Avatar
+            size="small"
+            rounded
+            title={initials}
+            onPress={() => console.log("Works!")}
+            activeOpacity={0.7}
+          />
+          <Text style={styles.authorText } >{authorname}</Text>
+        </View>
+        
         {fileview}
         <View style={styles.iconrow}>
           <View style={styles.iconrow}>
@@ -303,10 +330,18 @@ const styles = StyleSheet.create({
     marginRight: 40,
     marginBottom: 20,
   },
-
-  iconrow: {
+  author:{
     flex: 1,
     flexDirection: 'row',
+    position:'absolute',
+    left:8,
+    top:30,
+    zIndex:2
+  },
+
+  iconrow: {
+    flex:1,
+    flexDirection:'row',
     justifyContent: 'space-between',
     marginTop: 4,
     marginLeft: 4,
@@ -358,6 +393,25 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+
+  authorText: {
+    color: 'black',
+    marginTop: 8,
+    marginBottom: 5,
+    marginLeft:8,
+    fontSize: 12,
+    borderColor:'white',
+    borderWidth:1,
+    borderRadius:8,
+    padding:2,
+    backgroundColor:'whitesmoke',
+    overflow:'hidden',
+    
+
+    
+  },
+
+
   bodyText: {
     color: 'black',
     fontSize: 15,

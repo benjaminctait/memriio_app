@@ -6,6 +6,7 @@ import {StyleSheet, View, ScrollView, Text, RefreshControl} from 'react-native';
 import {TextInput} from 'react-native-gesture-handler';
 import {SubTag} from './buttons';
 import AsyncStorage from '@react-native-community/async-storage';
+import { SearchBar } from 'react-native-elements'
 
 
 
@@ -28,6 +29,7 @@ class Feed extends Component {
     isLoading: true,
     personalMemoryunsharedOnly: false,
     refreshing: false,
+    activeCloud:0,
   };
 
   //----------------------------------------------------------------------------------------------
@@ -39,11 +41,14 @@ class Feed extends Component {
   //----------------------------------------------------------------------------------------------
 
   handleSearchChange = (searchwords) => {
+
+  
     let wordarray = [];
+    this.setState({searchwords:searchwords})
     if (searchwords) {
       wordarray = searchwords.toLowerCase().split(' ');
     }
-    let cloudids = this.getIncludedClouds();
+    let cloudids = [this.state.activeCloud]
     let userid = this.state.user.userid;
 
     console.log(
@@ -128,12 +133,16 @@ class Feed extends Component {
   //----------------------------------------------------------------------------------------------
 
   loadMemories = (memories) => {
+
     this.setState({memories: memories, isLoading: false});
   };
 
   //----------------------------------------------------------------------------------------------
 
   loadClouds = (clouds) => {
+
+    console.log('loadclouds');
+
     let cloudids = [0];
     let personal = {
       id: 0,
@@ -149,17 +158,18 @@ class Feed extends Component {
           
           if( cids.findIndex ( id => id == cloud.id ) !== -1 ){
             this.state.cloudInclusions.push({cloudid: cloud.id, include: true});
+            this.state.activeCloud = cloud.id
+            console.log('active cloud ' + [this.state.activeCloud]);
           }else{
             this.state.cloudInclusions.push({cloudid: cloud.id, include: false});  
           }
-          console.log('loadclouds : ', this.state.cloudInclusions );
+          console.log('loadclouds : ', this.state.activeCloud );
           cloudids.push(cloud.id);
         });
-      })
-    
 
-    mem.getMemories(this.state.user.userid, cloudids, this.loadMemories);
-    this.handleSearchChange(this.state.searchwords);
+        mem.getMemories([this.state.activeCloud], this.loadMemories);
+      })
+   
     this.setState({userClouds: clouds});
 
   };
@@ -169,8 +179,9 @@ class Feed extends Component {
   componentDidMount = async () => {
     console.log(' FEED : DIDMOUNT ');
     this.state.user = await mem.activeUser();
+
     mem.mapUserClouds(this.state.user.userid, this.loadClouds);
-    this.refreshFeed();
+    
   };
 
   //----------------------------------------------------------------------------------------------
@@ -180,6 +191,11 @@ class Feed extends Component {
     let activeclouds = ''
 
     await mem.cleanupStorage({key:'activecloud'})
+
+    if(shouldInclude){
+      this.setState({activeCloud:cloud.id})
+      console.log(this.state.activeCloud);
+    }
     this.state.cloudInclusions.forEach((element) => {
       if (element.cloudid === cloud.id) {
         element.include = shouldInclude;
@@ -304,22 +320,28 @@ class Feed extends Component {
 
     return (
       <View style={styles.mainArea}>
-        <TextInput
-          style={styles.searchfield}
-          placeholder="Search..."
-          placeholderTextColor="grey"
-          onChangeText={(text) => {
-            this.handleSearchChange(text);
-          }}
+        
+        <SearchBar
+
+            placeholder="Search..."
+            placeholderTextColor="grey"
+            containerStyle={styles.searchContainer}
+            inputContainerStyle={[styles.searchContainer,this.props.style]}            
+            onChangeText={(text) => {
+              this.handleSearchChange(text);
+            }}
+            value={this.state.searchwords}
         />
+        
         {feedview}
         <View style={styles.cloudarea}>
           {this.state.userClouds.map((cloud, index) => (
+             
             <SubTag
               key               = { index }
               data              = { cloud }
               title             = { cloud.name}
-              buttonDown        = { this.cloudIsActive(cloud.id) }
+              buttonDown        = { (cloud.id !== this.state.activeCloud) }
               greyOutOnTagPress = { true }
               onTagPress        = { this.handleCloudChange }
             />
@@ -329,6 +351,8 @@ class Feed extends Component {
       </View>
     );
   }
+
+ 
 
   //----------------------------------------------------------------------------------------------
 }
@@ -342,6 +366,10 @@ const styles = StyleSheet.create({
   scrollarea: {
     height: 1000,
     paddingVertical: 1,
+  },
+
+  searchContainer:{
+    backgroundColor:'white'
   },
 
   nomemory: {

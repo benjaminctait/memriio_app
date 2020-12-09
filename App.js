@@ -11,12 +11,9 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Signin from './src/signin';
 import Settings from './src/settings.js';
 import {Text} from 'react-native';
-import {StackNavigator} from 'react-navigation';
+
 import PlayerScreen from 'react-native-sound-playerview';
 import FlashMessage from "react-native-flash-message";
-
-
-
 
 
 const Stack = createStackNavigator();

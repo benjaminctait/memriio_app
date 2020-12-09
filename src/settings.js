@@ -7,11 +7,12 @@ import {
     Image,
 } from 'react-native';
 
-import {activeUser,createMemoryCloud,mapUserClouds} from './datapass'
+import * as mem from './datapass'
 import KeyboardShift from './keyboardShift';
 import { 
   Input, 
   ListItem,
+  Tooltip,
 } from 'react-native-elements';
 import {
   BackButton,
@@ -62,7 +63,8 @@ setupClouds = (clouds) => {
 
   componentDidMount = async () => {
   
-    const user = await activeUser()
+    const user = await mem.activeUser()
+    
     console.log('settings load : user - ' + user.userid + ' ' + user.firstName + ' ' + user.lastName + ' ' + user.email);
     
     this.setState({
@@ -78,7 +80,7 @@ setupClouds = (clouds) => {
     })
     
     this.getPointsAndStatus()
-    mapUserClouds(user.userid,this.setupClouds)
+    mem.mapUserClouds(user.userid,this.setupClouds)
 
   }
 
@@ -87,20 +89,62 @@ setupClouds = (clouds) => {
 //--------------------------------------------------------------------------
 
 getPointsAndStatus = () => {
-   
-    this.setState(
-      { points:1500,
-        status:'Carbon',
-        statusGapInCredits:150,
-        statusGapInPosts:3,
-        nextStatusLevel:'Bronze'
+  
+  let totalpoints = 0, 
+      totalcredits = 0,
+      currentLevel = '',
+      nextLevel = '',
+      gapToReach = 0,
+      gapToRetain = 0,
+      nextLevelIndex = 0.
+      cnt = 0
+
+
+  // In future user may wish to see points from a range of clouds - now hard wired to UAP cloud.id = 1
+  mem.getPointsData(this.state.userid,1).then(pointsData => {
+    mem.getStatusLevels(1).then(levels => {
+
+      // get total points and status count
+      pointsData.map(record =>{
+          totalpoints += record.points
+          totalcredits += record.statuscredits
       })
+
+      // determine status name, next level and gap to next level
+      levels.map(level => {
+          if(totalcredits >= level.reachvalue){
+            currentLevel = level.statusname
+            if(nextLevelIndex < (levels.length -1) ){
+              nextLevelIndex++
+              nextLevel   = levels[nextLevelIndex].statusname
+              gapToReach  = levels[nextLevelIndex].reachvalue - totalcredits      // gap in creadits to reach next status level
+              gapToRetain = levels[nextLevelIndex-1].retainvalue - totalcredits   // gap in credits to retain current level
+            }
+          }
+      })
+
+      console.log('Status & Points');
+      console.log('Current Status ' + currentLevel + ' ( ' + totalcredits + ' ) Next Level ' + nextLevel + ' Gap to reach ' + gapToReach + ' Gap to retain ' + gapToRetain);
+      console.log('Total Points ' + totalpoints)
+
+      this.setState(
+        { points:totalpoints,
+          status:currentLevel,
+          statusGapInCredits:gapToReach,          
+          nextStatusLevel:nextLevel
+        })
+    })
+   
+  })
+    
 
   }
 //--------------------------------------------------------------------------
     render(){
       
-      
+      let earningStatusText = `+5 credits  : Share a new post with a cloud \n`
+      earningStatusText += `\n`
+      earningStatusText += `+15 credits : Complete the new post interview`
       
       return( 
 
@@ -172,7 +216,14 @@ getPointsAndStatus = () => {
                       <Text style={styles.pointsText}>{`Points Balance \t\t ${this.state.points}`}</Text>
                       <View style={{flex:0,flexDirection:'row'}}>
                         <Text style={styles.pointsText}>{`Status \t\t\t\t ${this.state.status}\t` }</Text>
-                        <Text style={styles.pointsSubText}>{`(${this.state.statusGapInPosts}x posts to reach ${this.state.nextStatusLevel})`}</Text>
+                        <Tooltip 
+                            popover={<Text style={styles.popoutText}>{earningStatusText}</Text>}
+                            height={80}
+                            width={300}
+                            >
+                          <Text style={styles.pointsSubText}>{`${this.state.statusGapInCredits} credits to reach ${this.state.nextStatusLevel}`}</Text>
+                        </Tooltip>
+                       
                       </View>
                       
                       
@@ -253,7 +304,7 @@ const styles = StyleSheet.create({
       marginLeft:5,
       borderWidth:.5,
       borderRadius:5,
-      borderColor:'blue',
+      borderColor:'#b0aeae',
       backgroundColor:'#f5f5f5',
       paddingBottom:8,     
       width:'98%'
@@ -267,11 +318,21 @@ const styles = StyleSheet.create({
       fontSize:15,
     },
     pointsSubText:{
-      marginTop:11,
+      marginTop:8,
+      padding:2,
       marginBottom:3,
       marginLeft:5,
       color:'#ed1874',
       fontSize:12,
+      borderWidth:1,
+      borderRadius:5,
+      borderColor:'grey',
+      backgroundColor:'#e3e1e1',
+    },
+    
+    popoutText:{
+      color:'black',
+      fontSize:13,
     },
 
     inputText:{

@@ -81,9 +81,12 @@ class NewPost extends Component {
     let cloudarray = [];
     let personarray = [];
     let me = this.state;
+    let locationName = ''
     
+    if(me.location){
+      locationName = me.location.firstname + ' ' + me.location.lastname   // a temporary treatment until we have gps implemented
+    }
     
-    let locationName = me.location.firstname + ' ' + me.location.lastname   // a temporary treatment until we have gps implemented
     me.taggedClouds.map(cloud =>{
       if(cloud.id !== 0) cloudarray.push(parseInt(cloud.id)) })             // push all but the personal cloud
   
@@ -448,8 +451,10 @@ class NewPost extends Component {
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.goBack(null)} />
-          <PostButton onPress={() => this.sendPost()} />
+          <BackButton onPress={() => this.props.navigation.goBack(null)} 
+                      Title={'Capture'}/>
+          <PostButton onPress={() => this.sendPost()} 
+                      Title={'Upload'} />
         </View>
       
       </KeyboardShift>
