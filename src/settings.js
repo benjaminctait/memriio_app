@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
       marginBottom:20,
       marginLeft:10,
       alignSelf:'center',
-
+    },
 
   inputText: {
     marginTop: 2,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
       marginBottom:2,
       marginLeft:10,
       alignSelf:'center',
-
+    },
 
   mainButtons: {
     flexDirection: 'row',
