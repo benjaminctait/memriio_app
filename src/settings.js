@@ -1,11 +1,6 @@
-import React, { Component } from 'react';
-import { 
-    StyleSheet,
-    View,
-    TouchableOpacity,    
-    Text,
-    Image,
-} from 'react-native';
+import React, {Component} from 'react';
+import {StyleSheet, View, TouchableOpacity, Text, Image} from 'react-native';
+
 
 import * as mem from './datapass'
 import KeyboardShift from './keyboardShift';
@@ -21,43 +16,39 @@ import {
 } from './buttons'
 
 
-
 class Settings extends Component {
-
-  constructor () {
+  constructor() {
     super();
     this.setupClouds = this.setupClouds.bind(this);
-    
   }
 
-    state = {
-        email:'',
-        firstname:'',
-        familyname:'',
-        clouds:[],
-        avatar:null,
-        userid:0
-    }     
-  
-//--------------------------------------------------------------------------
+  state = {
+    email: '',
+    firstname: '',
+    familyname: '',
+    clouds: [],
+    avatar: null,
+    userid: 0,
+  };
 
-setupClouds = (clouds) => {
-  
-  if(Array.isArray(clouds)){
+  //--------------------------------------------------------------------------
 
-    const firstitem = [{id:0,
-      name:'Personal',
-      administrator:this.state.userid,
-      createdon:null}] 
-    const newarray = firstitem.concat(clouds)
-    
-    
-    
-    this.setState({clouds:newarray})
-    
-  }
-  
-}
+  setupClouds = (clouds) => {
+    if (Array.isArray(clouds)) {
+      const firstitem = [
+        {
+          id: 0,
+          name: 'Personal',
+          administrator: this.state.userid,
+          createdon: null,
+        },
+      ];
+      const newarray = firstitem.concat(clouds);
+
+
+      this.setState({clouds: newarray});
+    }
+  };
 
 //--------------------------------------------------------------------------
 
@@ -82,9 +73,14 @@ setupClouds = (clouds) => {
     this.getPointsAndStatus()
     mem.mapUserClouds(user.userid,this.setupClouds)
 
-  }
+    this.setState({
+      userid: user.userid,
+      email: user.email,
+      firstname: user.firstName,
+      familyname: user.lastName,
+    });    
+  };
 
-  
 
 //--------------------------------------------------------------------------
 
@@ -163,31 +159,33 @@ getPointsAndStatus = () => {
             
                 />
 
-                <Input 
-                  label ='Family Name'
-                  labelStyle={styles.labelText}
-                  containerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText} 
-                  onChangeText = {(text) => {this.setState({familyname:text})}}
-                  placeholder={this.state.familyname}
-                  placeholderTextColor='black'
-            
-                />
 
-                <Input 
-                  label ='email'
-                  autoCapitalize={false}
-                  labelStyle={styles.labelText}
-                  containerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText} 
-                  onChangeText = {(text) => {this.setState({email:text})}}
-                  placeholder={this.state.email}
-                  placeholderTextColor='black'
-            
-                />
+          <Input
+            label="Family Name"
+            labelStyle={styles.labelText}
+            containerStyle={styles.inputContainer}
+            inputStyle={styles.inputText}
+            onChangeText={(text) => {
+              this.setState({familyname: text});
+            }}
+            placeholder={this.state.familyname}
+            placeholderTextColor="black"
+          />
 
-                
-                <ListItem
+          <Input
+            label="email"
+            autoCapitalize={false}
+            labelStyle={styles.labelText}
+            containerStyle={styles.inputContainer}
+            inputStyle={styles.inputText}
+            onChangeText={(text) => {
+              this.setState({email: text});
+            }}
+            placeholder={this.state.email}
+            placeholderTextColor="black"
+          />
+
+              <ListItem
                   title='My Memory Clouds'
                   leftIcon={{name:'cloud-queue'}}
                   containerStyle={{
@@ -261,20 +259,22 @@ getPointsAndStatus = () => {
           </KeyboardShift>
         )
     }
+
 }
 
-export default Settings
+export default Settings;
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: 'white',
-    },   
-    inputContainer: {
-      width:'95%',
-      marginBottom:20,
-      alignSelf:'center',
-    },
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  inputContainer: {
+    width: '95%',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+
 
     settingsTextItem:{
       flex: 0,
@@ -296,7 +296,20 @@ const styles = StyleSheet.create({
       marginLeft:10,
       alignSelf:'center',
 
-    },
+
+  inputText: {
+    marginTop: 2,
+    marginBottom: 2,
+    fontSize: 18,
+    color: 'blue',
+  },
+  xText: {
+    marginTop: 2,
+    marginBottom: 2,
+    marginLeft: 10,
+    alignSelf: 'center',
+  },
+
 
 
     pointsBox:{
@@ -349,7 +362,28 @@ const styles = StyleSheet.create({
       marginLeft:10,
       alignSelf:'center',
 
-    },
+
+  mainButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 30,
+    marginHorizontal: 50,
+    marginTop: 15,
+  },
+  littleButton: {
+    marginLeft: 5,
+    height: 30,
+    width: 30,
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
+  },
+  subtitle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 5,
+    marginRight: 5,
+    fontSize: 8,
+  },
 
     labelText:{
       marginTop:2,
@@ -396,3 +430,4 @@ const styles = StyleSheet.create({
       backgroundColor:'#f5f5f5',
     }
   })
+

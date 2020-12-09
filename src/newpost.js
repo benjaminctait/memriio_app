@@ -4,10 +4,7 @@ import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Video from 'react-native-video';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {showMessage,hideMessage} from "react-native-flash-message";
-
-
-
+import {showMessage, hideMessage} from 'react-native-flash-message';
 
 import {
   StyleSheet,
@@ -28,15 +25,13 @@ import {
 
 import {Input, ListItem, CheckBox} from 'react-native-elements';
 
-
 //--------------------------------------------------------------------------
 
 class NewPost extends Component {
   constructor() {
     super();
     this.setupCloudsAndPeople = this.setupCloudsAndPeople.bind(this);
-    this.pushMemory = this.pushMemory.bind(this)
-    
+    this.pushMemory = this.pushMemory.bind(this);
   }
 
   state = {
@@ -72,7 +67,6 @@ class NewPost extends Component {
     }
   };
 
-  
   //--------------------------------------------------------------------------
 
   sendPost = async () => {
@@ -81,30 +75,32 @@ class NewPost extends Component {
     let cloudarray = [];
     let personarray = [];
     let me = this.state;
-    let locationName = ''
-    
-    if(me.location){
-      locationName = me.location.firstname + ' ' + me.location.lastname   // a temporary treatment until we have gps implemented
-    }
-    
-    me.taggedClouds.map(cloud =>{
-      if(cloud.id !== 0) cloudarray.push(parseInt(cloud.id)) })             // push all but the personal cloud
-  
-    
+
+    let locationName =
+      me.location.firstname && me.location.lastname
+        ? me.location.firstname + ' ' + me.location.lastname
+        : ''; // a temporary treatment until we have gps implemented
+    me.taggedClouds.map((cloud) => {
+      if (cloud.id !== 0) {
+        cloudarray.push(parseInt(cloud.id));
+      }
+    }); // push all but the personal cloud
+
+
     me.taggedPeople.map((person, i) => {
       personarray[i] = person.userid;
     });
-    
+
     showMessage({
       message: 'Memory uploading.. should be done shortly',
-      type:'success',
+      type: 'success',
       duration: 2000,
       autoHide: true,
       floating: true,
-    })
+    });
 
-    console.log('SEND POST',this.props.screenProps);
-    this.props.navigation.navigate('Feed')
+    console.log('SEND POST', this.props.screenProps);
+    this.props.navigation.navigate('Feed');
 
     await mem.postNewMemory(
       me.title,
@@ -123,8 +119,8 @@ class NewPost extends Component {
   pushMemory = (memid) => {
     console.log('PUSH MEMORY');
     console.log(this.props.navigation.screenProps);
-  }
-  
+  };
+
   //--------------------------------------------------------------------------
 
   doPostLoad = (memid) => {
@@ -141,18 +137,17 @@ class NewPost extends Component {
           mem.postStatusEvent ( uid ,  5 , memid , 'STATUS : Post new memory' , cid )
           console.log    ( 'refreshFeed Points & status: user : ', uid, ' memid : ', memid , ' cloud : ', cid )
         }
+
     }
     showMessage({
       message: 'Memory posted ',
-      type:'success',
+      type: 'success',
       duration: 2000,
       backgroundColor: '#5DADE2',
       color: '#FDFEFE',
       autoHide: true,
       floating: true,
-    })
-    
-    
+    });
   };
 
   // ---------------------------------------------------------------------------------
@@ -212,7 +207,9 @@ class NewPost extends Component {
         console.log();
 
         keys.map((key, index) => {
-          AsyncStorage.getItem(key).then((item) => console.log('async store for key ' + key + ' value ' ,item))
+          AsyncStorage.getItem(key).then((item) =>
+            console.log('async store for key ' + key + ' value ', item),
+          );
           if (
             key.includes('image-') ||
             key.includes('video-') ||
@@ -269,22 +266,27 @@ class NewPost extends Component {
   // ---------------------------------------------------------------------------------
 
   handleCloudTagPress = (cloudItem, buttonState) => {
-
-    let selectedClouds = this.state.taggedClouds.map((cloud) => { return cloud.id })
-    let newarray = []
-    let exists = selectedClouds.includes(cloudItem.id)
+    let selectedClouds = this.state.taggedClouds.map((cloud) => {
+      return cloud.id;
+    });
+    let newarray = [];
+    let exists = selectedClouds.includes(cloudItem.id);
 
     if (buttonState && !exists) {
       this.state.taggedClouds.push(cloudItem);
     }
 
     if (!buttonState && exists) {
-    this.state.taggedClouds.map(cloud =>{
-      if(cloud.id !== cloudItem.id) newarray.push(cloud)})
-    this.state.taggedClouds = newarray  
+      this.state.taggedClouds.map((cloud) => {
+        if (cloud.id !== cloudItem.id) {
+          newarray.push(cloud);
+        }
+      });
+      this.state.taggedClouds = newarray;
     }
 
-    console.log('handleCloudTagPress : taggedClouds.cloud.id ' ,
+    console.log(
+      'handleCloudTagPress : taggedClouds.cloud.id ',
       this.state.taggedClouds.map((cloud) => {
         return cloud.id;
       }),
@@ -346,22 +348,23 @@ class NewPost extends Component {
             textContent={'Uploading memory...'}
             textStyle={styles.spinnerTextStyle}
           />
-          
-           <Input // Title
+
+          <Input // Title
             inputStyle={styles.titletext}
             onChangeText={(text) => {
               this.setState({title: text});
             }}
             placeholder="Title.."
             placeholderTextColor="gray"
-          /> 
+          />
 
           <Input // Description
             inputStyle={styles.titletext}
             placeholder="Description.."
             placeholderTextColor="grey"
             onChangeText={(text) => {
-              this.setState({story: text});}}
+              this.setState({story: text});
+            }}
           />
 
           <View>
@@ -456,9 +459,7 @@ class NewPost extends Component {
           <PostButton onPress={() => this.sendPost()} 
                       Title={'Upload'} />
         </View>
-      
       </KeyboardShift>
-      
     );
   }
 }
