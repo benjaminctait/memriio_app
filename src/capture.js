@@ -12,8 +12,6 @@ import {createThumbnail} from 'react-native-create-thumbnail';
 
 import {
   CameraClickButton,
-  BackButton,
-  PostButton,
   VideoStartButton,
   AudioStartButton,
   VideoStopButton,
@@ -33,13 +31,14 @@ import {
   Image,
   PermissionsAndroid,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 
 import RNSoundLevel from 'react-native-sound-level';
 import AnimatedWave from 'react-native-animated-wave';
 import CameraRollPicker from 'react-native-camera-roll-picker';
 
-import Sound from 'react-native-sound';
+
 let filePath = '';
 
 class CaptureComponent extends Component {
@@ -57,6 +56,8 @@ class CaptureComponent extends Component {
     hasPermission: undefined,
     decibles: 0,
     filesSelected: [],
+    fadeAnimation: new Animated.Value(0),
+    shutterFlashVisible:false,
   };
 
   //--------------------------------------------------------------------------------------
@@ -245,11 +246,32 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
+  showShutterFlash = () => {
+    this.setState({shutterFlashVisible:true})
+    Animated.timing(this.state.fadeAnimation, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true, 
+    }).start(this.hideShutterFlash);
+  };
+
+  hideShutterFlash = () => {
+    Animated.timing(this.state.fadeAnimation, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(this.setState({shutterFlashVisible:false}));
+  };
+
+  //--------------------------------------------------------------------------------------
+
+
   takePicture = async () => {
     if (this.camera) {
       console.log('capture.takePicture() ' + this.camera);
       try {
         const data = await this.camera.takePictureAsync();
+        this.showShutterFlash()
         const fullpath = data.uri.split('//')[1];
         AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
         AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
@@ -397,7 +419,10 @@ class CaptureComponent extends Component {
   };
   //--------------------------------------------------------------------------------------
   render() {
-    let bigButton, content;
+    let bigButton = null 
+    let content = null
+    let effect = null
+
     switch (this.state.mode) {
       case 'camera':
         bigButton = <CameraClickButton onPress={this.takePicture} />;
@@ -412,7 +437,15 @@ class CaptureComponent extends Component {
             autoFocus={RNCamera.Constants.AutoFocus.on}
             playSoundOnCapture={true}
           />
-        );
+        )
+        if(this.state.shutterFlashVisible){
+          effect = (
+            <Animated.View
+              style={[styles.fadingContainer,{opacity: this.state.fadeAnimation}]}
+            />
+          )
+        }
+        
         break;
       case 'video':
         content = (
@@ -500,6 +533,7 @@ class CaptureComponent extends Component {
     return (
       <View style={styles.container}>
         {content}
+        {effect}
         <View style={styles.modeButtons}>
           <IconButtonCamera
             onPress={() => this.showMode('camera')}
@@ -554,6 +588,17 @@ const styles = StyleSheet.create({
     
     padding:4,
 
+  },
+
+  fadingContainer:{ 
+    position:'absolute',
+    top:0,  
+    left:0,
+    width:'100%',
+    height:'100%',
+    backgroundColor:'whitesmoke'
+
+      
   },
 
   mainButtons: {

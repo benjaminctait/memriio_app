@@ -30,7 +30,7 @@ getLocations = () => {
   return [
     {
       locid:0,
-      firstname:'UAP',
+      firstname:'UAP', 
       lastname:'Brisbane'
     },
     {
@@ -39,9 +39,24 @@ getLocations = () => {
       lastname:'Shanghai'
     },
     {
-      locid:1,
+      locid:2,
       firstname:'UAP',
       lastname:'New York'
+    },
+    {
+      locid:3,
+      firstname:'UAP',
+      lastname:'Rock Tavern'
+    },
+    {
+      locid:4,
+      firstname:'UAP',
+      lastname:'Melbourne'
+    },
+    {
+      locid:5,
+      firstname:'UAP',
+      lastname:'Sydney'
     }
   ]
   
