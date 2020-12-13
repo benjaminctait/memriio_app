@@ -17,9 +17,9 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* memriio_appTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* memriio_appTests.m */; };
 		BA6A1520299A1A21197F3A20 /* libPods-memriio_app-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 658E51A76AFF38B6B8B343B0 /* libPods-memriio_app-tvOS.a */; };
-		D22E3CE86230A0940FDE8DE8 /* libPods-memriio_app.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F847779B4461EABC885D286 /* libPods-memriio_app.a */; };
 		D32A4D6AC6D153EE6018CB23 /* libPods-memriio_app-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */; };
 		DBC4541F8F4C90C42489FC37 /* libPods-memriio_app-memriio_appTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31C6DF40BE0AFEFA5EDC2A17 /* libPods-memriio_app-memriio_appTests.a */; };
+		E83F49CC2585926C006B24D1 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83F49CB2585926C006B24D1 /* File.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +63,8 @@
 		73746E0A5FD14E9788E0FE7C /* Pods-memriio_app-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		93A6CFA3DDDE66097328D773 /* Pods-memriio_app-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOSTests/Pods-memriio_app-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		BB77427D1D138C2E68653CF7 /* Pods-memriio_app-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		E83F49CA2585926B006B24D1 /* memriio_app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "memriio_app-Bridging-Header.h"; sourceTree = "<group>"; };
+		E83F49CB2585926C006B24D1 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -82,7 +84,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D22E3CE86230A0940FDE8DE8 /* libPods-memriio_app.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,12 +175,14 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				E83F49CB2585926C006B24D1 /* File.swift */,
 				13B07FAE1A68108700A75B9A /* memriio_app */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* memriio_appTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				6B5D8ECF329F6BBA9CC31525 /* Pods */,
+				E83F49CA2585926B006B24D1 /* memriio_app-Bridging-Header.h */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -294,7 +297,7 @@
 					};
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = X8XYBH9H8V;
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1220;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -629,6 +632,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				E83F49CC2585926C006B24D1 /* File.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -737,6 +741,7 @@
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = memriio_app/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1;
 				OTHER_LDFLAGS = (
@@ -746,6 +751,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.memrii.memrii;
 				PRODUCT_NAME = memrii;
+				SWIFT_OBJC_BRIDGING_HEADER = "memriio_app-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -761,6 +767,7 @@
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = X8XYBH9H8V;
 				INFOPLIST_FILE = memriio_app/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 1;
 				OTHER_LDFLAGS = (
@@ -770,6 +777,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.memrii.memrii;
 				PRODUCT_NAME = memrii;
+				SWIFT_OBJC_BRIDGING_HEADER = "memriio_app-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -932,11 +940,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = (
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
-					"\"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)\"",
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -985,11 +992,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "/usr/lib/swift $(inherited)";
 				LIBRARY_SEARCH_PATHS = (
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
 					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
-					"\"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)\"",
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;

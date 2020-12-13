@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
 import MemoryCard from './cards';
 import * as mem from './datapass';
-
 import {StyleSheet, View, ScrollView, Text, RefreshControl} from 'react-native';
-import {TextInput} from 'react-native-gesture-handler';
 import {SubTag} from './buttons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { SearchBar } from 'react-native-elements'
@@ -24,10 +22,8 @@ class Feed extends Component {
     userClouds: [],
     user: null,
     searchwordcount: 1,
-    searchwords: '',
-    cloudInclusions: [{}],
-    isLoading: true,
-    personalMemoryunsharedOnly: false,
+    searchwords: '',  
+    isLoading: true,    
     refreshing: false,
     activeCloud:0,
   };
@@ -59,10 +55,8 @@ class Feed extends Component {
       this.loadMemories(null);
     } else if (cloudids.length === 1 && cloudids[0].value === 0) {
       // personal only
-
-      if (this.state.personalMemoryunsharedOnly) {
-        // personal only - unshared only
-        mem.getMemories_PersonalOnly_Unshared(userid, wordarray).then(
+        
+        mem.searchMemories_User(userid, wordarray).then(
           (memories) => {
             this.loadMemories(memories);
           },
@@ -70,17 +64,7 @@ class Feed extends Component {
             this.loadMemories(null);
           },
         );
-      } else {
-        // personal only - bth shared and undshared
-        mem.getMemories_PersonalOnly_All(userid, wordarray).then(
-          (memories) => {
-            this.loadMemories(memories);
-          },
-          (error) => {
-            this.loadMemories(null);
-          },
-        );
-      }
+      
     } else if (cloudids.includes(0)) {
       // personal cloud + other clouds
 
@@ -141,9 +125,8 @@ class Feed extends Component {
 
   loadClouds = (clouds) => {
 
-    console.log('loadclouds');
+    console.log('loadclouds - activecloud : ',this.state.activeCloud);
 
-    let cloudids = [0];
     let personal = {
       id: 0,
       name: 'Personal',
@@ -152,23 +135,11 @@ class Feed extends Component {
     };
     clouds.push(personal);
     clouds.reverse();
-    mem.getSelectedCloudsAsArray().then(cids => {
-      
-        clouds.map((cloud) => {
-          
-          if( cids.findIndex ( id => id == cloud.id ) !== -1 ){
-            this.state.cloudInclusions.push({cloudid: cloud.id, include: true});
-            this.state.activeCloud = cloud.id
-            console.log('active cloud ' + [this.state.activeCloud]);
-          }else{
-            this.state.cloudInclusions.push({cloudid: cloud.id, include: false});  
-          }
-          console.log('loadclouds : ', this.state.activeCloud );
-          cloudids.push(cloud.id);
-        });
-
-        mem.getMemories([this.state.activeCloud], this.loadMemories);
-      })
+    if(this.state.activeCloud === 0){
+      this.handleSearchChange('')
+    }else{
+      mem.getMemories([this.state.activeCloud], this.loadMemories);
+    }
    
     this.setState({userClouds: clouds});
 
@@ -187,30 +158,14 @@ class Feed extends Component {
   //----------------------------------------------------------------------------------------------
   handleCloudChange = async (cloud, shouldInclude) => {
     this.flushFeed();
-    let x = 0
-    let activeclouds = ''
 
     await mem.cleanupStorage({key:'activecloud'})
 
     if(shouldInclude){
+      AsyncStorage.setItem('activecloud',cloud.id.toString())
       this.setState({activeCloud:cloud.id})
-      console.log(this.state.activeCloud);
+      
     }
-    this.state.cloudInclusions.forEach((element) => {
-      if (element.cloudid === cloud.id) {
-        element.include = shouldInclude;
-      }
-    });
-    this.state.cloudInclusions.forEach((element) => {
-      if (element.include) {
-        let k = 'activecloud-'+ x++
-        AsyncStorage.setItem(k,element.cloudid.toString())
-        activeclouds += element.cloudid + ','
-      }
-    });
-
-    console.log('handleCloudChange : activeClouds : ',activeclouds)   
-
     this.handleSearchChange(this.state.searchwords);
   };
 
@@ -282,11 +237,7 @@ class Feed extends Component {
             <MemoryCard
               key={index}
               memory={mem}
-              title={mem.title}
-              description={mem.description}
-              story={mem.story}
-              createdon={mem.createdon}
-              userid={mem.userid}
+              activeCloud={this.state.activeCloud}
               navigation={this.props.navigation}
             />
           ))}

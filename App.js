@@ -94,8 +94,11 @@ class App extends Component {
   async componentDidMount() {
     const loggedin = await AsyncStorage.getItem('userLoggedin');
     const uid = await AsyncStorage.getItem('userid');
+
     if (loggedin) {
-      this.setState({isLoggedIn: loggedin, userid: uid,loadcomplete:true});
+      this.setState({isLoggedIn: true, userid: uid,loadcomplete:true});
+    }else{
+      this.setState({isLoggedIn: false, loadcomplete:true});
     }
   }
 
