@@ -270,8 +270,9 @@ class CaptureComponent extends Component {
     if (this.camera) {
       console.log('capture.takePicture() ' + this.camera);
       try {
-        const data = await this.camera.takePictureAsync();
         this.showShutterFlash()
+        const data = await this.camera.takePictureAsync();
+        
         const fullpath = data.uri.split('//')[1];
         AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
         AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
@@ -434,7 +435,7 @@ class CaptureComponent extends Component {
             style={styles.preview}
             type={RNCamera.Constants.Type.back}
             flashMode={RNCamera.Constants.flashMode}
-            autoFocus={RNCamera.Constants.AutoFocus.on}
+            autoFocus={'on'}
             playSoundOnCapture={true}
           />
         )

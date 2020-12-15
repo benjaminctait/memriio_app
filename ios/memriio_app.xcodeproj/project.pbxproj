@@ -20,6 +20,10 @@
 		D32A4D6AC6D153EE6018CB23 /* libPods-memriio_app-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */; };
 		DBC4541F8F4C90C42489FC37 /* libPods-memriio_app-memriio_appTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31C6DF40BE0AFEFA5EDC2A17 /* libPods-memriio_app-memriio_appTests.a */; };
 		E83F49CC2585926C006B24D1 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83F49CB2585926C006B24D1 /* File.swift */; };
+		E881952C25875E91005FFBFD /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
+		E881961225877438005FFBFD /* images in Resources */ = {isa = PBXBuildFile; fileRef = E881961125877438005FFBFD /* images */; };
+		E8B3490B2587512D000B858C /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
+		E8E8B29CB7A47FBF8201EC39 /* libPods-memriio_app.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F847779B4461EABC885D286 /* libPods-memriio_app.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,7 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
+		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = main.jsbundle; path = memriio_app/main.jsbundle; sourceTree = "<group>"; };
 		00E356EE1AD99517003FC87E /* memriio_appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = memriio_appTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* memriio_appTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = memriio_appTests.m; sourceTree = "<group>"; };
@@ -65,6 +69,7 @@
 		BB77427D1D138C2E68653CF7 /* Pods-memriio_app-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		E83F49CA2585926B006B24D1 /* memriio_app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "memriio_app-Bridging-Header.h"; sourceTree = "<group>"; };
 		E83F49CB2585926C006B24D1 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		E881961125877438005FFBFD /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = images; path = assets/src/images; sourceTree = "<group>"; };
 		ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
@@ -84,6 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8E8B29CB7A47FBF8201EC39 /* libPods-memriio_app.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,6 +181,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				E881961125877438005FFBFD /* images */,
 				E83F49CB2585926C006B24D1 /* File.swift */,
 				13B07FAE1A68108700A75B9A /* memriio_app */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -336,6 +343,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E881952C25875E91005FFBFD /* main.jsbundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +351,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E881961225877438005FFBFD /* images in Resources */,
+				E8B3490B2587512D000B858C /* main.jsbundle in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
@@ -378,7 +388,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
+			shellScript = "export NODE_BINARY=node\n../../../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		031954A12DB04A433EAE4C79 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
