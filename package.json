@@ -32,7 +32,7 @@
     "lodash": "^4.17.15",
     "react": "^16.9.0",
     "react-audio-player": "^0.13.0",
-    "react-native": "^0.62.1",
+    "react-native": "^0.63.2",
     "react-native-animated-wave": "^1.2.3",
     "react-native-audio": "^4.3.0",
     "react-native-aws3": "0.0.9",
@@ -48,6 +48,7 @@
     "react-native-image-resizer": "^1.2.1",
     "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-loading-spinner-overlay": "^1.1.0",
+    "react-native-maps": "^0.27.1",
     "react-native-mov-to-mp4": "^0.2.1",
     "react-native-paper": "^3.6.0",
     "react-native-reanimated": "^1.7.0",
@@ -91,5 +92,4 @@
   "jest": {
     "preset": "react-native"
   }
-  
 }
