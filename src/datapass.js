@@ -61,33 +61,33 @@ export async function createMemoryCloud(cloudName, administratorID) {
 // get details for the current user -----------------------------------------------------
 
 export async function activeUser() {
-  const logged = await AsyncStorage.getItem('userLoggedin');
-  console.log('activeUser is anyone loggedin: ' + logged);
 
-  if (logged) {
-    let userid          = await AsyncStorage.getItem('userid');
-    let firstName       = await AsyncStorage.getItem('firstname');
-    let lastName        = await AsyncStorage.getItem('lastname');
-    let email           = await AsyncStorage.getItem('email');
-    let activeCloud     = await AsyncStorage.getItem('activecloud')
+  return new Promise((resolve,reject) =>{
+    
+    AsyncStorage.getItem('userLoggedin').then(logged => {
+      
+      
+      if (logged) {
 
-    let user = {userid, firstName, lastName, email, activeCloud };
-    console.log(
-      'activeUser user: ' +
-        user.firstName +
-        ' ' +
-        user.lastName +
-        ' id: ' +
-        user.userid +
-        ' email: ' +
-        user.email + 
-        ' active cloud: ' +
-        user.activeCloud,
-    );
-    return user;
-  } else {
-    return null;
-  }
+        AsyncStorage.getItem('userid').then(userid =>{
+          AsyncStorage.getItem('firstname').then(firstName =>{
+            AsyncStorage.getItem('lastname').then(lastName =>{
+              AsyncStorage.getItem('email').then(email => {
+                AsyncStorage.getItem('activecloud').then(activeCloud =>{
+                  let user = {userid, firstName, lastName, email, activeCloud };
+                  resolve(user)
+                })
+              })
+            })
+          })
+        })
+      } else {
+        reject(null)
+      }
+
+    })
+  })
+  
 }
 
 // -----------------------------------------------------------------------

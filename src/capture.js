@@ -333,13 +333,12 @@ class CaptureComponent extends Component {
   };
   //--------------------------------------------------------------------------------------
   getSelectedImages = async (images) => {
-    // this.state.filesSelected = images;
+   
     this.setState({filesSelected: images});
     console.log('getting selected images');
-    await cleanupStorage({key: 'file-'}); //remove previously stroed files
+    await cleanupStorage({key: 'file-'}); //remove previously stored files
     images.forEach((img, i) => {
-      //console.log('image :', img);
-
+      
       if (img.uri) {
         if (img.type === 'video') {
           if (Platform.OS === 'ios') {
@@ -380,16 +379,7 @@ class CaptureComponent extends Component {
           }
         } else {
           if (Platform.OS === 'ios') {
-            // heicToJpg(img.uri).then((jpegPath) => {
-            //   AsyncStorage.setItem(
-            //     `image-file-${this.state.fcount + i + 1}`,
-            //     jpegPath,
-            //   );
-            //   AsyncStorage.setItem(
-            //     `image-file-${this.state.fcount + i + 1}-thumb`,
-            //     jpegPath,
-            //   );
-            // });
+            
             cameraRollPathToAbsolutePath(img.uri, img.type).then(
               (assetPath) => {
                 console.log('getSelectImages ', assetPath);
@@ -399,7 +389,7 @@ class CaptureComponent extends Component {
                 );
                 AsyncStorage.setItem(
                   `image-file-${this.state.fcount + i + 1}-thumb`,
-                  img.uri,
+                  assetPath,
                 );
               },
             );

@@ -4,19 +4,24 @@ import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Video from 'react-native-video';
 import Spinner from 'react-native-loading-spinner-overlay';
+import ImageViewer from 'react-native-image-zoom-viewer';
+
 import {showMessage, hideMessage} from 'react-native-flash-message';
 
 import {
   StyleSheet,
   View,
   Image,
-  TextInput,
+  Text,
   Keyboard,
   ScrollView,
+  Dimensions,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 
 import {
-  CameraClickButton,
+  
   BackButton,
   PostButton,
   SubTag,
@@ -24,6 +29,8 @@ import {
 } from './buttons';
 
 import {Input, ListItem, CheckBox} from 'react-native-elements';
+
+let THUMBNAIL_WIDTH = 150
 
 //--------------------------------------------------------------------------
 
@@ -45,6 +52,8 @@ class NewPost extends Component {
     taggedClouds: [],
     user: null,
     spinner: false,
+    modalVisible:false,
+    activeImage:null,
   };
 
   //--------------------------------------------------------------------------
@@ -199,65 +208,62 @@ class NewPost extends Component {
 
   async componentDidMount() {
     const store = [];
-    const user = await mem.activeUser();
+    
+    console.log('newpost-didmount');
+    console.log();
+
+    mem.activeUser().then(user =>{
+      
+      if(user){
+        this.setState( { user: user } )
+        mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
+        
+      }
+    })
 
     try {
-      await AsyncStorage.getAllKeys().then((keys) => {
-        console.log('newpost-didmount');
-        console.log();
-
-        keys.map((key, index) => {
-          AsyncStorage.getItem(key).then((item) =>
-            console.log('async store for key ' + key + ' value ', item),
-          );
-          if (
-            key.includes('image-') ||
-            key.includes('video-') ||
-            key.includes('audio-')
-          ) {
-            if (!key.includes('thumb')) {
-              AsyncStorage.getItem(key).then((item) => {
-                this.getMatchingThumb(keys, key).then((thumb) => {
-                  console.log(
-                    'push content - key : ' +
-                      key +
-                      ', file : ' +
-                      mem.getFilename(item) +
-                      ', thumb : ' +
-                      mem.getFilename(thumb),
-                  );
-                  if (key.includes('audio-')) {
-                    store.push({
-                      filepath: item,
-                      thumbnail: thumb,
-                      isAudio: true,
-                    });
-                  } else if (key.includes('video-')) {
-                    store.push({
-                      filepath: item,
-                      thumbnail: thumb,
-                      isVideo: true,
-                    });
-                  } else {
-                    store.push({
-                      filepath: item,
-                      thumbnail: thumb,
-                      isAudio: false,
-                    });
-                  }
-                });
-              });
-            }
-          }
+        AsyncStorage.getAllKeys().then((keys) => {
+          
+          keys.map((key, index) => {
+            AsyncStorage.getItem(key).then( item => {
+              
+              if (
+                key.includes('image-') ||
+                key.includes('video-') ||
+                key.includes('audio-')
+              ) {
+                console.log('async store for key ' + key + ' value ', item)
+                if (!key.includes('thumb')) {
+                  this.getMatchingThumb(keys, key).then((thumb) => {
+                    
+                    if (key.includes('audio-')) {
+                      store.push({
+                        filepath: item,
+                        thumbnail: thumb,
+                        isAudio: true,
+                      });
+                    } else if (key.includes('video-')) {
+                      store.push({
+                        filepath: item,
+                        thumbnail: thumb,
+                        isVideo: true,
+                      });
+                    } else {
+                      
+                      store.push({
+                        filepath: item,
+                        thumbnail: thumb,
+                        isAudio: false,
+                      });
+                    }
+                    this.setState({content:store})
+                  });
+                }
+              }
+            })
+          });
         });
-        console.log('content is array ' + Array.isArray(this.state.content));
-
-        this.setState({
-          content: store,
-          user: user,
-        });
-      });
-      await mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
+      
     } catch (e) {
       alert(e);
     }
@@ -295,24 +301,31 @@ class NewPost extends Component {
 
   // ---------------------------------------------------------------------------------
 
+  showModal = (item) => {
+
+    console.log('SHOW MODAL ');
+    console.log('fileurl', item.filepath );
+    console.log('thumb ', item.thumbnail );
+    if (mem.isSupportedImageFile(mem.getFilename(item.filepath))) {
+      this.setState({modalVisible: true, activeImage: item});
+    } 
+    
+    // else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
+    //   return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
+    // } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
+    //   return <VideoPlayer poster={item.fileurl} source={item.fileurl} />;
+    // }
+
+  };
+
+  // ---------------------------------------------------------------------------------
+
   getMatchingThumb = (keys, targetKey) => {
     return new Promise((resolve, reject) => {
       AsyncStorage.getItem(targetKey + '-thumb').then((thumbPath) => {
         console.log('thumb for :', targetKey, thumbPath);
         resolve(thumbPath);
       });
-      // let targetKeyNumber = parseInt(targetKey.slice(-1));
-      // keys.map((key) => {
-      //   if (key.includes('thumb')) {
-      //     let thumbKeyNumber = parseInt(key.slice(-1));
-
-      //     if (targetKeyNumber === thumbKeyNumber) {
-      //       AsyncStorage.getItem(targetKey+'-thumb').then((thumbPath) => {
-      //         resolve(thumbPath);
-      //       });
-      //     }
-      //   }
-      // });
     });
   };
 
@@ -339,7 +352,9 @@ class NewPost extends Component {
 
   render() {
     let itemcount = this.state.content.length;
-    //console.log('newpost content :', this.state.content);
+    let imageScrollWidth = (( itemcount * ( THUMBNAIL_WIDTH + 30 ) ) / Dimensions.get('window').width ) * 100
+    console.log(imageScrollWidth);
+    
     return (
       <KeyboardShift>
         <View style={styles.container}>
@@ -418,35 +433,46 @@ class NewPost extends Component {
               }
             />
           </View>
+        
           <ScrollView
             horizontal={true}
-            contentContainerStyle={{width: `${100 * itemcount}%`}}
+            contentContainerStyle={{width: `${imageScrollWidth}%` }}
             showsHorizontalScrollIndicator={true}
             scrollEventThrottle={200}
             decelerationRate="fast"
-            pagingEnabled>
+            snapToStart={false}
+           
+            >
             {this.state.content.map((item, index) => (
-              <View style={styles.thumbnailsContainer}>
+              <View 
+                style={styles.thumbnailsContainer} 
+                  
+              >
                 {item.isVideo ? (
                   <Video
                     source={{uri: item.filepath}}
                     paused={true}
                     muted={false}
                     controls={true}
+                    item = {item }
                     poster={item.thumbnail}
                     style={styles.thumbnailStyle}
+                    
                   />
                 ) : (
-                  <Image
-                    key={index}
-                    style={styles.thumbnailStyle}
-                    source={
-                      item.isAudio
-                        ? require('./images/audioThumb.png')
-                        : {uri: item.thumbnail}
-                    }
-                    resizeMode="cover"
-                  />
+                  <TouchableOpacity onPress = {() => this.showModal(item)} >
+                    <Image
+                      key={index}
+                      style={styles.thumbnailStyle}
+                      item ={ item }
+                      source={
+                        item.isAudio
+                          ? require('./images/audioThumb.png')
+                          : {uri: item.thumbnail}
+                      }
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
                 )}
               </View>
             ))}
@@ -459,6 +485,33 @@ class NewPost extends Component {
           <PostButton onPress={() => this.sendPost()} 
                       Title={'Upload'} />
         </View>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {
+            this.setState({modalVisible: false});
+          }}>
+          <Text
+            style={styles.backButton}
+            onPress={() => {
+              this.setState({modalVisible: !this.state.modalVisible});
+            }}>
+            <Image
+              source={require('./images/back.png')}
+              style={styles.backButtonImage}
+            />
+          </Text>
+
+          <ImageViewer
+            imageUrls={[{url: this.state.activeImage ? this.state.activeImage.thumbnail : null }]}
+            style={styles.imageFull}
+            renderHeader={() => {}}
+            renderIndicator={() => {}}
+          />
+        </Modal>
+
       </KeyboardShift>
     );
   }
@@ -471,6 +524,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
+  imageFull: {
+    position: 'absolute',
+    width: '100%', 
+    height: '100%', 
+    zIndex: -1
+  },
+
+  backButton: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    height: 100,
+  },
+  backButtonImage: {
+    width: 35,
+    height: 35,
+  },
+
   preview: {
     alignContent: 'center',
   },
@@ -504,8 +575,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
   thumbnailsContainer: {
-    height: 200,
-    width: 100,
+    height: 150,
+    width: THUMBNAIL_WIDTH,
     margin: 5,
     marginTop: 10,
   },

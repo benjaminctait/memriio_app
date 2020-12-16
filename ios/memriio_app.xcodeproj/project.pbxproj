@@ -8,22 +8,22 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* memriio_appTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* memriio_appTests.m */; };
+		055A3AFB8C51E7C0FF09912E /* libPods-memriio_app-memriio_appTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E1E3ABD224D9EC64A93E684 /* libPods-memriio_app-memriio_appTests.a */; };
+		12FB59C32380508C667E9A7B /* libPods-memriio_app.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BF82DE9958F0B74214EC98CA /* libPods-memriio_app.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1E144EF171683C04B73A7592 /* libPods-memriio_app-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 43F7B351597633B17A62C7D3 /* libPods-memriio_app-tvOS.a */; };
 		2D02E4BC1E0B4A80006451C7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* memriio_appTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* memriio_appTests.m */; };
-		BA6A1520299A1A21197F3A20 /* libPods-memriio_app-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 658E51A76AFF38B6B8B343B0 /* libPods-memriio_app-tvOS.a */; };
-		D32A4D6AC6D153EE6018CB23 /* libPods-memriio_app-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */; };
-		DBC4541F8F4C90C42489FC37 /* libPods-memriio_app-memriio_appTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 31C6DF40BE0AFEFA5EDC2A17 /* libPods-memriio_app-memriio_appTests.a */; };
+		DCE8BD77331941504FD636EE /* libPods-memriio_app-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C834D2503CB330551168EFFE /* libPods-memriio_app-tvOSTests.a */; };
 		E83F49CC2585926C006B24D1 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83F49CB2585926C006B24D1 /* File.swift */; };
 		E881952C25875E91005FFBFD /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
 		E881961225877438005FFBFD /* images in Resources */ = {isa = PBXBuildFile; fileRef = E881961125877438005FFBFD /* images */; };
 		E8B3490B2587512D000B858C /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
-		E8E8B29CB7A47FBF8201EC39 /* libPods-memriio_app.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F847779B4461EABC885D286 /* libPods-memriio_app.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +48,8 @@
 		00E356EE1AD99517003FC87E /* memriio_appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = memriio_appTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* memriio_appTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = memriio_appTests.m; sourceTree = "<group>"; };
-		10A10831B19D9979DE6AFB24 /* Pods-memriio_app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app/Pods-memriio_app.debug.xcconfig"; sourceTree = "<group>"; };
+		038D3FB3D24A4A07B8605198 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
+		0D5374D165CB909B4700C091 /* Pods-memriio_app.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app.release.xcconfig"; path = "Target Support Files/Pods-memriio_app/Pods-memriio_app.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* memrii.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = memrii.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = memriio_app/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = memriio_app/AppDelegate.m; sourceTree = "<group>"; };
@@ -56,24 +57,39 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = memriio_app/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = memriio_app/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = memriio_app/main.m; sourceTree = "<group>"; };
+		14EFF54AECC24FC48A5B293E /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
+		21907A7E14164F7DA2038D5A /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
+		27D85B85A3614BDA8B4BFE6F /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* memriio_app-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "memriio_app-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* memriio_app-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "memriio_app-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		31C6DF40BE0AFEFA5EDC2A17 /* libPods-memriio_app-memriio_appTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-memriio_appTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		38531C98353D5EF7265E177E /* Pods-memriio_app-memriio_appTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-memriio_appTests.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-memriio_appTests/Pods-memriio_app-memriio_appTests.release.xcconfig"; sourceTree = "<group>"; };
-		3874254EBF95A81B4A796E84 /* Pods-memriio_app-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOSTests/Pods-memriio_app-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
-		3D5C23425846AEDE7AE236CB /* Pods-memriio_app-memriio_appTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-memriio_appTests.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-memriio_appTests/Pods-memriio_app-memriio_appTests.debug.xcconfig"; sourceTree = "<group>"; };
-		5F847779B4461EABC885D286 /* libPods-memriio_app.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		658E51A76AFF38B6B8B343B0 /* libPods-memriio_app-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		73746E0A5FD14E9788E0FE7C /* Pods-memriio_app-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
-		93A6CFA3DDDE66097328D773 /* Pods-memriio_app-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOSTests/Pods-memriio_app-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
-		BB77427D1D138C2E68653CF7 /* Pods-memriio_app-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		37BC29DA67E34974940A8E83 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
+		43F7B351597633B17A62C7D3 /* libPods-memriio_app-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EB3560FB0314E74BBD92BCC /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
+		5A4E0601C27447C192D69AA8 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
+		5CDACE099BF43B59DF832E47 /* Pods-memriio_app-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOSTests/Pods-memriio_app-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
+		621A5A9100A94252B247413B /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
+		738671D7874324A5AAB6F098 /* Pods-memriio_app-memriio_appTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-memriio_appTests.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-memriio_appTests/Pods-memriio_app-memriio_appTests.release.xcconfig"; sourceTree = "<group>"; };
+		74358BAF0E82EC41E38E6A63 /* Pods-memriio_app-memriio_appTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-memriio_appTests.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-memriio_appTests/Pods-memriio_app-memriio_appTests.debug.xcconfig"; sourceTree = "<group>"; };
+		8460D51359C14F47B21269FF /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
+		8997C3AEEBD34C9CBE9EA846 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
+		8D01DACBD0284173B7D4780F /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
+		9798047FF17597825C73E876 /* Pods-memriio_app-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.release.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		99A41968CB6F188C9E2EC1E0 /* Pods-memriio_app-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOS/Pods-memriio_app-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
+		9E1E3ABD224D9EC64A93E684 /* libPods-memriio_app-memriio_appTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-memriio_appTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A275BAAF114F4A96B921C7E7 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
+		AB9E6D213F7543B28828A57E /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
+		AC3FD37E865148A987341748 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
+		AC63FEF99866EFF05C7C6F3B /* Pods-memriio_app-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app-tvOSTests/Pods-memriio_app-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
+		ADC3CC677C4C49D76535EE14 /* Pods-memriio_app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app.debug.xcconfig"; path = "Target Support Files/Pods-memriio_app/Pods-memriio_app.debug.xcconfig"; sourceTree = "<group>"; };
+		B7EF824108DA48A6A19D5FE2 /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
+		BBB722CAB2F744E88294585B /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
+		BF82DE9958F0B74214EC98CA /* libPods-memriio_app.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C834D2503CB330551168EFFE /* libPods-memriio_app-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E83F49CA2585926B006B24D1 /* memriio_app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "memriio_app-Bridging-Header.h"; sourceTree = "<group>"; };
 		E83F49CB2585926C006B24D1 /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		E881961125877438005FFBFD /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; name = images; path = assets/src/images; sourceTree = "<group>"; };
-		ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-memriio_app-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
-		EEDFEF6276B7E8CA572BB1D7 /* Pods-memriio_app.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-memriio_app.release.xcconfig"; path = "Target Support Files/Pods-memriio_app/Pods-memriio_app.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,7 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DBC4541F8F4C90C42489FC37 /* libPods-memriio_app-memriio_appTests.a in Frameworks */,
+				055A3AFB8C51E7C0FF09912E /* libPods-memriio_app-memriio_appTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,7 +105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8E8B29CB7A47FBF8201EC39 /* libPods-memriio_app.a in Frameworks */,
+				12FB59C32380508C667E9A7B /* libPods-memriio_app.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,7 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA6A1520299A1A21197F3A20 /* libPods-memriio_app-tvOS.a in Frameworks */,
+				1E144EF171683C04B73A7592 /* libPods-memriio_app-tvOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,7 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D32A4D6AC6D153EE6018CB23 /* libPods-memriio_app-tvOSTests.a in Frameworks */,
+				DCE8BD77331941504FD636EE /* libPods-memriio_app-tvOSTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,10 +164,10 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				5F847779B4461EABC885D286 /* libPods-memriio_app.a */,
-				31C6DF40BE0AFEFA5EDC2A17 /* libPods-memriio_app-memriio_appTests.a */,
-				658E51A76AFF38B6B8B343B0 /* libPods-memriio_app-tvOS.a */,
-				ECAFA84F88C215E8222F1B77 /* libPods-memriio_app-tvOSTests.a */,
+				BF82DE9958F0B74214EC98CA /* libPods-memriio_app.a */,
+				9E1E3ABD224D9EC64A93E684 /* libPods-memriio_app-memriio_appTests.a */,
+				43F7B351597633B17A62C7D3 /* libPods-memriio_app-tvOS.a */,
+				C834D2503CB330551168EFFE /* libPods-memriio_app-tvOSTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -159,14 +175,14 @@
 		6B5D8ECF329F6BBA9CC31525 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				10A10831B19D9979DE6AFB24 /* Pods-memriio_app.debug.xcconfig */,
-				EEDFEF6276B7E8CA572BB1D7 /* Pods-memriio_app.release.xcconfig */,
-				3D5C23425846AEDE7AE236CB /* Pods-memriio_app-memriio_appTests.debug.xcconfig */,
-				38531C98353D5EF7265E177E /* Pods-memriio_app-memriio_appTests.release.xcconfig */,
-				73746E0A5FD14E9788E0FE7C /* Pods-memriio_app-tvOS.debug.xcconfig */,
-				BB77427D1D138C2E68653CF7 /* Pods-memriio_app-tvOS.release.xcconfig */,
-				3874254EBF95A81B4A796E84 /* Pods-memriio_app-tvOSTests.debug.xcconfig */,
-				93A6CFA3DDDE66097328D773 /* Pods-memriio_app-tvOSTests.release.xcconfig */,
+				ADC3CC677C4C49D76535EE14 /* Pods-memriio_app.debug.xcconfig */,
+				0D5374D165CB909B4700C091 /* Pods-memriio_app.release.xcconfig */,
+				74358BAF0E82EC41E38E6A63 /* Pods-memriio_app-memriio_appTests.debug.xcconfig */,
+				738671D7874324A5AAB6F098 /* Pods-memriio_app-memriio_appTests.release.xcconfig */,
+				99A41968CB6F188C9E2EC1E0 /* Pods-memriio_app-tvOS.debug.xcconfig */,
+				9798047FF17597825C73E876 /* Pods-memriio_app-tvOS.release.xcconfig */,
+				AC63FEF99866EFF05C7C6F3B /* Pods-memriio_app-tvOSTests.debug.xcconfig */,
+				5CDACE099BF43B59DF832E47 /* Pods-memriio_app-tvOSTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -190,6 +206,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				6B5D8ECF329F6BBA9CC31525 /* Pods */,
 				E83F49CA2585926B006B24D1 /* memriio_app-Bridging-Header.h */,
+				ACA49CCAC4D7468EB1D700BE /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -207,6 +224,29 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		ACA49CCAC4D7468EB1D700BE /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				27D85B85A3614BDA8B4BFE6F /* AntDesign.ttf */,
+				4EB3560FB0314E74BBD92BCC /* Entypo.ttf */,
+				621A5A9100A94252B247413B /* EvilIcons.ttf */,
+				A275BAAF114F4A96B921C7E7 /* Feather.ttf */,
+				B7EF824108DA48A6A19D5FE2 /* FontAwesome.ttf */,
+				5A4E0601C27447C192D69AA8 /* FontAwesome5_Brands.ttf */,
+				BBB722CAB2F744E88294585B /* FontAwesome5_Regular.ttf */,
+				8D01DACBD0284173B7D4780F /* FontAwesome5_Solid.ttf */,
+				AB9E6D213F7543B28828A57E /* Fontisto.ttf */,
+				8460D51359C14F47B21269FF /* Foundation.ttf */,
+				14EFF54AECC24FC48A5B293E /* Ionicons.ttf */,
+				37BC29DA67E34974940A8E83 /* MaterialCommunityIcons.ttf */,
+				AC3FD37E865148A987341748 /* MaterialIcons.ttf */,
+				21907A7E14164F7DA2038D5A /* Octicons.ttf */,
+				038D3FB3D24A4A07B8605198 /* SimpleLineIcons.ttf */,
+				8997C3AEEBD34C9CBE9EA846 /* Zocial.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -214,11 +254,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "memriio_appTests" */;
 			buildPhases = (
-				E497018EAD81DADE348A88C5 /* [CP] Check Pods Manifest.lock */,
+				398BFA60244B2D08859FF46E /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				86251D9A03465F847CEBCB23 /* [CP] Copy Pods Resources */,
+				AE93A4AFE2985B7746D99890 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -234,13 +274,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "memriio_app" */;
 			buildPhases = (
-				031954A12DB04A433EAE4C79 /* [CP] Check Pods Manifest.lock */,
+				0CEAC77EFEA5BE423983FC04 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				059084D06EC4170032CE7BCC /* [CP] Copy Pods Resources */,
+				C88A77588FA352D795AD25AD /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -255,7 +295,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memriio_app-tvOS" */;
 			buildPhases = (
-				741B56FAC9986DB3B7B62127 /* [CP] Check Pods Manifest.lock */,
+				98B7F96144F00C89F3CE8620 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F122414F3F0027D42C /* Start Packager */,
 				2D02E4771E0B4A5D006451C7 /* Sources */,
 				2D02E4781E0B4A5D006451C7 /* Frameworks */,
@@ -275,7 +315,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "memriio_app-tvOSTests" */;
 			buildPhases = (
-				F665F0B7E21FD22B816BBEE7 /* [CP] Check Pods Manifest.lock */,
+				EC0C7F45B746BF372A8ADA8B /* [CP] Check Pods Manifest.lock */,
 				2D02E48C1E0B4A5D006451C7 /* Sources */,
 				2D02E48D1E0B4A5D006451C7 /* Frameworks */,
 				2D02E48E1E0B4A5D006451C7 /* Resources */,
@@ -388,9 +428,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../../../node_modules/react-native/scripts/react-native-xcode.sh\n";
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
-		031954A12DB04A433EAE4C79 /* [CP] Check Pods Manifest.lock */ = {
+		0CEAC77EFEA5BE423983FC04 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -412,54 +452,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		059084D06EC4170032CE7BCC /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-memriio_app/Pods-memriio_app-resources.sh",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Octicons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf",
-				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Zocial.ttf",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AntDesign.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Entypo.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EvilIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialCommunityIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Octicons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SimpleLineIcons.ttf",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Zocial.ttf",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-memriio_app/Pods-memriio_app-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -474,7 +466,29 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
-		741B56FAC9986DB3B7B62127 /* [CP] Check Pods Manifest.lock */ = {
+		398BFA60244B2D08859FF46E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-memriio_app-memriio_appTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		98B7F96144F00C89F3CE8620 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -496,7 +510,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		86251D9A03465F847CEBCB23 /* [CP] Copy Pods Resources */ = {
+		AE93A4AFE2985B7746D99890 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -544,29 +558,55 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-memriio_app-memriio_appTests/Pods-memriio_app-memriio_appTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E497018EAD81DADE348A88C5 /* [CP] Check Pods Manifest.lock */ = {
+		C88A77588FA352D795AD25AD /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
+				"${PODS_ROOT}/Target Support Files/Pods-memriio_app/Pods-memriio_app-resources.sh",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Entypo.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Feather.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Foundation.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Octicons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf",
+				"${PODS_ROOT}/../../node_modules/react-native-vector-icons/Fonts/Zocial.ttf",
 			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-memriio_app-memriio_appTests-checkManifestLockResult.txt",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AntDesign.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Entypo.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EvilIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Feather.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Brands.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Regular.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FontAwesome5_Solid.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Fontisto.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Foundation.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Ionicons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialCommunityIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MaterialIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Octicons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SimpleLineIcons.ttf",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Zocial.ttf",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-memriio_app/Pods-memriio_app-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F665F0B7E21FD22B816BBEE7 /* [CP] Check Pods Manifest.lock */ = {
+		EC0C7F45B746BF372A8ADA8B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -694,7 +734,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3D5C23425846AEDE7AE236CB /* Pods-memriio_app-memriio_appTests.debug.xcconfig */;
+			baseConfigurationReference = 74358BAF0E82EC41E38E6A63 /* Pods-memriio_app-memriio_appTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -718,7 +758,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 38531C98353D5EF7265E177E /* Pods-memriio_app-memriio_appTests.release.xcconfig */;
+			baseConfigurationReference = 738671D7874324A5AAB6F098 /* Pods-memriio_app-memriio_appTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -739,7 +779,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 10A10831B19D9979DE6AFB24 /* Pods-memriio_app.debug.xcconfig */;
+			baseConfigurationReference = ADC3CC677C4C49D76535EE14 /* Pods-memriio_app.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -770,7 +810,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EEDFEF6276B7E8CA572BB1D7 /* Pods-memriio_app.release.xcconfig */;
+			baseConfigurationReference = 0D5374D165CB909B4700C091 /* Pods-memriio_app.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -795,7 +835,7 @@
 		};
 		2D02E4971E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 73746E0A5FD14E9788E0FE7C /* Pods-memriio_app-tvOS.debug.xcconfig */;
+			baseConfigurationReference = 99A41968CB6F188C9E2EC1E0 /* Pods-memriio_app-tvOS.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -823,7 +863,7 @@
 		};
 		2D02E4981E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BB77427D1D138C2E68653CF7 /* Pods-memriio_app-tvOS.release.xcconfig */;
+			baseConfigurationReference = 9798047FF17597825C73E876 /* Pods-memriio_app-tvOS.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -851,7 +891,7 @@
 		};
 		2D02E4991E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3874254EBF95A81B4A796E84 /* Pods-memriio_app-tvOSTests.debug.xcconfig */;
+			baseConfigurationReference = AC63FEF99866EFF05C7C6F3B /* Pods-memriio_app-tvOSTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -878,7 +918,7 @@
 		};
 		2D02E49A1E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 93A6CFA3DDDE66097328D773 /* Pods-memriio_app-tvOSTests.release.xcconfig */;
+			baseConfigurationReference = 5CDACE099BF43B59DF832E47 /* Pods-memriio_app-tvOSTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
