@@ -55,6 +55,7 @@
     "react-native-safe-area-context": "^0.7.3",
     "react-native-screens": "^2.2.0",
     "react-native-snap-carousel": "^3.9.1",
+    "react-native-sortable-list": "0.0.24",
     "react-native-sound": "^0.11.0",
     "react-native-sound-level": "^1.1.5",
     "react-native-sound-playerview": "git://github.com/suhailamir/react-native-sound-playerview.git",

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, createRef} from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
@@ -13,11 +13,9 @@ import {
   View,
   Image,
   Text,
-  Keyboard,
-  ScrollView,
-  Dimensions,
-  Modal,
-  TouchableOpacity,
+  Keyboard, 
+  Modal,  
+  Animated, 
 } from 'react-native';
 
 import {
@@ -29,6 +27,8 @@ import {
 } from './buttons';
 
 import {Input, ListItem, CheckBox} from 'react-native-elements';
+import ThumbScroll from './thumbScroll'
+
 
 let THUMBNAIL_WIDTH = 150
 
@@ -39,24 +39,31 @@ class NewPost extends Component {
     super();
     this.setupCloudsAndPeople = this.setupCloudsAndPeople.bind(this);
     this.pushMemory = this.pushMemory.bind(this);
-  }
 
-  state = {
-    title: '',
-    story: '',
-    content: [],
-    allPeople: [],
-    taggedPeople: [],
-    location: null,
-    allClouds: [],
-    taggedClouds: [],
-    user: null,
-    spinner: false,
-    modalVisible:false,
-    activeImage:null,
+    this.state = {
+      showDraggable   : true,
+      dropZoneValues  : null,
+      pan             : new Animated.ValueXY(),
+      thumbScroll     : React.createRef(),
+
+      title: '',
+      story: '',
+      content: [],
+      allPeople: [],
+      taggedPeople: [],
+      location: null,
+      allClouds: [],
+      taggedClouds: [],
+      user: null,
+      spinner: false,
+      modalVisible:false,
+      activeImage:null,
+    };
+
   };
-
+  
   //--------------------------------------------------------------------------
+  
 
   setupCloudsAndPeople = (clouds) => {
     if (Array.isArray(clouds)) {
@@ -303,9 +310,7 @@ class NewPost extends Component {
 
   showModal = (item) => {
 
-    console.log('SHOW MODAL ');
-    console.log('fileurl', item.filepath );
-    console.log('thumb ', item.thumbnail );
+    
     if (mem.isSupportedImageFile(mem.getFilename(item.filepath))) {
       this.setState({modalVisible: true, activeImage: item});
     } 
@@ -348,16 +353,16 @@ class NewPost extends Component {
       return null;
     }
   };
+
   // ---------------------------------------------------------------------------------
 
   render() {
-    let itemcount = this.state.content.length;
-    let imageScrollWidth = (( itemcount * ( THUMBNAIL_WIDTH + 30 ) ) / Dimensions.get('window').width ) * 100
-    console.log(imageScrollWidth);
     
     return (
       <KeyboardShift>
-        <View style={styles.container}>
+        <View 
+          style={styles.container}
+          >
           <Spinner
             visible={this.state.spinner}
             textContent={'Uploading memory...'}
@@ -434,49 +439,8 @@ class NewPost extends Component {
             />
           </View>
         
-          <ScrollView
-            horizontal={true}
-            contentContainerStyle={{width: `${imageScrollWidth}%` }}
-            showsHorizontalScrollIndicator={true}
-            scrollEventThrottle={200}
-            decelerationRate="fast"
-            snapToStart={false}
-           
-            >
-            {this.state.content.map((item, index) => (
-              <View 
-                style={styles.thumbnailsContainer} 
-                  
-              >
-                {item.isVideo ? (
-                  <Video
-                    source={{uri: item.filepath}}
-                    paused={true}
-                    muted={false}
-                    controls={true}
-                    item = {item }
-                    poster={item.thumbnail}
-                    style={styles.thumbnailStyle}
-                    
-                  />
-                ) : (
-                  <TouchableOpacity onPress = {() => this.showModal(item)} >
-                    <Image
-                      key={index}
-                      style={styles.thumbnailStyle}
-                      item ={ item }
-                      source={
-                        item.isAudio
-                          ? require('./images/audioThumb.png')
-                          : {uri: item.thumbnail}
-                      }
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
-            ))}
-          </ScrollView>
+          {this.renderThumbNails()}
+          
         </View>
 
         <View style={styles.mainButtons}>
@@ -515,15 +479,59 @@ class NewPost extends Component {
       </KeyboardShift>
     );
   }
+
+
+  // ---------------------------------------------------------------------------------
+
+  renderThumbNails = () =>{ 
+    
+    let dat = {}
+    let obj = {}
+    this.state.content.map((item,index) =>{
+     
+      obj = 
+          { 
+          filepath: item.filepath,
+          text: '',
+          originalIndex:index.toString(),
+          isAudio:item.isAudio.toString(),
+          thumbnail:item.thumbnail
+        }
+      dat[index] = obj
+    })
+    
+    console.log(dat);
+    return < ThumbScroll 
+            data={dat}
+          />
+  }
+
+  // ---------------------------------------------------------------------------------
+
 }
+
 
 export default NewPost;
 
+const CIRCLE_RADIUS = 30;
 const styles = StyleSheet.create({
+
+
   container: {
     flex: 1,
     backgroundColor: 'white',
   },
+
+  
+
+  circle: {
+    backgroundColor: "skyblue",
+    width: CIRCLE_RADIUS * 2,
+    height: CIRCLE_RADIUS * 2,
+    borderRadius: CIRCLE_RADIUS
+  },
+
+
   imageFull: {
     position: 'absolute',
     width: '100%', 

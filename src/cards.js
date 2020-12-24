@@ -213,7 +213,6 @@ class MemoryCard extends Component {
           itemWidth={width}
           hasParallaxImages={true}
           firstItem={1}
-          
           containerCustomStyle={sliderStyles.slider}
           contentContainerCustomStyle={sliderStyles.sliderContentContainer}
           renderItem={this.renderFileView}
