@@ -64,7 +64,7 @@ export default class HorizontalSortableList extends React.Component {
           renderRow={this._renderRow} 
           onPressRow = {this.test}
           />
-          
+          git s
       </View>
     );
   }
