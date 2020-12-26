@@ -28,6 +28,7 @@ import {
 
 import {Input, ListItem, CheckBox} from 'react-native-elements';
 import ThumbScroll from './thumbScroll'
+import { templateSettings } from 'lodash';
 
 
 let THUMBNAIL_WIDTH = 150
@@ -214,7 +215,8 @@ class NewPost extends Component {
   //         Note : people, location and groups can load after the component is loaded.
 
   async componentDidMount() {
-    const store = [];
+    let store = [];
+    
     
     console.log('newpost-didmount');
     console.log();
@@ -229,51 +231,76 @@ class NewPost extends Component {
     })
 
     try {
-        AsyncStorage.getAllKeys().then((keys) => {
-          
-          keys.map((key, index) => {
-            AsyncStorage.getItem(key).then( item => {
-              
-              if (
-                key.includes('image-') ||
-                key.includes('video-') ||
-                key.includes('audio-')
-              ) {
-                console.log('async store for key ' + key + ' value ', item)
-                if (!key.includes('thumb')) {
-                  this.getMatchingThumb(keys, key).then((thumb) => {
-                    
-                    if (key.includes('audio-')) {
-                      store.push({
-                        filepath: item,
-                        thumbnail: thumb,
-                        isAudio: true,
-                      });
-                    } else if (key.includes('video-')) {
-                      store.push({
-                        filepath: item,
-                        thumbnail: thumb,
-                        isVideo: true,
-                      });
-                    } else {
+        AsyncStorage.getAllKeys().then((allkeys) => {
+          console.log('at didmount',allkeys)
+          this.removeNonFilesAndSort(allkeys).then(keys =>{
+            
+            keys.map((key, index) => {
+              AsyncStorage.getItem(key).then( item => {
+                
+                  if (!key.includes('thumb')) {
+                    this.getMatchingThumb(keys, key).then((thumb) => {
                       
-                      store.push({
-                        filepath: item,
-                        thumbnail: thumb,
-                        isAudio: false,
-                      });
-                    }
-                    this.setState({content:store})
-                  });
-                }
-              }
-            })
-          });
+                      if (key.includes('audio-')) {
+                        store.push({
+                          filepath: item,
+                          thumbnail: thumb,
+                          isAudio: true,
+                          isVideo: false,                        
+                          id:index,
+                        });
+                      } else if (key.includes('video-')) {
+                        store.push({
+                          filepath: item,
+                          thumbnail: thumb,
+                          isAudio: false, 
+                          isVideo: true,
+                          id:index,
+                        });
+                      } else {
+                        
+                        store.push({
+                          filepath: item,
+                          thumbnail: thumb,
+                          isAudio: false,
+                          isVideo: false,
+                          id:index,
+                        });
+                      }
+                      this.setState({content:store})
+                    });
+                  }                
+              })
+            });
+
+          })
+          
         });
       
     } catch (e) {
       alert(e);
     }
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  removeNonFilesAndSort = (allkeys) =>{
+    let newkeys=[]
+    console.log('allkeys',allkeys)
+    return new Promise((resolve,reject) =>{
+      // clear out all non file keys
+      allkeys.map(key =>{
+        if (
+          key.includes('image-') ||
+          key.includes('video-') ||
+          key.includes('audio-')
+        ) {
+          newkeys.push(key)
+        }
+      })
+      console.log(newkeys);
+      resolve(newkeys)
+    })
   }
 
   // ---------------------------------------------------------------------------------
@@ -328,7 +355,7 @@ class NewPost extends Component {
   getMatchingThumb = (keys, targetKey) => {
     return new Promise((resolve, reject) => {
       AsyncStorage.getItem(targetKey + '-thumb').then((thumbPath) => {
-        console.log('thumb for :', targetKey, thumbPath);
+        //console.log('thumb for :', targetKey, thumbPath);
         resolve(thumbPath);
       });
     });
@@ -337,7 +364,7 @@ class NewPost extends Component {
   // ---------------------------------------------------------------------------------
 
   renderLocation = () => {
-    console.log('locaiton : ' + this.state.location);
+    console.log('location : ' + this.state.location);
     if (this.state.location) {
       return (
         <View style={styles.subtitle}>
@@ -449,8 +476,19 @@ class NewPost extends Component {
           <PostButton onPress={() => this.sendPost()} 
                       Title={'Upload'} />
         </View>
+        
+        {this.renderImageEditModal()}
+        
 
-        <Modal
+      </KeyboardShift>
+    );
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  renderImageEditModal = () => {
+    return (
+      <Modal
           animationType="slide"
           transparent={true}
           visible={this.state.modalVisible}
@@ -475,39 +513,96 @@ class NewPost extends Component {
             renderIndicator={() => {}}
           />
         </Modal>
-
-      </KeyboardShift>
-    );
+    )
   }
-
 
   // ---------------------------------------------------------------------------------
 
   renderThumbNails = () =>{ 
+
+    let dat = {
+      0: {
+        filepath          : '',
+        text              : '',
+        originalIndex     :0,
+        isAudio           :false,
+        isVideo           :false,
+        thumbnail         :'',
+        id                :0,
+      },
+    };
     
-    let dat = {}
     let obj = {}
     this.state.content.map((item,index) =>{
      
       obj = 
           { 
-          filepath: item.filepath,
-          text: '',
-          originalIndex:index.toString(),
-          isAudio:item.isAudio.toString(),
-          thumbnail:item.thumbnail
+          filepath      : item.filepath,
+          text          : '',
+          originalIndex : index,
+          isAudio       : item.isAudio,
+          isVideo       : item.isVideo,
+          thumbnail     : item.thumbnail,
+          id            : index,
         }
       dat[index] = obj
+      
     })
     
-    console.log(dat);
     return < ThumbScroll 
             data={dat}
-          />
+            onPress={contentItem => this.showModal(contentItem)}
+            handleFileOrderChange = {this.changeContentOrder}
+         />
   }
 
   // ---------------------------------------------------------------------------------
 
+  changeContentOrder = async ( newOrder )  => {
+            
+    // re-order this.state.content to match the thumbnail scroll order
+    let temp = []
+    newOrder.map(id =>{
+      id = parseInt(id)      
+      this.state.content.map((item,index) =>{
+        if(index === id){
+          temp.push(item)
+        }
+      })
+    })
+    
+    // now clear and re-write the files in async storage so the revised order is persistant
+    console.log('before : ');
+    mem.logStorageContent()
+
+    console.log('cleam images');
+    await mem.cleanupStorage({key: 'image-'})
+    console.log('cleam video');
+    await mem.cleanupStorage({key: 'video-'})
+    console.log('cleam audio');
+    await mem.cleanupStorage({key: 'audio-'})
+
+    console.log('write reordered content');
+    temp.forEach((item,index) => {
+      if(item.isVideo){
+        AsyncStorage.setItem(`video-${index}`, item.filepath);
+        AsyncStorage.setItem(`video-${index}-thumb`, item.thumbnail);
+      }else if(item.isAudio){
+        AsyncStorage.setItem(`audio-${index}`, item.filepath);
+        AsyncStorage.setItem(`audio-${index}-thumb`, './images/file.png');
+      }else{
+        AsyncStorage.setItem(`image-${index}`, item.filepath);
+        AsyncStorage.setItem(`image-${index}-thumb`, item.thumbnail);
+      }
+    });
+
+    console.log('after : ');
+    mem.logStorageContent()
+
+    this.state.content = temp // not using setstate on purpose.
+
+  }
+  // ---------------------------------------------------------------------------------
 }
 
 

@@ -128,26 +128,20 @@ class CaptureComponent extends Component {
             isRecordingVideo: false,
             fcount: this.state.fcount + 1,
           });
-          let fname = Date.now().toString() + '.mp4';
-          console.log('BBC video : ' + data.uri);
-          this.littlecallback(data.uri);
+         
+          AsyncStorage.setItem('video-' + this.state.fcount+1, result);
+          createThumbnail({
+            url: data.uri,
+            timeStamp: 10000,
+          }).then((thumbnail) => {
+            console.log('setting video thumb,', thumbnail);
+            AsyncStorage.setItem(`video-${this.state.fcount+1}-thumb`, thumbnail.path);
+          });
         }
       } catch (err) {
         alert('Video error' + err);
       }
     }
-  };
-
-  //--------------------------------------------------------------------------------------
-  littlecallback = (result) => {
-    AsyncStorage.setItem('video-' + this.state.fcount, result);
-    createThumbnail({
-      url: result,
-      timeStamp: 10000,
-    }).then((thumbnail) => {
-      console.log('setting video thumb,', thumbnail);
-      AsyncStorage.setItem(`video-${this.state.fcount}-thumb`, thumbnail.path);
-    });
   };
 
   //--------------------------------------------------------------------------------------
@@ -211,13 +205,13 @@ class CaptureComponent extends Component {
         this.state.currentTime
       } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
     );
-    await cleanupStorage({key: 'audio'});
-    this.setState({fcount: this.state.fcount + 1});
-    AsyncStorage.setItem('audio-' + this.state.fcount, filePathNew);
+    
+    AsyncStorage.setItem('audio-' + this.state.fcount+1, filePathNew);
     AsyncStorage.setItem(
-      `audio-${this.state.fcount}-thumb`,
+      `audio-${this.state.fcount+1}-thumb`,
       './images/file.png',
     );
+    this.setState({fcount: this.state.fcount + 1});
   }
   //--------------------------------------------------------------------------------------
 
@@ -277,13 +271,10 @@ class CaptureComponent extends Component {
         AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
         AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
         console.log('takePicture :', data);
-
-        logStorageContent();
+        this.setState({fcount: this.state.fcount + 1});
       } catch (err) {
         alert(err);
-      } finally {
-        this.setState({fcount: this.state.fcount + 1});
-      }
+      } 
     }
   };
 

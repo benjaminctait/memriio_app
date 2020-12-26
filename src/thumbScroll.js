@@ -11,44 +11,13 @@ import {
   Dimensions,
   Platform,  
 } from 'react-native';
-import {TouchableOpacity,TouchableHighlight} from 'react-native-gesture-handler'
+import {TouchableOpacity} from 'react-native-gesture-handler'
 
 
 let THUMBNAIL_WIDTH = 180
 let TEXT_HEIGHT = 20
 const window = Dimensions.get('window');
 
-
-const testdata = {
-  0: {
-    filepath: 'https://placekitten.com/200/240',
-    text: 'Chloe',
-    originalIndex:0,
-    isAudio:'',
-    thumbnail:''
-  },
-  1: {
-    filepath: 'https://placekitten.com/200/201',
-    text: 'Jasper',
-    originalIndex:0,
-    isAudio:'',
-    thumbnail:''
-  },
-  2: {
-    filepath: 'https://placekitten.com/200/202',
-    text: 'Pepper',
-    originalIndex:0,
-    isAudio:'',
-    thumbnail:''
-  },
-  3: {
-    filepath: 'https://placekitten.com/200/203',
-    text: 'Oscar',
-    originalIndex:0,
-    isAudio:'',
-    thumbnail:''
-  },
-};
 
 export default class HorizontalSortableList extends React.Component {
 
@@ -59,27 +28,42 @@ export default class HorizontalSortableList extends React.Component {
           horizontal
           style={styles.list}
           contentContainerStyle={styles.contentContainer}
-          data={testdata} // Mahummad - change 'testdata' to 'this.props.data'  - why does test data work but this.props.data does not - if you log them they are structurally identical
-                          // see line 486 in newpost to see how i build the props.data object - i must be doing something wrong ?
-          renderRow={this._renderRow} 
-          onPressRow = {this.test}
+          data={this.props.data} 
+          renderRow={this.renderRow} 
+          onPressRow = {this.onThumbPress}
+          onChangeOrder = {this.handleChangeOrder}
           />
-          git s
+         
       </View>
     );
   }
 
-  test = (e) =>{
+  // ---------------------------------------------------------------------------------
+
+  onThumbPress = (e) =>{
     if(!this.props.active){
-      console.log('press ',e);
+      this.props.onPress(this.props.data[e])
     }
-    
   }
 
-  _renderRow = ({data, active}) => {
+  // ---------------------------------------------------------------------------------
+
+  handleChangeOrder = (next) =>{
+    if(!this.props.active){
+      this.props.handleFileOrderChange( next )
+    }
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  renderRow = ({data, active}) => {
+    
     return <Row data={data} active={active} />
   }
 }
+
+// ---------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------
 
 class Row extends React.Component {
 
@@ -87,6 +71,7 @@ class Row extends React.Component {
     super(props);
 
     this._active = new Animated.Value(0);
+    this._active.useNativeDriver = true
 
     this._style = {
       ...Platform.select({
@@ -119,10 +104,11 @@ class Row extends React.Component {
     };
   }
 
-  
+  // ---------------------------------------------------------------------------------
+
   componentDidUpdate ( prevProps ) {
     if (this.props.active !== prevProps.active) {
-      
+
       console.log('anim start');
       Animated.timing(this._active, {
         duration: 300,
@@ -133,6 +119,8 @@ class Row extends React.Component {
     }
   }
   
+  // ---------------------------------------------------------------------------------
+
   render() {
    const {data, active} = this.props;
 
