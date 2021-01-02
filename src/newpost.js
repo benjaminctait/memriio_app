@@ -2,9 +2,10 @@ import React, {Component, createRef} from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
-import Video from 'react-native-video';
 import Spinner from 'react-native-loading-spinner-overlay';
 import ImageViewer from 'react-native-image-zoom-viewer';
+import Video from 'react-native-video'
+import Dialog from 'react-native-dialog'
 
 import {showMessage, hideMessage} from 'react-native-flash-message';
 
@@ -27,11 +28,14 @@ import {
 } from './buttons';
 
 import {Input, ListItem, CheckBox} from 'react-native-elements';
-import ThumbScroll from './thumbScroll'
-import { templateSettings } from 'lodash';
+
+import ThumbList from './thumbList.js'
 
 
 let THUMBNAIL_WIDTH = 150
+const IMAGE = 0
+const VIDEO = 1
+const AUDIO = 2
 
 //--------------------------------------------------------------------------
 
@@ -42,23 +46,22 @@ class NewPost extends Component {
     this.pushMemory = this.pushMemory.bind(this);
 
     this.state = {
-      showDraggable   : true,
-      dropZoneValues  : null,
-      pan             : new Animated.ValueXY(),
-      thumbScroll     : React.createRef(),
 
       title: '',
-      story: '',
-      content: [],
-      allPeople: [],
+      story: '',      
       taggedPeople: [],
       location: null,
-      allClouds: [],
       taggedClouds: [],
       user: null,
+      content: [],
+
+      allPeople: [],
+      allClouds: [],
       spinner: false,
       modalVisible:false,
-      activeImage:null,
+      deleteDialogVisible:false,
+      activeItem:null,
+      deleteIndex:'',
     };
 
   };
@@ -92,11 +95,14 @@ class NewPost extends Component {
     let cloudarray = [];
     let personarray = [];
     let me = this.state;
-
-    let locationName =
+    let locationName = ''
+    if (me.location){
+      locationName =
       me.location.firstname && me.location.lastname
         ? me.location.firstname + ' ' + me.location.lastname
         : ''; // a temporary treatment until we have gps implemented
+    }
+    
     me.taggedClouds.map((cloud) => {
       if (cloud.id !== 0) {
         cloudarray.push(parseInt(cloud.id));
@@ -187,19 +193,19 @@ class NewPost extends Component {
     this.props.navigation.navigate('SearchPeople', {
       allPeople: this.state.allPeople,
       taggedPeople: this.state.taggedPeople,
+      updatePeople: this.updatePeople
     });
   };
 
   // ---------------------------------------------------------------------------------
+
+  updatePeople = ( taggedPeople  ) => {
+    console.log('update called');
+    this.setState({taggedPeople:taggedPeople})
+  }
+
   componentDidUpdate() {
     if (this.props.route.params) {
-      if (this.props.route.params.taggedPeople) {
-        if (this.state.taggedPeople !== this.props.route.params.taggedPeople) {
-          if (Array.isArray(this.props.route.params.taggedPeople)) {
-            this.setState({taggedPeople: this.props.route.params.taggedPeople});
-          }
-        }
-      }
       if (this.props.route.params.location) {
         if (this.props.route.params.location !== this.state.location) {
           this.setState({location: this.props.route.params.location});
@@ -215,92 +221,35 @@ class NewPost extends Component {
   //         Note : people, location and groups can load after the component is loaded.
 
   async componentDidMount() {
-    let store = [];
+   
+    const { capturedFiles,memory } = this.props.route.params;
     
-    
-    console.log('newpost-didmount');
-    console.log();
+    console.log('NEWPOST - didmount');
+    console.log('');
+    console.log(this.props.route.params);
 
-    mem.activeUser().then(user =>{
-      
-      if(user){
-        this.setState( { user: user } )
-        mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
-        
-      }
-    })
-
-    try {
-        AsyncStorage.getAllKeys().then((allkeys) => {
-          console.log('at didmount',allkeys)
-          this.removeNonFilesAndSort(allkeys).then(keys =>{
-            
-            keys.map((key, index) => {
-              AsyncStorage.getItem(key).then( item => {
-                
-                  if (!key.includes('thumb')) {
-                    this.getMatchingThumb(keys, key).then((thumb) => {
-                      
-                      if (key.includes('audio-')) {
-                        store.push({
-                          filepath: item,
-                          thumbnail: thumb,
-                          isAudio: true,
-                          isVideo: false,                        
-                          id:index,
-                        });
-                      } else if (key.includes('video-')) {
-                        store.push({
-                          filepath: item,
-                          thumbnail: thumb,
-                          isAudio: false, 
-                          isVideo: true,
-                          id:index,
-                        });
-                      } else {
-                        
-                        store.push({
-                          filepath: item,
-                          thumbnail: thumb,
-                          isAudio: false,
-                          isVideo: false,
-                          id:index,
-                        });
-                      }
-                      this.setState({content:store})
-                    });
-                  }                
-              })
-            });
-
-          })
-          
-        });
-      
-    } catch (e) {
-      alert(e);
-    }
-  }
-
-  // ---------------------------------------------------------------------------------
-
-  removeNonFilesAndSort = (allkeys) =>{
-    let newkeys=[]
-    console.log('allkeys',allkeys)
-    return new Promise((resolve,reject) =>{
-      // clear out all non file keys
-      allkeys.map(key =>{
-        if (
-          key.includes('image-') ||
-          key.includes('video-') ||
-          key.includes('audio-')
-        ) {
-          newkeys.push(key)
+    if(memory){
+      this.setState(
+        {
+          content       : capturedFiles,
+          title         : memory.title,
+          story         : memory.story,      
+          taggedPeople  : memory.taggedPeople,
+          location      : memory.location,
+          taggedClouds  : memory.taggedClouds,
+          user          : memory.user,
+        }
+      )
+      mem.mapUserClouds(memory.user.userid, this.setupCloudsAndPeople);
+    }else{
+      this.setState({content:capturedFiles})
+      mem.activeUser().then(user =>{
+        if(user){
+          this.setState( { user: user } )
+          mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
         }
       })
-      console.log(newkeys);
-      resolve(newkeys)
-    })
+    }    
   }
 
   // ---------------------------------------------------------------------------------
@@ -335,31 +284,48 @@ class NewPost extends Component {
 
   // ---------------------------------------------------------------------------------
 
-  showModal = (item) => {
+  showImageEditModal = (itemID ) => {
 
+    let found = false, idx = 0, tmp = this.state.content
     
-    if (mem.isSupportedImageFile(mem.getFilename(item.filepath))) {
-      this.setState({modalVisible: true, activeImage: item});
-    } 
-    
-    // else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-    //   return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
-    // } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
-    //   return <VideoPlayer poster={item.fileurl} source={item.fileurl} />;
-    // }
-
+    while (!found && idx < tmp.length) {
+      if(tmp[idx].id === itemID){
+        found = true
+        this.setState({modalVisible: true, activeItem: tmp[idx]});
+      }
+      idx++
+    }
   };
 
   // ---------------------------------------------------------------------------------
 
-  getMatchingThumb = (keys, targetKey) => {
-    return new Promise((resolve, reject) => {
-      AsyncStorage.getItem(targetKey + '-thumb').then((thumbPath) => {
-        //console.log('thumb for :', targetKey, thumbPath);
-        resolve(thumbPath);
-      });
-    });
-  };
+  showDeleteDialog = ( itemID ) => {
+    this.setState({deleteIndex:itemID, deleteDialogVisible:true}) 
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  handleFileDelete = () =>{
+    
+    let found = false, idx = 0, tmp = this.state.content
+    
+    while (!found && idx < tmp.length) {
+      if(tmp[idx].id === this.state.deleteIndex){
+        found = true
+        tmp.splice(idx,1)
+      }
+      idx++
+    }
+    this.setState({deleteDialogVisible:false,content:tmp})
+    this.props.route.params.updateCaptureContent(tmp)
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  handleDeleteCancel = () =>{
+    console.log('File Delete no');
+    this.setState({deleteDialogVisible:false})
+  }
 
   // ---------------------------------------------------------------------------------
 
@@ -403,6 +369,7 @@ class NewPost extends Component {
             }}
             placeholder="Title.."
             placeholderTextColor="gray"
+            value={this.state.title?this.state.title:''}
           />
 
           <Input // Description
@@ -412,6 +379,7 @@ class NewPost extends Component {
             onChangeText={(text) => {
               this.setState({story: text});
             }}
+            value={this.state.story?this.state.story:''}
           />
 
           <View>
@@ -453,31 +421,35 @@ class NewPost extends Component {
                 <View style={styles.subtitle}>
                   {this.state.allClouds.map((cloud, index) => (
                     <SubTag
-                      key={index}
-                      data={cloud}
-                      greyOutOnTagPress={!(cloud.name === 'Personal')} // Cant turn off the Personal cloud
-                      buttonDown={true}
-                      onTagPress={this.handleCloudTagPress}
-                      title={cloud.name}
+                      key               = { index}
+                      data              = { cloud}
+                      greyOutOnTagPress = { !(cloud.name === 'Personal')} // Cant turn off the Personal cloud
+                      buttonDown        = { true}
+                      onTagPress        = { this.handleCloudTagPress}
+                      title             = { cloud.name}
                     />
                   ))}
                 </View>
               }
             />
           </View>
-        
-          {this.renderThumbNails()}
+              <ThumbList
+                data              = { this.state.content}
+                handleThumbPress  = { this.showImageEditModal}    
+                handleDeletePress = { this.showDeleteDialog }            
+              />
           
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.goBack(null)} 
+          <BackButton onPress={ this.goBackToCapture }
                       Title={'Capture'}/>
-          <PostButton onPress={() => this.sendPost()} 
+          <PostButton onPress={ this.sendPost } 
                       Title={'Upload'} />
         </View>
         
         {this.renderImageEditModal()}
+        {this.renderDeleteDialog()}
         
 
       </KeyboardShift>
@@ -486,7 +458,60 @@ class NewPost extends Component {
 
   // ---------------------------------------------------------------------------------
 
+  goBackToCapture = () => {
+    let memobj = {
+      title: this.state.title,
+      story: this.state.story,      
+      taggedPeople: this.state.taggedPeople,
+      location: this.state.location,
+      taggedClouds: this.state.taggedClouds,
+      user: this.state.user,
+      //content: this.state.content,
+    }
+
+    this.props.route.params.updateMemoryDetails(memobj)
+    this.props.navigation.navigate('CaptureComponent')
+  }
+
+  // ---------------------------------------------------------------------------------
+
   renderImageEditModal = () => {
+    let content = null
+    if(this.state.activeItem){
+      switch (this.state.activeItem.type) {
+        case IMAGE:
+          content = <ImageViewer
+                      imageUrls={[{url: this.state.activeItem ? this.state.activeItem.thumbnail : null }]}
+                      style={styles.imageFull}
+                      renderHeader={() => {}}
+                      renderIndicator={() => {}}
+                    />
+          break;
+        case VIDEO:
+          content = <Video
+                      source   = { { uri: this.state.activeItem.filepath } }
+                      paused   = { true }
+                      muted    = { false }
+                      controls = { true }
+                      poster   = { this.state.activeItem.thumbnail }
+                      style    = { styles.imageFull }
+                    />
+          break;
+        case AUDIO:
+          content = <Video
+                      source   = { { uri: this.state.activeItem.filepath } }
+                      paused   = { true }
+                      muted    = { false }
+                      controls = { true }
+                      poter   = { this.state.activeItem.thumbnail }
+                      style    = { styles.imageFull }
+                    />
+        break;
+        default:
+          break;
+      }
+    }
+
     return (
       <Modal
           animationType="slide"
@@ -505,127 +530,44 @@ class NewPost extends Component {
               style={styles.backButtonImage}
             />
           </Text>
-
-          <ImageViewer
-            imageUrls={[{url: this.state.activeImage ? this.state.activeImage.thumbnail : null }]}
-            style={styles.imageFull}
-            renderHeader={() => {}}
-            renderIndicator={() => {}}
-          />
+            {content}
+          
         </Modal>
     )
   }
 
   // ---------------------------------------------------------------------------------
 
-  renderThumbNails = () =>{ 
-
-    let dat = {
-      0: {
-        filepath          : '',
-        text              : '',
-        originalIndex     :0,
-        isAudio           :false,
-        isVideo           :false,
-        thumbnail         :'',
-        id                :0,
-      },
-    };
+  renderDeleteDialog = () =>{
     
-    let obj = {}
-    this.state.content.map((item,index) =>{
-     
-      obj = 
-          { 
-          filepath      : item.filepath,
-          text          : '',
-          originalIndex : index,
-          isAudio       : item.isAudio,
-          isVideo       : item.isVideo,
-          thumbnail     : item.thumbnail,
-          id            : index,
-        }
-      dat[index] = obj
-      
-    })
-    
-    return < ThumbScroll 
-            data={dat}
-            onPress={contentItem => this.showModal(contentItem)}
-            handleFileOrderChange = {this.changeContentOrder}
-         />
+      return (
+        <View  style={styles.deleteDialogContainer}>
+          <Dialog.Container visible={this.state.deleteDialogVisible} >
+            <Dialog.Title>File delete</Dialog.Title>
+            <Dialog.Description>
+              Do you want to delete this file? You cannot undo this action.
+            </Dialog.Description>
+            <Dialog.Button label="Cancel" onPress={this.handleDeleteCancel} />
+            <Dialog.Button label="Delete" onPress={this.handleFileDelete} />
+          </Dialog.Container>
+        </View>
+      )
   }
 
   // ---------------------------------------------------------------------------------
 
-  changeContentOrder = async ( newOrder )  => {
-            
-    // re-order this.state.content to match the thumbnail scroll order
-    let temp = []
-    newOrder.map(id =>{
-      id = parseInt(id)      
-      this.state.content.map((item,index) =>{
-        if(index === id){
-          temp.push(item)
-        }
-      })
-    })
-    
-    // now clear and re-write the files in async storage so the revised order is persistant
-    console.log('before : ');
-    mem.logStorageContent()
-
-    console.log('cleam images');
-    await mem.cleanupStorage({key: 'image-'})
-    console.log('cleam video');
-    await mem.cleanupStorage({key: 'video-'})
-    console.log('cleam audio');
-    await mem.cleanupStorage({key: 'audio-'})
-
-    console.log('write reordered content');
-    temp.forEach((item,index) => {
-      if(item.isVideo){
-        AsyncStorage.setItem(`video-${index}`, item.filepath);
-        AsyncStorage.setItem(`video-${index}-thumb`, item.thumbnail);
-      }else if(item.isAudio){
-        AsyncStorage.setItem(`audio-${index}`, item.filepath);
-        AsyncStorage.setItem(`audio-${index}-thumb`, './images/file.png');
-      }else{
-        AsyncStorage.setItem(`image-${index}`, item.filepath);
-        AsyncStorage.setItem(`image-${index}-thumb`, item.thumbnail);
-      }
-    });
-
-    console.log('after : ');
-    mem.logStorageContent()
-
-    this.state.content = temp // not using setstate on purpose.
-
-  }
-  // ---------------------------------------------------------------------------------
 }
+
 
 
 export default NewPost;
 
-const CIRCLE_RADIUS = 30;
+
 const styles = StyleSheet.create({
-
-
   container: {
     flex: 1,
     backgroundColor: 'white',
   },
-
-  
-
-  circle: {
-    backgroundColor: "skyblue",
-    width: CIRCLE_RADIUS * 2,
-    height: CIRCLE_RADIUS * 2,
-    borderRadius: CIRCLE_RADIUS
-  },
-
 
   imageFull: {
     position: 'absolute',
@@ -691,5 +633,11 @@ const styles = StyleSheet.create({
   },
   spinnerTextStyle: {
     color: '#FFF',
+  },
+  deleteDialogContainer: {
+    position:'absolute',
+    flex: 1,    
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

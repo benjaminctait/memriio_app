@@ -343,6 +343,27 @@ export async function logStorageContent() {
 }
 
 // ---------------------------------------------------------------------------------
+
+export async function findAsyncStorageKeyFor(keyValue) {
+  
+  
+  let index = 0
+  AsyncStorage.getAllKeys().then((keys) => {
+    while (index < keys.length) {
+      console.log(index,keys.length,(index<keys.length),keys[index]);
+      AsyncStorage.getItem(keys[index]).then((value) => {
+        if(value === keyValue){
+          console.log(keys[index]);
+          return keys[index]
+        }
+      })
+      index++
+    }
+  })
+  return ''
+}
+
+// ---------------------------------------------------------------------------------
 // Removes all content captured for the current post
 // pre :
 // post :  any key value pair where key contains 'image-','video-', 'audio-' will
@@ -1448,6 +1469,7 @@ const createMemoryID = () => {
 };
 
 export function isSupportedImageFile(filename) {
+  
   let ext = getExtension(filename).toLowerCase();
   let filetypes = ['jpeg', 'jpg', 'png', 'heic'];
   let found = filetypes.indexOf(ext);
@@ -1457,7 +1479,7 @@ export function isSupportedImageFile(filename) {
 //---------------------------
 
 export function isSupportedVideoFile(filename) {
-  let ext = getExtension(filename).toLowerCase();
+  let ext = getExtension(filename.toLowerCase());
   let filetypes = ['mov', 'mp4', 'mpeg'];
   let found = filetypes.indexOf(ext);
   return !(found === -1);
@@ -1465,7 +1487,7 @@ export function isSupportedVideoFile(filename) {
 //---------------------------
 
 export function isSupportedAudioFile(filename) {
-  let ext = getExtension(filename).toLowerCase();
+  let ext = getExtension(filename.toLowerCase());
   let filetypes = ['aac'];
   let found = filetypes.indexOf(ext);
   return found !== -1;
@@ -1481,7 +1503,7 @@ export function getExtension(filepath) {
 
 //---------------------------
 
-export function getFilename(filepath) {
+export  function getFilename(filepath) {
   let parts = filepath.split('/');
   let fname = parts[parts.length - 1];
   return fname;

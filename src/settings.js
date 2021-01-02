@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {StyleSheet, View, TouchableOpacity, Text, Image} from 'react-native';
 
 
+
 import * as mem from './datapass'
 import KeyboardShift from './keyboardShift';
 import { 

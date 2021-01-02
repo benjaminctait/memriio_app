@@ -256,8 +256,6 @@ PODS:
     - React-Core
   - react-native-maps (0.27.1):
     - React
-  - react-native-mov-to-mp4 (0.2.2):
-    - React
   - react-native-safe-area-context (0.7.3):
     - React
   - react-native-track-player (1.2.3):
@@ -267,7 +265,7 @@ PODS:
     - react-native-video/Video (= 4.4.5)
   - react-native-video/Video (4.4.5):
     - React
-  - react-native-viewpager (4.2.1):
+  - react-native-viewpager (4.2.2):
     - React-Core
   - React-RCTActionSheet (0.63.4):
     - React-Core/RCTActionSheetHeaders (= 0.63.4)
@@ -404,7 +402,6 @@ DEPENDENCIES:
   - react-native-gallery-manager (from `../node_modules/react-native-gallery-manager`)
   - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - react-native-maps (from `../node_modules/react-native-maps`)
-  - react-native-mov-to-mp4 (from `../node_modules/react-native-mov-to-mp4`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
   - react-native-video (from `../node_modules/react-native-video`)
@@ -493,8 +490,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-resizer"
   react-native-maps:
     :path: "../node_modules/react-native-maps"
-  react-native-mov-to-mp4:
-    :path: "../node_modules/react-native-mov-to-mp4"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-track-player:
@@ -584,11 +579,10 @@ SPEC CHECKSUMS:
   react-native-gallery-manager: 030b6f09cbe458ecbe81b6dcd8248dc17a475f26
   react-native-image-resizer: af7fa48fe7913b7b96fa079d16dd97ada31d6833
   react-native-maps: f4b89da81626ad7f151a8bfcb79733295d31ce5c
-  react-native-mov-to-mp4: b63917cb6f96d4c264d8f5213db7961442dd4298
   react-native-safe-area-context: 8260e5157617df4b72865f44006797f895b2ada7
   react-native-track-player: 84552605df7d90e199ff8b5deceddff58d658523
   react-native-video: aa527b0acb37f94c4491e70df0274cb26979405d
-  react-native-viewpager: 9c0fcf8c6f094a76803435bdc3b5290bfe675c05
+  react-native-viewpager: 6363ba2652848f431ef07ebb4abebb43c1c42a0c
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336
   React-RCTAnimation: 1bde3ecc0c104c55df246eda516e0deb03c4e49b
   React-RCTBlob: a97d378b527740cc667e03ebfa183a75231ab0f0

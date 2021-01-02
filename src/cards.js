@@ -227,7 +227,7 @@ class MemoryCard extends Component {
   //----------------------------------------------------------------
 
   renderFileView = ({item, index}) => {
-
+   
     if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
       return (
         <TouchableOpacity

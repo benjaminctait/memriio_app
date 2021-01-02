@@ -6,6 +6,7 @@ import {
   millisecsToHMSM,
   logStorageContent,
   cameraRollPathToAbsolutePath,
+  getFilename,
 } from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
@@ -17,11 +18,12 @@ import {
   VideoStopButton,
   AudioStopButton,
   IconButtonCamera,
-  IconButtonVideo,
   IconButtonAudio,
   IconButtonFile,
+  IconButtonVideo,
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
+
 
 import {
   StyleSheet,
@@ -39,15 +41,21 @@ import AnimatedWave from 'react-native-animated-wave';
 import CameraRollPicker from 'react-native-camera-roll-picker';
 
 
-let filePath = '';
+
+const CAMERA_SRC = 0
+const VIDEO_SRC = 1
+const AUDIO_SRC = 2
+const CAMERAROLL_SRC = 3
+const IMAGE = 0
+const VIDEO = 1
+const AUDIO = 2
+
 
 class CaptureComponent extends Component {
   state = {
     mode: 'camera',
     isRecordingVideo: false,
     isRecordingAudio: false,
-
-    fcount: 0,
     currentTime: 0.0,
     recording: false,
     paused: false,
@@ -55,15 +63,20 @@ class CaptureComponent extends Component {
     finished: false,
     hasPermission: undefined,
     decibles: 0,
-    filesSelected: [],
+    captureContent:[],
+    filesSelected: [],   
     fadeAnimation: new Animated.Value(0),
     shutterFlashVisible:false,
+    memory:null
   };
 
   //--------------------------------------------------------------------------------------
 
   async componentDidMount() {
-    await cleanupStorage();
+    
+    console.log('capture did mount ');
+    this.props.route.params = null
+    this.setState({captureContent:[]})
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       console.log('audio authorization:', isAuthorised);
       this.setState({hasPermission: isAuthorised});
@@ -117,6 +130,7 @@ class CaptureComponent extends Component {
   }
   //--------------------------------------------------------------------------------------
 
+  
   startRecordingVideo = async () => {
     if (this.camera) {
       try {
@@ -128,15 +142,8 @@ class CaptureComponent extends Component {
             isRecordingVideo: false,
             fcount: this.state.fcount + 1,
           });
-         
-          AsyncStorage.setItem('video-' + this.state.fcount+1, result);
-          createThumbnail({
-            url: data.uri,
-            timeStamp: 10000,
-          }).then((thumbnail) => {
-            console.log('setting video thumb,', thumbnail);
-            AsyncStorage.setItem(`video-${this.state.fcount+1}-thumb`, thumbnail.path);
-          });
+          
+          this.addFileToContent(data.uri,VIDEO_SRC,VIDEO,null)
         }
       } catch (err) {
         alert('Video error' + err);
@@ -145,6 +152,79 @@ class CaptureComponent extends Component {
   };
 
   //--------------------------------------------------------------------------------------
+
+  removeCameraRollcontent = async () =>{
+    let temp = []
+    this.state.captureContent.map(item =>{
+      if(item.origin !== CAMERAROLL_SRC){
+        temp.push(item)
+      }
+    })
+    this.setState({captureContent:temp})
+  }
+
+  //--------------------------------------------------------------------------------------
+
+  addFileToContent = async (fileuri,source,filetype,uniqueId) => {
+    
+    let temp = this.state.captureContent
+    let fname = await getFilename(fileuri)
+
+    switch (filetype) {
+      
+      case IMAGE:
+       
+        temp.push({
+          filepath  : fileuri,  // original filepath
+          thumbnail : fileuri,  // thumbnail path
+          origin    : source,   // CAMERA || CAMERAROLL || AUDIO || VIDEO     
+          type      : filetype, // IMAGE=0 || VIDEO=1 || AUDIO=2
+          text      : '',       // needed only to match thumbScroll data structure            
+          id        : uniqueId?uniqueId:fname,    // used only as unique identifier 
+        })  
+        this.setState({captureContent:temp});
+
+        break;
+
+      case VIDEO:
+
+        createThumbnail({
+          url: fileuri,
+          timeStamp: 10000,
+        }).then(thumbnail => {
+          temp.push({
+            filepath  : fileuri,        
+            thumbnail : thumbnail.path, 
+            origin    : source,    
+            type      : filetype, 
+            text      : '',                   
+            id        : uniqueId?uniqueId:fname,          
+          })  
+          this.setState({captureContent:temp});
+        })
+      
+      break;
+      case AUDIO:
+      
+        temp.push({
+          filepath  : fileuri,  
+          thumbnail : './images/file.png',  
+          origin    : source,   
+          type      : filetype,
+          text      : '',              
+          id        : uniqueId?uniqueId:fname,    
+        })  
+        this.setState({captureContent:temp});
+      
+      break;     
+      default:
+        break;
+    }
+    
+  }
+
+  //--------------------------------------------------------------------------------------
+
   stopRecordingVideo = async () => {
     console.log('stopRecordingVideo xxx' + this.camera);
 
@@ -199,19 +279,8 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   async _finishRecording(didSucceed, filePathNew, fileSize) {
-    this.setState({finished: didSucceed});
-    console.log(
-      `Finished recording : duration ${
-        this.state.currentTime
-      } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
-    );
-    
-    AsyncStorage.setItem('audio-' + this.state.fcount+1, filePathNew);
-    AsyncStorage.setItem(
-      `audio-${this.state.fcount+1}-thumb`,
-      './images/file.png',
-    );
-    this.setState({fcount: this.state.fcount + 1});
+    this.setState({finished: didSucceed});    
+    this.addFileToContent( filePathNew , AUDIO_SRC , AUDIO ,null)
   }
   //--------------------------------------------------------------------------------------
 
@@ -226,7 +295,6 @@ class CaptureComponent extends Component {
 
     try {
       const filePathNew = await AudioRecorder.stopRecording();
-      console.log('recording path', filePath);
 
       this.setState({finished: true});
       if (Platform.OS === 'android') {
@@ -265,13 +333,9 @@ class CaptureComponent extends Component {
       console.log('capture.takePicture() ' + this.camera);
       try {
         this.showShutterFlash()
-        const data = await this.camera.takePictureAsync();
+        const data = await this.camera.takePictureAsync();        
+        this.addFileToContent( data.uri.split('//')[1], CAMERA_SRC , IMAGE ,null )                
         
-        const fullpath = data.uri.split('//')[1];
-        AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
-        AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
-        console.log('takePicture :', data);
-        this.setState({fcount: this.state.fcount + 1});
       } catch (err) {
         alert(err);
       } 
@@ -282,9 +346,7 @@ class CaptureComponent extends Component {
 
   goBackToFeed = () => {
     console.log('removing files.....');
-    this.setState({filesSelected: [], fcount: 0});
-    cleanupStorage();
-
+    this.setState({filesSelected: [],captureContent:[],fcount: 0,memory:null});
     this.props.navigation.navigate('Feed');
   };
 
@@ -298,13 +360,7 @@ class CaptureComponent extends Component {
     }
   };
 
-  //--------------------------------------------------------------------------------------
-
-  showPost = () => {
-    console.log('new post navigation:');
-    this.props.navigation.navigate('NewPost');
-  };
-
+  
   //--------------------------------------------------------------------------------------
   handleGetPhotossPress = async () => {
     this.showMode('file');
@@ -322,84 +378,88 @@ class CaptureComponent extends Component {
     const status = await PermissionsAndroid.request(permission);
     return status === 'granted';
   };
+
   //--------------------------------------------------------------------------------------
+
+  showPost = () => {
+    console.log('new post navigation:');
+    
+    this.props.navigation.navigate('NewPost',{
+          capturedFiles:this.state.captureContent,
+          memory:this.state.memory,
+          updateMemoryDetails:this.updateCurrentMemoryDetails,
+          updateCaptureContent:this.updateContent,
+          
+        });
+    
+  };
+  
+  //--------------------------------------------------------------------------------------
+
+  updateContent = (content) =>{
+    let tmp = []
+    this.setState({captureContent:content},()=>{
+      this.state.filesSelected.map(item =>{
+        this.existsInContent(item).then(exists=>{
+          if(exists){            
+            tmp.push(item)
+          }
+        })
+      })
+      this.setState({filesSelected:tmp})
+    })
+  }
+
+  existsInContent = (file) =>{
+    return new Promise((resolve,reject)=>{
+      this.state.captureContent.map(item=>{
+        if(item.id === file.filename){
+          resolve(true)
+        }
+      })
+    })
+  }
+  
+  //--------------------------------------------------------------------------------------
+  
+  updateCurrentMemoryDetails = ( memory ) =>{
+    this.setState({memory:memory})
+  }
+
+  //--------------------------------------------------------------------------------------
+
   getSelectedImages = async (images) => {
    
-    this.setState({filesSelected: images});
-    console.log('getting selected images');
-    await cleanupStorage({key: 'file-'}); //remove previously stored files
-    images.forEach((img, i) => {
-      
-      if (img.uri) {
-        if (img.type === 'video') {
-          if (Platform.OS === 'ios') {
-            cameraRollPathToAbsolutePath(img.uri, img.type).then(
-              (assetPath) => {
-                //console.log('getSelectImages ', assetPath);
-                AsyncStorage.setItem(
-                  `video-file-${this.state.fcount + i + 1}`,
-                  assetPath,
-                );
-                createThumbnail({
-                  url: assetPath,
-                  timeStamp: 10000,
-                }).then((thumbnail) => {
-                  AsyncStorage.setItem(
-                    `video-file-${this.state.fcount + i + 1}-thumb`,
-                    thumbnail.path,
-                  );
-                });
-              },
-            );
+    await this.removeCameraRollcontent()
+      images.forEach((img, i) => {
+        console.log(img);
+        console.log();
+        if (img.uri  ) {
+          if (img.type === 'video') {
+            if (Platform.OS === 'ios') {
+              cameraRollPathToAbsolutePath(img.uri, img.type).then( assetPath => { 
+                    this.addFileToContent(assetPath,CAMERAROLL_SRC,VIDEO, img.filename )                    
+                })
+            } else {
+              this.addFileToContent( img.uri.split('//')[1] , CAMERAROLL_SRC , VIDEO,null)
+            }
           } else {
-            const fullpath = img.uri.split('//')[1];
-            AsyncStorage.setItem(
-              `video-file-${this.state.fcount + i + 1}`,
-              fullpath,
-            );
-
-            createThumbnail({
-              url: img.uri,
-              timeStamp: 10000,
-            }).then((thumbnail) => {
-              AsyncStorage.setItem(
-                `video-file-${this.state.fcount + i + 1}-thumb`,
-                thumbnail.path,
-              );
-            });
-          }
-        } else {
-          if (Platform.OS === 'ios') {
-            
-            cameraRollPathToAbsolutePath(img.uri, img.type).then(
-              (assetPath) => {
-                console.log('getSelectImages ', assetPath);
-                AsyncStorage.setItem(
-                  `image-file-${this.state.fcount + i + 1}`,
-                  assetPath,
-                );
-                AsyncStorage.setItem(
-                  `image-file-${this.state.fcount + i + 1}-thumb`,
-                  assetPath,
-                );
-              },
-            );
-          } else {
-            console.log('setting image file:', img.uri);
-            AsyncStorage.setItem(
-              `image-file-${this.state.fcount + i + 1}`,
-              img.uri,
-            );
-            AsyncStorage.setItem(
-              `image-file-${this.state.fcount + i + 1}-thumb`,
-              img.uri,
-            );
+            if (Platform.OS === 'ios') {
+              
+              cameraRollPathToAbsolutePath(img.uri, img.type).then( assetPath => {
+                    this.addFileToContent(assetPath,CAMERAROLL_SRC,IMAGE,img.filename)
+                })
+            } else {
+              this.addFileToContent(img.uri,CAMERAROLL_SRC,IMAGE,null)
+            }
           }
         }
-      }
-    });
+      })
+      this.setState({filesSelected:images})
   };
+
   //--------------------------------------------------------------------------------------
+
   render() {
     let bigButton = null 
     let content = null

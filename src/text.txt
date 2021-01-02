@@ -1,115 +1,36 @@
-render() {
-    return (
-      <KeyboardShift>
-        <View style={styles.container}>
-          <Input // Title
-            inputStyle={styles.titletext}
-            onChangeText={(text) => { this.setState( { title: text } )}}
-            placeholder=  "Title.."
-            placeholderTextColor="gray"
-            
-          />
-          
-          <Input // Description
-            inputStyle={styles.titletext}
-            placeholder="Description.."
-            placeholderTextColor="grey"
-            onChangeText={(text) => {this.setState( { story: text } )}}
-          />
-          
-          <View>
-            <ListItem // Tagged people list
-              title="People"
-              leftIcon={{name: 'face'}}
-              topDivider
-              bottomDivider
-              chevron
-              onPress={() => this.getPeople()}
-              subtitle={
-                <View style={styles.subtitle}>
-                  {this.state.taggedPeople.map((person, index) => (
-                    <SubTag
-                      key={index}
-                      data={person}
-                      title={person.firstname + ' ' + person.lastname}
-                      rightIcon={require('./images/x-symbol.png')}
-                    />
-                  ))}
-                </View>
-              }
-            />
-            <ListItem // Location
-              title="Location"
-              leftIcon={{name: 'language'}}
-              bottomDivider
-              chevron
-              onPress={() => this.getLocation()}
-              subtitle={this.renderLocation()}
-            />
-            <ListItem // Clouds
-              title="Cloud"
-              leftIcon={{name: 'group'}}
-              bottomDivider
-              chevron
-              onPress={() => this.getClouds()}
-              subtitle={
-                <View style={styles.subtitle}>
-                  {this.state.allClouds.map((cloud, index) => (
-                    <SubTag
-                      key={index}
-                      data={cloud}
-                      greyOutOnTagPress={!(cloud.name === 'Personal')} // Cant turn off the Personal cloud
-                      buttonDown={true}
-                      onTagPress={this.handleCloudTagPress}
-                      title={cloud.name}
-                    />
-                  ))}
-                </View>
-              }
-            />
-            
-          </View>
-          <View  // Content Thumbs
+return(
+        <TouchableOpacity onPress={this.handleOnPress}>
+          <View
             style={{
-              flex: 0,
               flexDirection: 'row',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              marginTop: 10,
-              marginBottom: 10,
-            }}>
-            {this.state.content.map((item, index) => (
-              <View
-                style={{
-                  width: '30%',
-                  height: 200,
-                  margin: 5,
-                }}>
-                <Image
-                  key={index}
-                  style={{
-                    height: '100%',
-                    width: '100%',
-                    borderRadius: 10,
-                    borderWidth: 1,
-                  }}
-                  source={
-                    item.isAudio
-                      ? require('./images/audioThumb.png')
-                      : {uri: item.thumbnail}
-                  }
-                  resizeMode="cover"
-                />
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.goBack(null)} />
-          <PostButton onPress={() => this.sendPost()} />
-        </View>
-      </KeyboardShift>
-    );
+              borderTopColor:'grey',                
+              borderTopWidth:1,
+              minHeight:50,
+              alignItems:'center',
+              paddingLeft:5,
+              
+            }}
+            >
+            
+            <Avatar
+              size="small"
+              rounded
+              title={initials}
+              overlayContainerStyle={{backgroundColor:person.avatar}}
+              onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
+              activeOpacity={0.7}
+            />
+            
+            <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
+              <Text                   
+                style={{ fontSize:15 }}              
+              >{`${person.firstname} ${person.lastname}`}
+              </Text>
+            </View>
+            
+            {checked}
+            
+          </View> 
+      </TouchableOpacity>     
+    )
   }
-}
