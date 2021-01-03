@@ -75,8 +75,8 @@ class CaptureComponent extends Component {
   async componentDidMount() {
     
     console.log('capture did mount ');
-    this.props.route.params = null
-    this.setState({captureContent:[]})
+    
+    this.setState({captureContent:[],filesSelected:[],memory:null})
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       console.log('audio authorization:', isAuthorised);
       this.setState({hasPermission: isAuthorised});
@@ -346,7 +346,8 @@ class CaptureComponent extends Component {
 
   goBackToFeed = () => {
     console.log('removing files.....');
-    this.setState({filesSelected: [],captureContent:[],fcount: 0,memory:null});
+    
+    this.setState({captureContent:[],filesSelected:[],memory:null})
     this.props.navigation.navigate('Feed');
   };
 
@@ -389,13 +390,19 @@ class CaptureComponent extends Component {
           memory:this.state.memory,
           updateMemoryDetails:this.updateCurrentMemoryDetails,
           updateCaptureContent:this.updateContent,
+          resetCapture:this.resetAll
           
         });
     
   };
   
   //--------------------------------------------------------------------------------------
+  resetAll = () =>{
+    console.log('reset capture');
+    this.setState({captureContent:[],filesSelected:[],memory:null})
 
+  }
+  //--------------------------------------------------------------------------------------
   updateContent = (content) =>{
     let tmp = []
     this.setState({captureContent:content},()=>{

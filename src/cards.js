@@ -3,8 +3,9 @@ import {SwitchIcon} from './buttons';
 import VideoPlayer from './videoplayer';
 import Carousel  from 'react-native-snap-carousel';
 import * as mem from './datapass';
-import ImageViewer from 'react-native-image-zoom-viewer';
+
 import sliderStyles  from './styles/index.style';
+import {CacheImage,CachedZoomableImage} from './cachedImage'
 
 import { Avatar,Badge, Icon } from 'react-native-elements'
 import {
@@ -40,8 +41,6 @@ class MemoryCard extends Component {
     activeImage: {},
     author:{},
     currentStatusLevel:null,
-
-   
     
   };
   //------------------------------------------------------------------------------------------------
@@ -227,40 +226,47 @@ class MemoryCard extends Component {
   //----------------------------------------------------------------
 
   renderFileView = ({item, index}) => {
-   
-    if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
-      return (
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() => {
-            this.showModel(item);
-          }}>
-          <Image style={styles.image} source={{uri: item.thumburl, cache: 'force-cache' }} />
-        </TouchableOpacity>
-      );
-    } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-      return (
-        <VideoPlayer
-          poster={item.thumburl}
-          source={item.displayurl ? item.displayurl : item.fileurl}
-        />
-      );
-    } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
-      return (
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() => {
-            this.props.navigation.navigate('Audio', {
-              title: this.props.memory.title,
-              filepath: item.fileurl,
-            });
-          }}>
-          <Image
-            style={{...styles.image, width: '100%'}}
-            source={require('./images/audioThumb.png')}
+    
+    if( item ) {
+      
+      let fname = mem.getFilename(item.fileurl)
+      
+      if (mem.isSupportedImageFile(fname)) {
+        return (
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => {
+              this.showModel(item);
+            }}>
+            <CacheImage style={styles.image} uri={ item.thumburl} filename = { fname } />
+          </TouchableOpacity>
+        );
+      } else if (mem.isSupportedVideoFile(fname)) {
+        return (
+          <VideoPlayer
+            poster={item.thumburl}
+            source={item.displayurl ? item.displayurl : item.fileurl}
           />
-        </TouchableOpacity>
-      );
+        );
+      } else if (mem.isSupportedAudioFile(fname)) {
+        return (
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => {
+              this.props.navigation.navigate('Audio', {
+                title: this.props.memory.title,
+                filepath: item.fileurl,
+              });
+            }}>
+            <Image
+              style={{...styles.image, width: '100%'}}
+              source={require('./images/audioThumb.png')}
+            />
+          </TouchableOpacity>
+        );
+      }
+    }else{
+      return null
     }
   };
 
@@ -353,36 +359,51 @@ class MemoryCard extends Component {
         </View>
 
         {lower}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={this.state.modalVisible}
-          onRequestClose={() => {
-            this.setState({modalVisible: false});
-          }}>
-          <Text
-            style={styles.backButton}
-            onPress={() => {
-              this.setState({modalVisible: !this.state.modalVisible});
-            }}>
-            <Image
-              source={require('./images/back.png')}
-              style={styles.backButtonImage}
-            />
-          </Text>
-
-          <ImageViewer
-            imageUrls={[{url: this.state.activeImage.thumburl}]}
-            style={styles.imageFull}
-            renderHeader={() => {}}
-            renderIndicator={() => {}}
-          />
-        </Modal>
+        { this.renderModal() }
       </View>
     );
   }
-}
 
+
+  //------------------------------------------------------------------------------------
+
+  renderModal = () => {
+    if(this.state.activeImage.thumburl){
+      console.log('rendermodal : ' ,this.state.activeImage.thumburl);
+      let fname = mem.getFilename(this.state.activeImage.thumburl)
+      return (
+        <Modal
+              animationType="slide"
+              transparent={true}
+              visible={this.state.modalVisible}
+              onRequestClose={() => {
+                this.setState({modalVisible: false});
+              }}>
+              <Text
+                style={styles.backButton}
+                onPress={() => {
+                  this.setState({modalVisible: !this.state.modalVisible});
+                }}>
+                <Image
+                  source={require('./images/back.png')}
+                  style={styles.backButtonImage}
+                />
+              </Text>
+    
+              <CachedZoomableImage 
+                style     = { styles.imageFull}
+                uri       = { this.state.activeImage.thumburl}
+                filename  = { fname }
+              />
+              
+            </Modal>
+      )
+    }else{
+      return null
+    }
+    
+  }
+}
 //------------------------------------------------------------------------------------
 
 const styles = StyleSheet.create({

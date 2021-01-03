@@ -123,6 +123,7 @@ class NewPost extends Component {
     });
 
     console.log('SEND POST', this.props.screenProps);
+    this.props.route.params.resetCapture()
     this.props.navigation.navigate('Feed');
 
     await mem.postNewMemory(
