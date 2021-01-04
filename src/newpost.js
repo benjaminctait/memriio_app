@@ -504,7 +504,7 @@ class NewPost extends Component {
                       paused   = { true }
                       muted    = { false }
                       controls = { true }
-                      poter   = { this.state.activeItem.thumbnail }
+                      poster   = { this.state.activeItem.thumbnail }
                       style    = { styles.imageFull }
                     />
         break;

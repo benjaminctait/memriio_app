@@ -391,7 +391,6 @@ class CaptureComponent extends Component {
           updateMemoryDetails:this.updateCurrentMemoryDetails,
           updateCaptureContent:this.updateContent,
           resetCapture:this.resetAll
-          
         });
     
   };

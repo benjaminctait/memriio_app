@@ -1,7 +1,8 @@
 import React from 'react' ;
-import { View, Image } from 'react-native';
+import { View, Image, Dimensions, TouchableHighlightBase} from 'react-native';
 import RNFS from 'react-native-fs'
-import ImageViewer from 'react-native-image-zoom-viewer';
+import ImageZoom from 'react-native-image-pan-zoom'
+
 let shorthash = require("shorthash");
 
 class CacheImage extends React.Component {
@@ -47,28 +48,28 @@ class CacheImage extends React.Component {
     //----------------------------------------------------------------
 }
 
-//----------------------------------------------------------------
-//----------------------------------------------------------------
 
   class CachedZoomableImage extends React.Component {
-    state = { source:null, local:false }
-    
+    state = { source:null, imageWidth:0, imageHeight:0 }
+
     loadFile = ( path )=> {
-      console.log('loadFile : ',path);
-        this.setState({ source:path,local:true }) ;
-      }
-    
+      Image.getSize(path, (width, height) => {
+        this.setState({ source:{uri:path}, imageHeight:height, imageWidth:width})
+      })
+    }
+
     //----------------------------------------------------------------
     downloadFile = (uri,path) => {
-      console.log('downloadFile : ',uri,path);
+
       RNFS.downloadFile({fromUrl:uri, toFile: path}).promise
           .then(res =>this.loadFile(path));
     }
-    
+
     //----------------------------------------------------------------
-  
+
     componentDidMount(){
       const { uri,filename } = this.props ; 
+      
       const name = shorthash.unique(filename);
       const extension = (Platform.OS === 'android') ? 'file://' : '' 
       const path =`${extension}${RNFS.CachesDirectoryPath}/${name}.png`;
@@ -76,35 +77,38 @@ class CacheImage extends React.Component {
             if(exists)this.loadFile(path) ;
             else this.downloadFile(uri,path) ;
           })
-     }
-     
-     //----------------------------------------------------------------
-  
-     render(){
-       console.log(this.state.source);
-       let source = {url: this.props.uri}
-       
-      //  if (this.state.local){
-          
-      //     source = {
-      //       url: '',
-      //       props: {
-      //           source: {uri:this.state.source}
-      //       }
-      //    }
-      //  }
-
-       return(
-         <ImageViewer
-            imageUrls       = { [source] }
-            style           = { this.props.style}
-            renderHeader    = { () => {}}
-            renderIndicator = { () => {}}
-          />
-       );
+    }
+    //----------------------------------------------------------------
+    render(){
+      
+      let windowWidth = Dimensions.get('window').width
+      let windowHeight = Dimensions.get('window').height
+      let wratio  = this.state.imageWidth / windowWidth
+      let hratio  = this.state.imageHeight / windowHeight
+      let aspectRatio = 1
+      
+      if(this.state.source){
+        if( wratio > hratio )  aspectRatio = wratio 
+       else aspectRatio = hratio
       }
+       
+      
+      return(
+      <ImageZoom 
+          cropWidth   = { windowWidth  }
+          cropHeight  = { windowHeight }
+          imageWidth  = { this.state.imageWidth / aspectRatio } 
+          imageHeight = { this.state.imageHeight / aspectRatio }
+          panToMove   = { true         }
+          pinchToZoom = { true         }
+          >
+        <Image style={this.props.style} source={this.state.source} />
+      </ImageZoom>
+      )
+    
+    }
 
-      //----------------------------------------------------------------
+    //----------------------------------------------------------------
   }
 
   export  {CacheImage,CachedZoomableImage} ;

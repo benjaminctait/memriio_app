@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {SwitchIcon} from './buttons';
 import VideoPlayer from './videoplayer';
+import Video from 'react-native-video'
 import Carousel  from 'react-native-snap-carousel';
 import * as mem from './datapass';
 
@@ -186,15 +187,13 @@ class MemoryCard extends Component {
       );
     }
   };
-  showModel = (item) => {
-    if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
-      // StatusBar.setHidden(true);
+
+  //----------------------------------------------------------------
+
+  showModal = (item) => {
+   
       this.setState({modalVisible: true, activeImage: item});
-    } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-      return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
-    } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
-      return <VideoPlayer poster={item.fileurl} source={item.fileurl} />;
-    }
+    
   };
 
   //----------------------------------------------------------------
@@ -205,18 +204,18 @@ class MemoryCard extends Component {
     return (
       <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center'}}>
         <Carousel
-          layout={'default'}
-          ref={(ref) => (this.carousel = ref)}
-          data={this.state.files}
-          sliderWidth={width}
-          itemWidth={width}
-          hasParallaxImages={true}
-          firstItem={1}
-          containerCustomStyle={sliderStyles.slider}
+          layout                = {'default'}
+          ref                   = {(ref) => (this.carousel = ref)} 
+          data                  = {this.state.files}
+          sliderWidth           = {width}
+          itemWidth             = {width}
+          hasParallaxImages     = {false}
+          firstItem             = {1}
+          renderItem            = {this.renderFileView}
+          onSnapToItem          = {(index) => this.setState({activeIndex: index})}
+          scrollEnabled         = {this.state.scrollable}
+          containerCustomStyle  = {sliderStyles.slider}
           contentContainerCustomStyle={sliderStyles.sliderContentContainer}
-          renderItem={this.renderFileView}
-          onSnapToItem={(index) => this.setState({activeIndex: index})}
-          scrollEnabled={this.state.scrollable}
         />
         
       </View>
@@ -235,18 +234,27 @@ class MemoryCard extends Component {
         return (
           <TouchableOpacity
             activeOpacity={0.5}
-            onPress={() => {
-              this.showModel(item);
-            }}>
+            onPress={() => { this.showModal(item) }}>
             <CacheImage style={styles.image} uri={ item.thumburl} filename = { fname } />
           </TouchableOpacity>
         );
       } else if (mem.isSupportedVideoFile(fname)) {
         return (
-          <VideoPlayer
-            poster={item.thumburl}
-            source={item.displayurl ? item.displayurl : item.fileurl}
-          />
+          <View>
+            <VideoPlayer
+              poster={item.thumburl}
+              source={item.displayurl ? item.displayurl : item.fileurl}
+            />
+            <TouchableOpacity
+              activeOpacity={0.5}
+              style   = {styles.expandToFullScreen}
+              onPress={() => { this.showModal(item) }}>
+              <Image
+                source  = {require('./images/expand.png')}
+                style   = {{width:'100%',height:'100%'} }
+              />
+            </TouchableOpacity>
+          </View>
         );
       } else if (mem.isSupportedAudioFile(fname)) {
         return (
@@ -258,10 +266,7 @@ class MemoryCard extends Component {
                 filepath: item.fileurl,
               });
             }}>
-            <Image
-              style={{...styles.image, width: '100%'}}
-              source={require('./images/audioThumb.png')}
-            />
+            
           </TouchableOpacity>
         );
       }
@@ -369,16 +374,34 @@ class MemoryCard extends Component {
 
   renderModal = () => {
     if(this.state.activeImage.thumburl){
-      console.log('rendermodal : ' ,this.state.activeImage.thumburl);
-      let fname = mem.getFilename(this.state.activeImage.thumburl)
+      
+     
+      let content = null
+      if (mem.isSupportedImageFile(this.state.activeImage.fileext)) {
+        content =  <CachedZoomableImage 
+                      style     = { styles.imageFull}
+                      uri       = { this.state.activeImage.thumburl}
+                      filename  = { mem.getFilename(this.state.activeImage.thumburl) }
+                    />
+      } else if (mem.isSupportedVideoFile(this.state.activeImage.fileext)) {
+        content = <VideoPlayer
+                    poster          = {this.state.activeImage.thumburl}
+                    source          = {this.state.activeImage.displayurl ? this.state.activeImage.displayurl : this.state.activeImage.fileurl}
+                    style           = {{height:"100%"}}
+                    resizeMode      = 'cover' 
+                    nativeControls  = { true }
+                  /> 
+        }
+
       return (
         <Modal
               animationType="slide"
-              transparent={true}
+              transparent={false}
               visible={this.state.modalVisible}
               onRequestClose={() => {
                 this.setState({modalVisible: false});
               }}>
+                { content }
               <Text
                 style={styles.backButton}
                 onPress={() => {
@@ -389,12 +412,7 @@ class MemoryCard extends Component {
                   style={styles.backButtonImage}
                 />
               </Text>
-    
-              <CachedZoomableImage 
-                style     = { styles.imageFull}
-                uri       = { this.state.activeImage.thumburl}
-                filename  = { fname }
-              />
+              
               
             </Modal>
       )
@@ -482,9 +500,15 @@ const styles = StyleSheet.create({
   },
   image: {
     height: 300,
-    resizeMode: 'cover',
+    resizeMode:'cover'
   },
-  imageFull: {width: '100%', height: '100%', zIndex: -1},
+  imageFull: {
+      
+      height: '100%', 
+      zIndex: -1,
+      resizeMode:'cover'
+      
+  },
   absText: {
     position: 'absolute',
     top: 0,
@@ -509,6 +533,15 @@ const styles = StyleSheet.create({
     left:8,
     width: 20,
     height: 20,
+    
+  },
+
+  expandToFullScreen:{
+    position:'absolute',
+    top:20,
+    right:20,
+    width: 30,
+    height: 30,
     
   },
 
