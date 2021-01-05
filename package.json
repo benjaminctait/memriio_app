@@ -22,7 +22,7 @@
     "@react-navigation/material-bottom-tabs": "^5.1.1",
     "@react-navigation/native": "^5.0.8",
     "@react-navigation/stack": "^5.2.11",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "buffer": "^5.5.0",
     "concat-stream": "^2.0.0",
     "escape-regex-string": "^1.0.6",
