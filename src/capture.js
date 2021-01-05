@@ -386,6 +386,7 @@ class CaptureComponent extends Component {
     console.log('new post navigation:');
     
     this.props.navigation.navigate('NewPost',{
+          mode:'new',
           capturedFiles:this.state.captureContent,
           memory:this.state.memory,
           updateMemoryDetails:this.updateCurrentMemoryDetails,

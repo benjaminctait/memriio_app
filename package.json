@@ -65,6 +65,7 @@
     "react-native-track-player": "^1.2.3",
     "react-native-vector-icons": "^6.6.0",
     "react-native-video": "^4.4.5",
+    "react-native-video-controls": "^2.7.1",
     "react-native-windows": "^0.61.16",
     "react-navigation": "^4.2.2",
     "react-redux": "^7.2.0",

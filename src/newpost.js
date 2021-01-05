@@ -1,12 +1,10 @@
 import React, {Component, createRef} from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Spinner from 'react-native-loading-spinner-overlay';
-import ImageViewer from 'react-native-image-zoom-viewer';
+import {ZoomableImage} from './cachedImage'
 import Video from 'react-native-video'
 import Dialog from 'react-native-dialog'
-
 import {showMessage, hideMessage} from 'react-native-flash-message';
 
 import {
@@ -227,8 +225,7 @@ class NewPost extends Component {
     
     console.log('NEWPOST - didmount');
     console.log('');
-    console.log(this.props.route.params);
-
+    
     if(memory){
       this.setState(
         {
@@ -481,22 +478,23 @@ class NewPost extends Component {
     if(this.state.activeItem){
       switch (this.state.activeItem.type) {
         case IMAGE:
-          content = <ImageViewer
-                      imageUrls={[{url: this.state.activeItem ? this.state.activeItem.thumbnail : null }]}
-                      style={styles.imageFull}
-                      renderHeader={() => {}}
-                      renderIndicator={() => {}}
-                    />
+          content = 
+                      <ZoomableImage 
+                        style     = { {height:'100%',width:'100%',resizeMode:'cover'}}
+                        localPath = { this.state.activeItem.thumbnail }
+                      />
           break;
         case VIDEO:
           content = <Video
                       source   = { { uri: this.state.activeItem.filepath } }
                       paused   = { true }
-                      muted    = { false }
-                      controls = { true }
+                      muted    = { false }                      
                       poster   = { this.state.activeItem.thumbnail }
                       style    = { styles.imageFull }
+                      ignoreSilentSwitch = { 'ignore' }
+                      
                     />
+
           break;
         case AUDIO:
           content = <Video
@@ -506,6 +504,7 @@ class NewPost extends Component {
                       controls = { true }
                       poster   = { this.state.activeItem.thumbnail }
                       style    = { styles.imageFull }
+                      ignoreSilentSwitch = { 'ignore' }
                     />
         break;
         default:
@@ -516,11 +515,13 @@ class NewPost extends Component {
     return (
       <Modal
           animationType="slide"
-          transparent={true}
+          transparent={false}
           visible={this.state.modalVisible}
           onRequestClose={() => {
             this.setState({modalVisible: false});
           }}>
+          
+          {content}
           <Text
             style={styles.backButton}
             onPress={() => {
@@ -531,7 +532,6 @@ class NewPost extends Component {
               style={styles.backButtonImage}
             />
           </Text>
-            {content}
           
         </Modal>
     )
@@ -574,6 +574,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%', 
     height: '100%', 
+    resizeMode:'cover',
     zIndex: -1
   },
 

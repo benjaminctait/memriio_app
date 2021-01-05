@@ -111,4 +111,54 @@ class CacheImage extends React.Component {
     //----------------------------------------------------------------
   }
 
-  export  {CacheImage,CachedZoomableImage} ;
+  class ZoomableImage extends React.Component {
+    state = { imageWidth:0, imageHeight:0 }
+
+    loadFile = ( path )=> {
+      Image.getSize(path, (width, height) => {
+        this.setState({ source:{uri:path}, imageHeight:height, imageWidth:width})
+      })
+    }
+
+    //----------------------------------------------------------------
+
+    componentDidMount(){
+      const { localPath } = this.props ; 
+      RNFS.exists(localPath).then( exists => {
+            if(exists)this.loadFile(localPath) 
+            })
+    }
+    //----------------------------------------------------------------
+    render(){
+      
+      let windowWidth = Dimensions.get('window').width
+      let windowHeight = Dimensions.get('window').height
+      let wratio  = this.state.imageWidth / windowWidth
+      let hratio  = this.state.imageHeight / windowHeight
+      let aspectRatio = 1
+      
+      if(this.state.source){
+        if( wratio > hratio )  aspectRatio = wratio 
+       else aspectRatio = hratio
+      }
+       
+      
+      return(
+      <ImageZoom 
+          cropWidth   = { windowWidth  }
+          cropHeight  = { windowHeight }
+          imageWidth  = { this.state.imageWidth / aspectRatio } 
+          imageHeight = { this.state.imageHeight / aspectRatio }
+          panToMove   = { true         }
+          pinchToZoom = { true         }
+          >
+        <Image style={this.props.style} source={this.state.source} />
+      </ImageZoom>
+      )
+    
+    }
+
+    //----------------------------------------------------------------
+  }
+
+export  {CacheImage,CachedZoomableImage,ZoomableImage} ;

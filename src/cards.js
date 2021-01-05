@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {SwitchIcon} from './buttons';
 import VideoPlayer from './videoplayer';
-import Video from 'react-native-video'
 import Carousel  from 'react-native-snap-carousel';
 import * as mem from './datapass';
 
@@ -244,6 +243,9 @@ class MemoryCard extends Component {
             <VideoPlayer
               poster={item.thumburl}
               source={item.displayurl ? item.displayurl : item.fileurl}
+              hideFullScreenButton = { true} 
+              hideBackButton       = { true }
+              tapAnywhereToPause   = { true }
             />
             <TouchableOpacity
               activeOpacity={0.5}
@@ -378,18 +380,31 @@ class MemoryCard extends Component {
      
       let content = null
       if (mem.isSupportedImageFile(this.state.activeImage.fileext)) {
-        content =  <CachedZoomableImage 
-                      style     = { styles.imageFull}
-                      uri       = { this.state.activeImage.thumburl}
-                      filename  = { mem.getFilename(this.state.activeImage.thumburl) }
-                    />
+        content =  <View>
+                      <CachedZoomableImage 
+                        style     = { styles.imageFull}
+                        uri       = { this.state.activeImage.thumburl}
+                        filename  = { mem.getFilename(this.state.activeImage.thumburl) }
+                      />
+                      <Text
+                        style={styles.backButton}
+                        onPress={() => {
+                          this.setState({modalVisible: !this.state.modalVisible});
+                        }}>
+                        <Image
+                          source={require('./images/back.png')}
+                          style={styles.backButtonImage}
+                        />
+                      </Text>
+                    </View>
       } else if (mem.isSupportedVideoFile(this.state.activeImage.fileext)) {
         content = <VideoPlayer
                     poster          = {this.state.activeImage.thumburl}
                     source          = {this.state.activeImage.displayurl ? this.state.activeImage.displayurl : this.state.activeImage.fileurl}
                     style           = {{height:"100%"}}
-                    resizeMode      = 'cover' 
-                    nativeControls  = { true }
+                    resizeMode      = 'cover'                     
+                    tapAnywhereToPause   = { true }
+                    onBack          = {() => { this.setState({modalVisible: !this.state.modalVisible})}}
                   /> 
         }
 
@@ -401,18 +416,7 @@ class MemoryCard extends Component {
               onRequestClose={() => {
                 this.setState({modalVisible: false});
               }}>
-                { content }
-              <Text
-                style={styles.backButton}
-                onPress={() => {
-                  this.setState({modalVisible: !this.state.modalVisible});
-                }}>
-                <Image
-                  source={require('./images/back.png')}
-                  style={styles.backButtonImage}
-                />
-              </Text>
-              
+              { content }
               
             </Modal>
       )

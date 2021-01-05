@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Dimensions, StyleSheet, View, Text} from 'react-native';
-import Video from 'react-native-video';
+
+import VideoPlayer from 'react-native-video-controls';
 import {getObjectSignedurl} from './datapass';
 import {VideoStartButton, VideoStopButton} from './buttons';
 
@@ -69,19 +70,22 @@ class VideoPlay extends Component {
     
     if (this.state.signedurl !== '') {
       return (
-        <View>
-          <Video
+        
+          <VideoPlayer
             repeat
-            style            = { this.props.style?this.props.style:{width, height: 300}}
-            resizeMode       = { this.props.resizeMode?this.props.resizeMode:'cover'}
-            source           = { {uri: this.state.originalsource}}
-            controls         = { this.props.nativeControls }
-            paused           = { this.state.paused}
-            posterResizeMode = { this.props.resizeMode?this.props.resizeMode:'cover'}
-            poster           = { this.state.poster}
+            style              = { this.props.style?this.props.style:{width, height: 300}}
+            resizeMode         = { this.props.resizeMode?this.props.resizeMode:'cover'}
+            muted              = { false }
+            source             = { {uri: this.state.originalsource}}
+            paused             = { this.state.paused}
+            posterResizeMode   = { this.props.resizeMode?this.props.resizeMode:'cover'}
+            poster             = { this.state.poster}
+            onBack             = { this.props.onBack }
+            disableFullscreen  = { this.props.hideFullScreenButton }
+            disableBack        = { this.props.hideBackButton }
+            tapAnywhereToPause = { this.props.tapAnywhereToPause }
           />
-          {this.getVideoControls()}
-        </View>
+          
       );
     } else {
       return <Text>Loading...</Text>;
