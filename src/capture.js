@@ -6,24 +6,24 @@ import {
   millisecsToHMSM,
   logStorageContent,
   cameraRollPathToAbsolutePath,
+  getFilename,
 } from './datapass';
 
 import {createThumbnail} from 'react-native-create-thumbnail';
 
 import {
   CameraClickButton,
-  BackButton,
-  PostButton,
   VideoStartButton,
   AudioStartButton,
   VideoStopButton,
   AudioStopButton,
   IconButtonCamera,
-  IconButtonVideo,
   IconButtonAudio,
   IconButtonFile,
+  IconButtonVideo,
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
+
 
 import {
   StyleSheet,
@@ -33,22 +33,29 @@ import {
   Image,
   PermissionsAndroid,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 
 import RNSoundLevel from 'react-native-sound-level';
 import AnimatedWave from 'react-native-animated-wave';
 import CameraRollPicker from 'react-native-camera-roll-picker';
 
-import Sound from 'react-native-sound';
-let filePath = '';
+
+
+const CAMERA_SRC = 0
+const VIDEO_SRC = 1
+const AUDIO_SRC = 2
+const CAMERAROLL_SRC = 3
+const IMAGE = 0
+const VIDEO = 1
+const AUDIO = 2
+
 
 class CaptureComponent extends Component {
   state = {
     mode: 'camera',
     isRecordingVideo: false,
     isRecordingAudio: false,
-
-    fcount: 0,
     currentTime: 0.0,
     recording: false,
     paused: false,
@@ -56,13 +63,20 @@ class CaptureComponent extends Component {
     finished: false,
     hasPermission: undefined,
     decibles: 0,
-    filesSelected: [],
+    captureContent:[],
+    filesSelected: [],   
+    fadeAnimation: new Animated.Value(0),
+    shutterFlashVisible:false,
+    memory:null
   };
 
   //--------------------------------------------------------------------------------------
 
   async componentDidMount() {
-    await cleanupStorage();
+    
+    console.log('capture did mount ');
+    
+    this.setState({captureContent:[],filesSelected:[],memory:null})
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       console.log('audio authorization:', isAuthorised);
       this.setState({hasPermission: isAuthorised});
@@ -116,6 +130,7 @@ class CaptureComponent extends Component {
   }
   //--------------------------------------------------------------------------------------
 
+  
   startRecordingVideo = async () => {
     if (this.camera) {
       try {
@@ -127,9 +142,8 @@ class CaptureComponent extends Component {
             isRecordingVideo: false,
             fcount: this.state.fcount + 1,
           });
-          let fname = Date.now().toString() + '.mp4';
-          console.log('BBC video : ' + data.uri);
-          this.littlecallback(data.uri);
+          
+          this.addFileToContent(data.uri,VIDEO_SRC,VIDEO,null)
         }
       } catch (err) {
         alert('Video error' + err);
@@ -138,18 +152,79 @@ class CaptureComponent extends Component {
   };
 
   //--------------------------------------------------------------------------------------
-  littlecallback = (result) => {
-    AsyncStorage.setItem('video-' + this.state.fcount, result);
-    createThumbnail({
-      url: result,
-      timeStamp: 10000,
-    }).then((thumbnail) => {
-      console.log('setting video thumb,', thumbnail);
-      AsyncStorage.setItem(`video-${this.state.fcount}-thumb`, thumbnail.path);
-    });
-  };
+
+  removeCameraRollcontent = async () =>{
+    let temp = []
+    this.state.captureContent.map(item =>{
+      if(item.origin !== CAMERAROLL_SRC){
+        temp.push(item)
+      }
+    })
+    this.setState({captureContent:temp})
+  }
 
   //--------------------------------------------------------------------------------------
+
+  addFileToContent = async (fileuri,source,filetype,uniqueId) => {
+    
+    let temp = this.state.captureContent
+    let fname = await getFilename(fileuri)
+
+    switch (filetype) {
+      
+      case IMAGE:
+       
+        temp.push({
+          filepath  : fileuri,  // original filepath
+          thumbnail : fileuri,  // thumbnail path
+          origin    : source,   // CAMERA || CAMERAROLL || AUDIO || VIDEO     
+          type      : filetype, // IMAGE=0 || VIDEO=1 || AUDIO=2
+          text      : '',       // needed only to match thumbScroll data structure            
+          id        : uniqueId?uniqueId:fname,    // used only as unique identifier 
+        })  
+        this.setState({captureContent:temp});
+
+        break;
+
+      case VIDEO:
+
+        createThumbnail({
+          url: fileuri,
+          timeStamp: 10000,
+        }).then(thumbnail => {
+          temp.push({
+            filepath  : fileuri,        
+            thumbnail : thumbnail.path, 
+            origin    : source,    
+            type      : filetype, 
+            text      : '',                   
+            id        : uniqueId?uniqueId:fname,          
+          })  
+          this.setState({captureContent:temp});
+        })
+      
+      break;
+      case AUDIO:
+      
+        temp.push({
+          filepath  : fileuri,  
+          thumbnail : './images/file.png',  
+          origin    : source,   
+          type      : filetype,
+          text      : '',              
+          id        : uniqueId?uniqueId:fname,    
+        })  
+        this.setState({captureContent:temp});
+      
+      break;     
+      default:
+        break;
+    }
+    
+  }
+
+  //--------------------------------------------------------------------------------------
+
   stopRecordingVideo = async () => {
     console.log('stopRecordingVideo xxx' + this.camera);
 
@@ -204,19 +279,8 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   async _finishRecording(didSucceed, filePathNew, fileSize) {
-    this.setState({finished: didSucceed});
-    console.log(
-      `Finished recording : duration ${
-        this.state.currentTime
-      } seconds at path: ${filePathNew} and size of ${fileSize || 0} bytes`,
-    );
-    await cleanupStorage({key: 'audio'});
-    this.setState({fcount: this.state.fcount + 1});
-    AsyncStorage.setItem('audio-' + this.state.fcount, filePathNew);
-    AsyncStorage.setItem(
-      `audio-${this.state.fcount}-thumb`,
-      './images/file.png',
-    );
+    this.setState({finished: didSucceed});    
+    this.addFileToContent( filePathNew , AUDIO_SRC , AUDIO ,null)
   }
   //--------------------------------------------------------------------------------------
 
@@ -231,7 +295,6 @@ class CaptureComponent extends Component {
 
     try {
       const filePathNew = await AudioRecorder.stopRecording();
-      console.log('recording path', filePath);
 
       this.setState({finished: true});
       if (Platform.OS === 'android') {
@@ -245,22 +308,37 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
+  showShutterFlash = () => {
+    this.setState({shutterFlashVisible:true})
+    Animated.timing(this.state.fadeAnimation, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true, 
+    }).start(this.hideShutterFlash);
+  };
+
+  hideShutterFlash = () => {
+    Animated.timing(this.state.fadeAnimation, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(this.setState({shutterFlashVisible:false}));
+  };
+
+  //--------------------------------------------------------------------------------------
+
+
   takePicture = async () => {
     if (this.camera) {
       console.log('capture.takePicture() ' + this.camera);
       try {
-        const data = await this.camera.takePictureAsync();
-        const fullpath = data.uri.split('//')[1];
-        AsyncStorage.setItem(`image-${this.state.fcount + 1}`, fullpath);
-        AsyncStorage.setItem(`image-${this.state.fcount + 1}-thumb`, fullpath);
-        console.log('takePicture :', data);
-
-        logStorageContent();
+        this.showShutterFlash()
+        const data = await this.camera.takePictureAsync();        
+        this.addFileToContent( data.uri.split('//')[1], CAMERA_SRC , IMAGE ,null )                
+        
       } catch (err) {
         alert(err);
-      } finally {
-        this.setState({fcount: this.state.fcount + 1});
-      }
+      } 
     }
   };
 
@@ -268,9 +346,8 @@ class CaptureComponent extends Component {
 
   goBackToFeed = () => {
     console.log('removing files.....');
-    this.setState({filesSelected: [], fcount: 0});
-    cleanupStorage();
-
+    
+    this.setState({captureContent:[],filesSelected:[],memory:null})
     this.props.navigation.navigate('Feed');
   };
 
@@ -284,13 +361,7 @@ class CaptureComponent extends Component {
     }
   };
 
-  //--------------------------------------------------------------------------------------
-
-  showPost = () => {
-    console.log('new post navigation:');
-    this.props.navigation.navigate('NewPost');
-  };
-
+  
   //--------------------------------------------------------------------------------------
   handleGetPhotossPress = async () => {
     this.showMode('file');
@@ -308,96 +379,99 @@ class CaptureComponent extends Component {
     const status = await PermissionsAndroid.request(permission);
     return status === 'granted';
   };
+
   //--------------------------------------------------------------------------------------
-  getSelectedImages = async (images) => {
-    // this.state.filesSelected = images;
-    this.setState({filesSelected: images});
-    console.log('getting selected images');
-    await cleanupStorage({key: 'file-'}); //remove previously stroed files
-    images.forEach((img, i) => {
-      //console.log('image :', img);
 
-      if (img.uri) {
-        if (img.type === 'video') {
-          if (Platform.OS === 'ios') {
-            cameraRollPathToAbsolutePath(img.uri, img.type).then(
-              (assetPath) => {
-                //console.log('getSelectImages ', assetPath);
-                AsyncStorage.setItem(
-                  `video-file-${this.state.fcount + i + 1}`,
-                  assetPath,
-                );
-                createThumbnail({
-                  url: assetPath,
-                  timeStamp: 10000,
-                }).then((thumbnail) => {
-                  AsyncStorage.setItem(
-                    `video-file-${this.state.fcount + i + 1}-thumb`,
-                    thumbnail.path,
-                  );
-                });
-              },
-            );
-          } else {
-            const fullpath = img.uri.split('//')[1];
-            AsyncStorage.setItem(
-              `video-file-${this.state.fcount + i + 1}`,
-              fullpath,
-            );
+  showPost = () => {
+    console.log('new post navigation:');
+    
+    this.props.navigation.navigate('NewPost',{
+          mode:'new',
+          capturedFiles:this.state.captureContent,
+          memory:this.state.memory,
+          updateMemoryDetails:this.updateCurrentMemoryDetails,
+          updateCaptureContent:this.updateContent,
+          resetCapture:this.resetAll
+        });
+    
+  };
+  
+  //--------------------------------------------------------------------------------------
+  resetAll = () =>{
+    console.log('reset capture');
+    this.setState({captureContent:[],filesSelected:[],memory:null})
 
-            createThumbnail({
-              url: img.uri,
-              timeStamp: 10000,
-            }).then((thumbnail) => {
-              AsyncStorage.setItem(
-                `video-file-${this.state.fcount + i + 1}-thumb`,
-                thumbnail.path,
-              );
-            });
+  }
+  //--------------------------------------------------------------------------------------
+  updateContent = (content) =>{
+    let tmp = []
+    this.setState({captureContent:content},()=>{
+      this.state.filesSelected.map(item =>{
+        this.existsInContent(item).then(exists=>{
+          if(exists){            
+            tmp.push(item)
           }
-        } else {
-          if (Platform.OS === 'ios') {
-            // heicToJpg(img.uri).then((jpegPath) => {
-            //   AsyncStorage.setItem(
-            //     `image-file-${this.state.fcount + i + 1}`,
-            //     jpegPath,
-            //   );
-            //   AsyncStorage.setItem(
-            //     `image-file-${this.state.fcount + i + 1}-thumb`,
-            //     jpegPath,
-            //   );
-            // });
-            cameraRollPathToAbsolutePath(img.uri, img.type).then(
-              (assetPath) => {
-                console.log('getSelectImages ', assetPath);
-                AsyncStorage.setItem(
-                  `image-file-${this.state.fcount + i + 1}`,
-                  assetPath,
-                );
-                AsyncStorage.setItem(
-                  `image-file-${this.state.fcount + i + 1}-thumb`,
-                  img.uri,
-                );
-              },
-            );
+        })
+      })
+      this.setState({filesSelected:tmp})
+    })
+  }
+
+  existsInContent = (file) =>{
+    return new Promise((resolve,reject)=>{
+      this.state.captureContent.map(item=>{
+        if(item.id === file.filename){
+          resolve(true)
+        }
+      })
+    })
+  }
+  
+  //--------------------------------------------------------------------------------------
+  
+  updateCurrentMemoryDetails = ( memory ) =>{
+    this.setState({memory:memory})
+  }
+
+  //--------------------------------------------------------------------------------------
+
+  getSelectedImages = async (images) => {
+   
+    await this.removeCameraRollcontent()
+      images.forEach((img, i) => {
+        console.log(img);
+        console.log();
+        if (img.uri  ) {
+          if (img.type === 'video') {
+            if (Platform.OS === 'ios') {
+              cameraRollPathToAbsolutePath(img.uri, img.type).then( assetPath => { 
+                    this.addFileToContent(assetPath,CAMERAROLL_SRC,VIDEO, img.filename )                    
+                })
+            } else {
+              this.addFileToContent( img.uri.split('//')[1] , CAMERAROLL_SRC , VIDEO,null)
+            }
           } else {
-            console.log('setting image file:', img.uri);
-            AsyncStorage.setItem(
-              `image-file-${this.state.fcount + i + 1}`,
-              img.uri,
-            );
-            AsyncStorage.setItem(
-              `image-file-${this.state.fcount + i + 1}-thumb`,
-              img.uri,
-            );
+            if (Platform.OS === 'ios') {
+              
+              cameraRollPathToAbsolutePath(img.uri, img.type).then( assetPath => {
+                    this.addFileToContent(assetPath,CAMERAROLL_SRC,IMAGE,img.filename)
+                })
+            } else {
+              this.addFileToContent(img.uri,CAMERAROLL_SRC,IMAGE,null)
+            }
           }
         }
-      }
-    });
+      })
+      this.setState({filesSelected:images})
   };
+
   //--------------------------------------------------------------------------------------
+
   render() {
-    let bigButton, content;
+    let bigButton = null 
+    let content = null
+    let effect = null
+
     switch (this.state.mode) {
       case 'camera':
         bigButton = <CameraClickButton onPress={this.takePicture} />;
@@ -409,10 +483,18 @@ class CaptureComponent extends Component {
             style={styles.preview}
             type={RNCamera.Constants.Type.back}
             flashMode={RNCamera.Constants.flashMode}
-            autoFocus={RNCamera.Constants.AutoFocus.on}
+            autoFocus={'on'}
             playSoundOnCapture={true}
           />
-        );
+        )
+        if(this.state.shutterFlashVisible){
+          effect = (
+            <Animated.View
+              style={[styles.fadingContainer,{opacity: this.state.fadeAnimation}]}
+            />
+          )
+        }
+        
         break;
       case 'video':
         content = (
@@ -500,6 +582,7 @@ class CaptureComponent extends Component {
     return (
       <View style={styles.container}>
         {content}
+        {effect}
         <View style={styles.modeButtons}>
           <IconButtonCamera
             onPress={() => this.showMode('camera')}
@@ -554,6 +637,17 @@ const styles = StyleSheet.create({
     
     padding:4,
 
+  },
+
+  fadingContainer:{ 
+    position:'absolute',
+    top:0,  
+    left:0,
+    width:'100%',
+    height:'100%',
+    backgroundColor:'whitesmoke'
+
+      
   },
 
   mainButtons: {

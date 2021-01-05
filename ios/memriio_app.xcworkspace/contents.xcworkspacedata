@@ -2,9 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Pods/Pods.xcodeproj">
+      location = "group:memriio_app.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:memriio_app.xcodeproj">
+      location = "group:Pods/Pods.xcodeproj">
    </FileRef>
 </Workspace>

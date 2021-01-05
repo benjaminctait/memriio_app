@@ -1,22 +1,24 @@
-import React, {Component} from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
+import React, {Component, createRef} from 'react';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
-import Video from 'react-native-video';
 import Spinner from 'react-native-loading-spinner-overlay';
+import {ZoomableImage} from './cachedImage'
+import Video from 'react-native-video'
+import Dialog from 'react-native-dialog'
 import {showMessage, hideMessage} from 'react-native-flash-message';
 
 import {
   StyleSheet,
   View,
   Image,
-  TextInput,
-  Keyboard,
-  ScrollView,
+  Text,
+  Keyboard, 
+  Modal,  
+  Animated, 
 } from 'react-native';
 
 import {
-  CameraClickButton,
+  
   BackButton,
   PostButton,
   SubTag,
@@ -25,6 +27,14 @@ import {
 
 import {Input, ListItem, CheckBox} from 'react-native-elements';
 
+import ThumbList from './thumbList.js'
+
+
+let THUMBNAIL_WIDTH = 150
+const IMAGE = 0
+const VIDEO = 1
+const AUDIO = 2
+
 //--------------------------------------------------------------------------
 
 class NewPost extends Component {
@@ -32,22 +42,30 @@ class NewPost extends Component {
     super();
     this.setupCloudsAndPeople = this.setupCloudsAndPeople.bind(this);
     this.pushMemory = this.pushMemory.bind(this);
-  }
 
-  state = {
-    title: '',
-    story: '',
-    content: [],
-    allPeople: [],
-    taggedPeople: [],
-    location: null,
-    allClouds: [],
-    taggedClouds: [],
-    user: null,
-    spinner: false,
+    this.state = {
+
+      title: '',
+      story: '',      
+      taggedPeople: [],
+      location: null,
+      taggedClouds: [],
+      user: null,
+      content: [],
+
+      allPeople: [],
+      allClouds: [],
+      spinner: false,
+      modalVisible:false,
+      deleteDialogVisible:false,
+      activeItem:null,
+      deleteIndex:'',
+    };
+
   };
-
+  
   //--------------------------------------------------------------------------
+  
 
   setupCloudsAndPeople = (clouds) => {
     if (Array.isArray(clouds)) {
@@ -75,11 +93,14 @@ class NewPost extends Component {
     let cloudarray = [];
     let personarray = [];
     let me = this.state;
-
-    let locationName =
+    let locationName = ''
+    if (me.location){
+      locationName =
       me.location.firstname && me.location.lastname
         ? me.location.firstname + ' ' + me.location.lastname
         : ''; // a temporary treatment until we have gps implemented
+    }
+    
     me.taggedClouds.map((cloud) => {
       if (cloud.id !== 0) {
         cloudarray.push(parseInt(cloud.id));
@@ -100,6 +121,7 @@ class NewPost extends Component {
     });
 
     console.log('SEND POST', this.props.screenProps);
+    this.props.route.params.resetCapture()
     this.props.navigation.navigate('Feed');
 
     await mem.postNewMemory(
@@ -170,19 +192,19 @@ class NewPost extends Component {
     this.props.navigation.navigate('SearchPeople', {
       allPeople: this.state.allPeople,
       taggedPeople: this.state.taggedPeople,
+      updatePeople: this.updatePeople
     });
   };
 
   // ---------------------------------------------------------------------------------
+
+  updatePeople = ( taggedPeople  ) => {
+    console.log('update called');
+    this.setState({taggedPeople:taggedPeople})
+  }
+
   componentDidUpdate() {
     if (this.props.route.params) {
-      if (this.props.route.params.taggedPeople) {
-        if (this.state.taggedPeople !== this.props.route.params.taggedPeople) {
-          if (Array.isArray(this.props.route.params.taggedPeople)) {
-            this.setState({taggedPeople: this.props.route.params.taggedPeople});
-          }
-        }
-      }
       if (this.props.route.params.location) {
         if (this.props.route.params.location !== this.state.location) {
           this.setState({location: this.props.route.params.location});
@@ -198,69 +220,34 @@ class NewPost extends Component {
   //         Note : people, location and groups can load after the component is loaded.
 
   async componentDidMount() {
-    const store = [];
-    const user = await mem.activeUser();
-
-    try {
-      await AsyncStorage.getAllKeys().then((keys) => {
-        console.log('newpost-didmount');
-        console.log();
-
-        keys.map((key, index) => {
-          AsyncStorage.getItem(key).then((item) =>
-            console.log('async store for key ' + key + ' value ', item),
-          );
-          if (
-            key.includes('image-') ||
-            key.includes('video-') ||
-            key.includes('audio-')
-          ) {
-            if (!key.includes('thumb')) {
-              AsyncStorage.getItem(key).then((item) => {
-                this.getMatchingThumb(keys, key).then((thumb) => {
-                  console.log(
-                    'push content - key : ' +
-                      key +
-                      ', file : ' +
-                      mem.getFilename(item) +
-                      ', thumb : ' +
-                      mem.getFilename(thumb),
-                  );
-                  if (key.includes('audio-')) {
-                    store.push({
-                      filepath: item,
-                      thumbnail: thumb,
-                      isAudio: true,
-                    });
-                  } else if (key.includes('video-')) {
-                    store.push({
-                      filepath: item,
-                      thumbnail: thumb,
-                      isVideo: true,
-                    });
-                  } else {
-                    store.push({
-                      filepath: item,
-                      thumbnail: thumb,
-                      isAudio: false,
-                    });
-                  }
-                });
-              });
-            }
-          }
-        });
-        console.log('content is array ' + Array.isArray(this.state.content));
-
-        this.setState({
-          content: store,
-          user: user,
-        });
-      });
-      await mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
-    } catch (e) {
-      alert(e);
-    }
+   
+    const { capturedFiles,memory } = this.props.route.params;
+    
+    console.log('NEWPOST - didmount');
+    console.log('');
+    
+    if(memory){
+      this.setState(
+        {
+          content       : capturedFiles,
+          title         : memory.title,
+          story         : memory.story,      
+          taggedPeople  : memory.taggedPeople,
+          location      : memory.location,
+          taggedClouds  : memory.taggedClouds,
+          user          : memory.user,
+        }
+      )
+      mem.mapUserClouds(memory.user.userid, this.setupCloudsAndPeople);
+    }else{
+      this.setState({content:capturedFiles})
+      mem.activeUser().then(user =>{
+        if(user){
+          this.setState( { user: user } )
+          mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
+        }
+      })
+    }    
   }
 
   // ---------------------------------------------------------------------------------
@@ -295,31 +282,53 @@ class NewPost extends Component {
 
   // ---------------------------------------------------------------------------------
 
-  getMatchingThumb = (keys, targetKey) => {
-    return new Promise((resolve, reject) => {
-      AsyncStorage.getItem(targetKey + '-thumb').then((thumbPath) => {
-        console.log('thumb for :', targetKey, thumbPath);
-        resolve(thumbPath);
-      });
-      // let targetKeyNumber = parseInt(targetKey.slice(-1));
-      // keys.map((key) => {
-      //   if (key.includes('thumb')) {
-      //     let thumbKeyNumber = parseInt(key.slice(-1));
+  showImageEditModal = (itemID ) => {
 
-      //     if (targetKeyNumber === thumbKeyNumber) {
-      //       AsyncStorage.getItem(targetKey+'-thumb').then((thumbPath) => {
-      //         resolve(thumbPath);
-      //       });
-      //     }
-      //   }
-      // });
-    });
+    let found = false, idx = 0, tmp = this.state.content
+    
+    while (!found && idx < tmp.length) {
+      if(tmp[idx].id === itemID){
+        found = true
+        this.setState({modalVisible: true, activeItem: tmp[idx]});
+      }
+      idx++
+    }
   };
 
   // ---------------------------------------------------------------------------------
 
+  showDeleteDialog = ( itemID ) => {
+    this.setState({deleteIndex:itemID, deleteDialogVisible:true}) 
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  handleFileDelete = () =>{
+    
+    let found = false, idx = 0, tmp = this.state.content
+    
+    while (!found && idx < tmp.length) {
+      if(tmp[idx].id === this.state.deleteIndex){
+        found = true
+        tmp.splice(idx,1)
+      }
+      idx++
+    }
+    this.setState({deleteDialogVisible:false,content:tmp})
+    this.props.route.params.updateCaptureContent(tmp)
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  handleDeleteCancel = () =>{
+    console.log('File Delete no');
+    this.setState({deleteDialogVisible:false})
+  }
+
+  // ---------------------------------------------------------------------------------
+
   renderLocation = () => {
-    console.log('locaiton : ' + this.state.location);
+    console.log('location : ' + this.state.location);
     if (this.state.location) {
       return (
         <View style={styles.subtitle}>
@@ -335,14 +344,16 @@ class NewPost extends Component {
       return null;
     }
   };
+
   // ---------------------------------------------------------------------------------
 
   render() {
-    let itemcount = this.state.content.length;
-    //console.log('newpost content :', this.state.content);
+    
     return (
       <KeyboardShift>
-        <View style={styles.container}>
+        <View 
+          style={styles.container}
+          >
           <Spinner
             visible={this.state.spinner}
             textContent={'Uploading memory...'}
@@ -356,6 +367,7 @@ class NewPost extends Component {
             }}
             placeholder="Title.."
             placeholderTextColor="gray"
+            value={this.state.title?this.state.title:''}
           />
 
           <Input // Description
@@ -365,6 +377,7 @@ class NewPost extends Component {
             onChangeText={(text) => {
               this.setState({story: text});
             }}
+            value={this.state.story?this.state.story:''}
           />
 
           <View>
@@ -406,71 +419,176 @@ class NewPost extends Component {
                 <View style={styles.subtitle}>
                   {this.state.allClouds.map((cloud, index) => (
                     <SubTag
-                      key={index}
-                      data={cloud}
-                      greyOutOnTagPress={!(cloud.name === 'Personal')} // Cant turn off the Personal cloud
-                      buttonDown={true}
-                      onTagPress={this.handleCloudTagPress}
-                      title={cloud.name}
+                      key               = { index}
+                      data              = { cloud}
+                      greyOutOnTagPress = { !(cloud.name === 'Personal')} // Cant turn off the Personal cloud
+                      buttonDown        = { true}
+                      onTagPress        = { this.handleCloudTagPress}
+                      title             = { cloud.name}
                     />
                   ))}
                 </View>
               }
             />
           </View>
-          <ScrollView
-            horizontal={true}
-            contentContainerStyle={{width: `${100 * itemcount}%`}}
-            showsHorizontalScrollIndicator={true}
-            scrollEventThrottle={200}
-            decelerationRate="fast"
-            pagingEnabled>
-            {this.state.content.map((item, index) => (
-              <View style={styles.thumbnailsContainer}>
-                {item.isVideo ? (
-                  <Video
-                    source={{uri: item.filepath}}
-                    paused={true}
-                    muted={false}
-                    controls={true}
-                    poster={item.thumbnail}
-                    style={styles.thumbnailStyle}
-                  />
-                ) : (
-                  <Image
-                    key={index}
-                    style={styles.thumbnailStyle}
-                    source={
-                      item.isAudio
-                        ? require('./images/audioThumb.png')
-                        : {uri: item.thumbnail}
-                    }
-                    resizeMode="cover"
-                  />
-                )}
-              </View>
-            ))}
-          </ScrollView>
+              <ThumbList
+                data              = { this.state.content}
+                handleThumbPress  = { this.showImageEditModal}    
+                handleDeletePress = { this.showDeleteDialog }            
+              />
+          
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={() => this.props.navigation.goBack(null)} 
+          <BackButton onPress={ this.goBackToCapture }
                       Title={'Capture'}/>
-          <PostButton onPress={() => this.sendPost()} 
+          <PostButton onPress={ this.sendPost } 
                       Title={'Upload'} />
         </View>
+        
+        {this.renderImageEditModal()}
+        {this.renderDeleteDialog()}
+        
+
       </KeyboardShift>
     );
   }
+
+  // ---------------------------------------------------------------------------------
+
+  goBackToCapture = () => {
+    let memobj = {
+      title: this.state.title,
+      story: this.state.story,      
+      taggedPeople: this.state.taggedPeople,
+      location: this.state.location,
+      taggedClouds: this.state.taggedClouds,
+      user: this.state.user,
+      //content: this.state.content,
+    }
+
+    this.props.route.params.updateMemoryDetails(memobj)
+    this.props.navigation.navigate('CaptureComponent')
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  renderImageEditModal = () => {
+    let content = null
+    if(this.state.activeItem){
+      switch (this.state.activeItem.type) {
+        case IMAGE:
+          content = 
+                      <ZoomableImage 
+                        style     = { {height:'100%',width:'100%',resizeMode:'cover'}}
+                        localPath = { this.state.activeItem.thumbnail }
+                      />
+          break;
+        case VIDEO:
+          content = <Video
+                      source   = { { uri: this.state.activeItem.filepath } }
+                      paused   = { true }
+                      muted    = { false }                      
+                      poster   = { this.state.activeItem.thumbnail }
+                      style    = { styles.imageFull }
+                      ignoreSilentSwitch = { 'ignore' }
+                      
+                    />
+
+          break;
+        case AUDIO:
+          content = <Video
+                      source   = { { uri: this.state.activeItem.filepath } }
+                      paused   = { true }
+                      muted    = { false }
+                      controls = { true }
+                      poster   = { this.state.activeItem.thumbnail }
+                      style    = { styles.imageFull }
+                      ignoreSilentSwitch = { 'ignore' }
+                    />
+        break;
+        default:
+          break;
+      }
+    }
+
+    return (
+      <Modal
+          animationType="slide"
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {
+            this.setState({modalVisible: false});
+          }}>
+          
+          {content}
+          <Text
+            style={styles.backButton}
+            onPress={() => {
+              this.setState({modalVisible: !this.state.modalVisible});
+            }}>
+            <Image
+              source={require('./images/back.png')}
+              style={styles.backButtonImage}
+            />
+          </Text>
+          
+        </Modal>
+    )
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  renderDeleteDialog = () =>{
+    
+      return (
+        <View  style={styles.deleteDialogContainer}>
+          <Dialog.Container visible={this.state.deleteDialogVisible} >
+            <Dialog.Title>File delete</Dialog.Title>
+            <Dialog.Description>
+              Do you want to delete this file? You cannot undo this action.
+            </Dialog.Description>
+            <Dialog.Button label="Cancel" onPress={this.handleDeleteCancel} />
+            <Dialog.Button label="Delete" onPress={this.handleFileDelete} />
+          </Dialog.Container>
+        </View>
+      )
+  }
+
+  // ---------------------------------------------------------------------------------
+
 }
 
+
+
 export default NewPost;
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
   },
+
+  imageFull: {
+    position: 'absolute',
+    width: '100%', 
+    height: '100%', 
+    resizeMode:'cover',
+    zIndex: -1
+  },
+
+  backButton: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    height: 100,
+  },
+  backButtonImage: {
+    width: 35,
+    height: 35,
+  },
+
   preview: {
     alignContent: 'center',
   },
@@ -504,8 +622,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
   thumbnailsContainer: {
-    height: 200,
-    width: 100,
+    height: 150,
+    width: THUMBNAIL_WIDTH,
     margin: 5,
     marginTop: 10,
   },
@@ -517,5 +635,11 @@ const styles = StyleSheet.create({
   },
   spinnerTextStyle: {
     color: '#FFF',
+  },
+  deleteDialogContainer: {
+    position:'absolute',
+    flex: 1,    
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

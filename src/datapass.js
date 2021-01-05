@@ -7,8 +7,9 @@ import {
 import {RNS3} from 'react-native-aws3';
 import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage';
-import {Platform} from 'react-native';
+import {LogBox, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
+import { random } from 'lodash';
 
 const memory = {
   title: '', // short title of the memory : string
@@ -60,33 +61,33 @@ export async function createMemoryCloud(cloudName, administratorID) {
 // get details for the current user -----------------------------------------------------
 
 export async function activeUser() {
-  const logged = await AsyncStorage.getItem('userLoggedin');
-  console.log('activeUser is anyone loggedin: ' + logged);
 
-  if (logged) {
-    let userid          = await AsyncStorage.getItem('userid');
-    let firstName       = await AsyncStorage.getItem('firstname');
-    let lastName        = await AsyncStorage.getItem('lastname');
-    let email           = await AsyncStorage.getItem('email');
-    let activeClouds    = await AsyncStorage.getItem('activeclouds')
+  return new Promise((resolve,reject) =>{
+    
+    AsyncStorage.getItem('userLoggedin').then(logged => {
+      
+      
+      if (logged) {
 
-    let user = {userid, firstName, lastName, email, activeClouds };
-    console.log(
-      'activeUser user: ' +
-        user.firstName +
-        ' ' +
-        user.lastName +
-        ' id: ' +
-        user.userid +
-        ' email: ' +
-        user.email + 
-        ' mobile clouds: ' +
-        user.activeClouds,
-    );
-    return user;
-  } else {
-    return null;
-  }
+        AsyncStorage.getItem('userid').then(userid =>{
+          AsyncStorage.getItem('firstname').then(firstName =>{
+            AsyncStorage.getItem('lastname').then(lastName =>{
+              AsyncStorage.getItem('email').then(email => {
+                AsyncStorage.getItem('activecloud').then(activeCloud =>{
+                  let user = {userid, firstName, lastName, email, activeCloud };
+                  resolve(user)
+                })
+              })
+            })
+          })
+        })
+      } else {
+        reject(null)
+      }
+
+    })
+  })
+  
 }
 
 // -----------------------------------------------------------------------
@@ -172,6 +173,32 @@ export async function getStatusLevels( cloudid ){
 
 // -----------------------------------------------------------------------
 
+export async function updateUserAvatar( userid , avatarString ){
+  return new Promise((resolve,reject) => {
+    fetch(
+      'https://memrii-api.herokuapp.com/special',
+      {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: null
+      },
+    )
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+
+  })
+  
+}
+
+// -----------------------------------------------------------------------
+
+
 export async function postNewMemory(
   title,
   story,
@@ -203,7 +230,7 @@ export async function postNewMemory(
 
 const uploadNewMemory = (callBackOnSuccess) => {
   let Promises = [];
-  let isHeroFile = false;
+  
 
   createMemoryID().then((response) => {
     if (response === 'success' && memory.memid !== -1) {
@@ -216,28 +243,23 @@ const uploadNewMemory = (callBackOnSuccess) => {
       Promises.push(setMemorySearchWords(getSearchWords()));
 
       memory.files.map((memfile, idx) => {
-        if (idx === 0) {
-          isHeroFile = true;
-        } else {
-          isHeroFile = false;
-        } // automatically set the first file memory as the hero shot.
-
+        
         if (isSupportedImageFile(memfile.filepath)) {
           Promises.push(
             uploadImageFile(memfile).then((result) => {
-              addFileToMemory(result, isHeroFile);
+              addFileToMemory(result, (idx === 0 )); // set the first file memory as the hero shot.
             }),
           );
         } else if (isSupportedVideoFile(memfile.filepath)) {
           Promises.push(
             uploadVideoFile(memfile).then((result) => {
-              addFileToMemory(result, isHeroFile);
+              addFileToMemory(result, (idx === 0 ));
             }),
           );
         } else if (isSupportedAudioFile(memfile.filepath)) {
           Promises.push(
             uploadAudioFile(memfile).then((result) => {
-              addFileToMemory(result, isHeroFile);
+              addFileToMemory(result, (idx === 0 ));
             }),
           );
         }
@@ -321,6 +343,27 @@ export async function logStorageContent() {
 }
 
 // ---------------------------------------------------------------------------------
+
+export async function findAsyncStorageKeyFor(keyValue) {
+  
+  
+  let index = 0
+  AsyncStorage.getAllKeys().then((keys) => {
+    while (index < keys.length) {
+      console.log(index,keys.length,(index<keys.length),keys[index]);
+      AsyncStorage.getItem(keys[index]).then((value) => {
+        if(value === keyValue){
+          console.log(keys[index]);
+          return keys[index]
+        }
+      })
+      index++
+    }
+  })
+  return ''
+}
+
+// ---------------------------------------------------------------------------------
 // Removes all content captured for the current post
 // pre :
 // post :  any key value pair where key contains 'image-','video-', 'audio-' will
@@ -377,6 +420,8 @@ export async function getSelectedCloudsAsArray(){
 // rretrieve all clouds that user id if a member of ------------------------
 
 export function mapUserClouds(userid, callback) {
+
+  console.log('mapUserClouds : ', userid );
   fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
     method: 'post',
     headers: {
@@ -471,16 +516,16 @@ export function getMemories_PersonalOnly_Unshared(userid, searchwords) {
 
 //-------------------------------------------------------------------------------
 
-export function getMemories_PersonalOnly_All(userid, searchwords) {
+export function searchMemories_User(userid, searchwords) {
   console.log(
-    'getMemories_PersonalOnly_All - userid : ' +
+    'searchMemories_User - userid : ' +
       userid +
       ' searchwords : ' +
       searchwords,
   );
 
   if (searchwords.length > 0) {
-    console.log('getMemories_PersonalOnly_All - with searchwords');
+    console.log('searchMemories_User - with searchwords');
     return new Promise((resolve, reject) => {
       fetch(
         'https://memrii-api.herokuapp.com/get_memories_keywords_user_noclouds',
@@ -503,7 +548,7 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
         });
     });
   } else {
-    console.log('getMemories_PersonalOnly_All - no searchwords');
+    console.log('searchMemories_User - no searchwords');
     return new Promise((resolve, reject) => {
       fetch('https://memrii-api.herokuapp.com/get_memories_userid_noclouds', {
         method: 'post',
@@ -516,7 +561,7 @@ export function getMemories_PersonalOnly_All(userid, searchwords) {
         .then((res) => {
           if (res.success) {
             console.log(
-              'getMemories_PersonalOnly_All returns ' + res.data.length,
+              'searchMemories_User returns ' + res.data.length,
             );
             resolve(res.data);
           } else {
@@ -631,6 +676,31 @@ export function getMemories_Clouds(cloudids) {
       });
   });
 }
+
+//-------------------------------------------------------------------------------
+
+export function getMemories_User(userid) {
+  console.log('getMemories_Clouds - cloudids : ' + cloudids);
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/get_memories_cloudids', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        cloudids: cloudids,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+}
+
 
 //-------------------------------------------------------------------------------
 
@@ -1126,7 +1196,8 @@ const processMediumResImage = async (filepath, filetype) => {
 //--------------------------------------------------------------------------
 
 const addFileToMemory = (fileUrlObj, ishero) => {
-  console.log('addFileToMemory : +++++++++++++ ');
+  console.log('ADD_FILE_TO_MEMORY : +++++++++++++ ');
+
 
   let {displayurl = ''} = fileUrlObj.thumbURL;
 
@@ -1141,8 +1212,8 @@ const addFileToMemory = (fileUrlObj, ishero) => {
   const sourceext = getExtension(sourceURL);
   const thumbext = getExtension(thumbURL);
 
-  console.log('addFileToMemory : sourceURL ' + sourceURL);
-  console.log('addFileToMemory : thumbURL ' + thumbURL);
+  console.log('addFileToMemory : sourceURL ',getFilename(sourceURL),ishero);
+  console.log('addFileToMemory : thumbURL ' ,getFilename(thumbURL),ishero);
 
   return new Promise((resolve, reject) => {
     fetch('https://memrii-api.herokuapp.com/associateFile', {
@@ -1398,6 +1469,7 @@ const createMemoryID = () => {
 };
 
 export function isSupportedImageFile(filename) {
+  
   let ext = getExtension(filename).toLowerCase();
   let filetypes = ['jpeg', 'jpg', 'png', 'heic'];
   let found = filetypes.indexOf(ext);
@@ -1407,7 +1479,7 @@ export function isSupportedImageFile(filename) {
 //---------------------------
 
 export function isSupportedVideoFile(filename) {
-  let ext = getExtension(filename).toLowerCase();
+  let ext = getExtension(filename.toLowerCase());
   let filetypes = ['mov', 'mp4', 'mpeg'];
   let found = filetypes.indexOf(ext);
   return !(found === -1);
@@ -1415,7 +1487,7 @@ export function isSupportedVideoFile(filename) {
 //---------------------------
 
 export function isSupportedAudioFile(filename) {
-  let ext = getExtension(filename).toLowerCase();
+  let ext = getExtension(filename.toLowerCase());
   let filetypes = ['aac'];
   let found = filetypes.indexOf(ext);
   return found !== -1;
@@ -1431,7 +1503,7 @@ export function getExtension(filepath) {
 
 //---------------------------
 
-export function getFilename(filepath) {
+export  function getFilename(filepath) {
   let parts = filepath.split('/');
   let fname = parts[parts.length - 1];
   return fname;

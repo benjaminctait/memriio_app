@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Dimensions, StyleSheet, View, Text} from 'react-native';
-import Video from 'react-native-video';
+
+import VideoPlayer from 'react-native-video-controls';
 import {getObjectSignedurl} from './datapass';
 import {VideoStartButton, VideoStopButton} from './buttons';
 
@@ -39,44 +40,52 @@ class VideoPlay extends Component {
   // -------------------------------------------------------------------------------------------
 
   getVideoControls = () => {
-    if (this.state.paused) {
-      return (
-        <VideoStartButton
-          style={styles.absoluteCenter}
-          onPress={this.onPlayPress}
-        />
-      );
-    } else {
-      return (
-        <VideoStopButton
-          style={styles.bottomLeft}
-          imageStyle={{height: 40, width: 40}}
-          onPress={this.onPlayPress}
-        />
-      );
+    if(!this.props.nativeControls){
+      if (this.state.paused) {
+        return (
+          <VideoStartButton
+            style={styles.absoluteCenter}
+            onPress={this.onPlayPress}
+          />
+        );
+      } else {
+        return (
+          <VideoStopButton
+            style={styles.bottomLeft}
+            imageStyle={{height: 40, width: 40}}
+            onPress={this.onPlayPress}
+          />
+        );
+      }
+    }else{
+      return null
     }
+    
   };
 
   // -------------------------------------------------------------------------------------------
 
   render() {
     const {width} = Dimensions.get('window');
-    const ctrs = this.getVideoControls();
-
+    
     if (this.state.signedurl !== '') {
       return (
-        <View>
-          <Video
+        
+          <VideoPlayer
             repeat
-            style={{width, height: 300}}
-            resizeMode="cover"
-            source={{uri: this.state.originalsource}}
-            paused={this.state.paused}
-            posterResizeMode="cover"
-            poster={this.state.poster}
+            style              = { this.props.style?this.props.style:{width, height: 300}}
+            resizeMode         = { this.props.resizeMode?this.props.resizeMode:'cover'}
+            muted              = { false }
+            source             = { {uri: this.state.originalsource}}
+            paused             = { this.state.paused}
+            posterResizeMode   = { this.props.resizeMode?this.props.resizeMode:'cover'}
+            poster             = { this.state.poster}
+            onBack             = { this.props.onBack }
+            disableFullscreen  = { this.props.hideFullScreenButton }
+            disableBack        = { this.props.hideBackButton }
+            tapAnywhereToPause = { this.props.tapAnywhereToPause }
           />
-          {ctrs}
-        </View>
+          
       );
     } else {
       return <Text>Loading...</Text>;
@@ -102,12 +111,14 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex:1,
   },
 
   bottomLeft: {
     position: 'absolute',
     bottom: 25,
     left: 25,
+    zIndex:1
   },
 });
 

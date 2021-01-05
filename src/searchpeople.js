@@ -20,6 +20,7 @@ class SearchPeople extends Component{
 
   state = {
     searchText:'',
+    tagged:[],
     
   }
 
@@ -34,18 +35,20 @@ handleTextChange = (value) => {
 
 handlePersonClick = (person) => {
 
-  const {params} = this.props.route
-  let idx =  params.taggedPeople.findIndex(taggedPerson => {return person.userid === taggedPerson.userid})
+  const { params } = this.props.route
+  let tmp = params.taggedPeople
+  let idx =  tmp.findIndex(taggedPerson => {return person.userid === taggedPerson.userid})
 
   if( idx > -1 )
   { 
-    params.taggedPeople.splice ( idx,1 ) 
+    tmp.splice ( idx , 1 ) 
   }else{
-    params.taggedPeople.push   ( person )
+    tmp.push   ( person )
     
   }
   this.inputRef.current.clear()  
-  this.setState({ searchText:'' })
+  this.setState({ searchText:'' ,tagged:tmp})
+  params.updatePeople(tmp)
     
 }
 
@@ -53,9 +56,7 @@ handlePersonClick = (person) => {
 
 itemIsTagged = ( userid ) =>{
   
-  const {params} = this.props.route
-
-  let test = params.taggedPeople.findIndex(person => {return person.userid === userid})
+  let test = this.state.tagged.findIndex( person => { return person.userid === userid})
   return (test !== -1)
 
 }

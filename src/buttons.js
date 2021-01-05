@@ -8,6 +8,8 @@ import {
     View,
   } from 'react-native';
 
+import {Avatar} from 'react-native-elements'
+
 class CameraClickButton extends Component{
     render(){
         return(
@@ -356,51 +358,61 @@ class PersonListItem extends Component{
   render(){
     const {person,tagged} = this.props
     let checked = null
-   
-      if(tagged) {
-        checked = <View style={{ justifyContent: 'flex-end'}}>
-                    <Image
-                      style={{ width: 30, height: 30,  margin: 5 }}
-                      source={
-                        person.avatar  ? {uri: person.avatar} : require('./images/checked_blue.png')
-                      }
-                      resizeMethod={'resize'}
-                    />
-                  </View>
-        
-      }
-
-      return(
-          <TouchableOpacity onPress={this.handleOnPress}>
-            <View
-              style={{
-                flexDirection: 'row',
-                borderTopColor:'grey',                
-                borderTopWidth:1,
-              }}
-              >
-              
-              <Image
-                style={{ width: 30, height: 30, borderRadius: 20,borderColor:'black', margin: 5}}
-                source={
-                  person.avatar  ? {uri: person.avatar} : require('./images/lego_head.png')
-                }
-                resizeMethod={'resize'}
-              />
-              
-              <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
-                <Text                   
-                  style={{ fontSize:15 }}              
-                >{`${person.firstname} ${person.lastname}`}
-                </Text>
-              </View>
-              
-              {checked}
-              
-            </View> 
-        </TouchableOpacity>     
-      )
+    let initials = ''
+    
+    if(person){
+      if ( person.firstname) { initials += person.firstname[0] }
+      if ( person.lastname ) { initials += person.lastname[0]  }
     }
+   
+    if(tagged) {
+      checked = <View style={{ alignSelf: 'flex-end',position:'absolute', right:5 }}>
+                  <Image
+                    style={{ width: 30, height: 30,  margin: 5 }}
+                    source={require('./images/checked_blue.png')}
+                    resizeMethod={'resize'}
+                  />
+                </View>
+      
+    }
+
+    return(
+        <TouchableOpacity onPress={this.handleOnPress}>
+          <View
+            style={{
+              flex:1,
+              flexDirection:'row',
+              borderTopColor:'grey',                
+              borderTopWidth:1,
+              minHeight:50,
+              alignItems:'center',
+              paddingLeft:5,
+              
+            }}
+            >
+            
+            <Avatar
+              size="small"
+              rounded
+              title={initials}
+              overlayContainerStyle={{backgroundColor:person.avatar,justifyContent:'flex-start'}}
+              onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
+              activeOpacity={0.7}
+            />
+            
+            <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
+              <Text                   
+                style={{ fontSize:15 }}              
+              >{`${person.firstname} ${person.lastname}`}
+              </Text>
+            </View>
+            
+            {checked}
+            
+          </View> 
+      </TouchableOpacity>     
+    )
+  }
 
 
 }

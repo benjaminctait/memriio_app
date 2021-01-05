@@ -1,11 +1,13 @@
 import React, {Component} from 'react';
 import {SwitchIcon} from './buttons';
 import VideoPlayer from './videoplayer';
-import Carousel, {Pagination} from 'react-native-snap-carousel';
+import Carousel  from 'react-native-snap-carousel';
 import * as mem from './datapass';
-import ImageViewer from 'react-native-image-zoom-viewer';
-import sliderStyles, {colors} from './styles/index.style';
-import { Avatar } from 'react-native-elements'
+
+import sliderStyles  from './styles/index.style';
+import {CacheImage,CachedZoomableImage} from './cachedImage'
+
+import { Avatar,Badge, Icon } from 'react-native-elements'
 import {
   StyleSheet,
   View,
@@ -14,10 +16,12 @@ import {
   Dimensions,
   Modal,
   TouchableOpacity,
-  TouchableWithoutFeedbackBase,
+  
 } from 'react-native';
 
-
+let monthNames =["Jan","Feb","Mar","Apr",
+"May","Jun","Jul","Aug",
+"Sep", "Oct","Nov","Dec"];
 
 class MemoryCard extends Component {
   constructor(props) {
@@ -36,6 +40,7 @@ class MemoryCard extends Component {
     modalVisible: false,
     activeImage: {},
     author:{},
+    currentStatusLevel:null,
     
   };
   //------------------------------------------------------------------------------------------------
@@ -47,7 +52,14 @@ class MemoryCard extends Component {
     
 
     if (prevProps.memory.memid !== this.props.memory.memid) {
-      mem.getUserDetails(memory.userid).then(user => {this.setState({author:user})})
+
+      mem.getUserDetails(memory.userid).then(user => {
+        this.setState({author:user})
+        this.getUserStatus(user.userid,this.props.activeCloud).then(level =>{
+          this.setState({currentStatusLevel:level})
+        })        
+      })
+
       mem.getMemoryFiles(memory.memid, (memfiles) => {
         memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
           if(mfile.ishero){
@@ -72,7 +84,14 @@ class MemoryCard extends Component {
       let mf = []
       let hero = null
       
-      mem.getUserDetails(memory.userid).then(user => {this.setState({author:user})})
+      mem.getUserDetails(memory.userid).then(user => {
+        this.setState({author:user})
+        this.getUserStatus(user.userid,this.props.activeCloud).then(level =>{
+          this.setState({currentStatusLevel:level})
+        })        
+      })
+
+      
       mem.getMemoryFiles(memory.memid, (memfiles) => {
       
       memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
@@ -90,6 +109,35 @@ class MemoryCard extends Component {
     });
 
     // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
+  }
+
+  //------------------------------------------------------------------------------------------------
+
+  getUserStatus = (userid,cloudid) => {
+  
+    let totalcredits = 0,
+        currentLevel = ''
+    
+    return new Promise((resolve,reject ) =>{
+      // In future user may wish to see points from a range of clouds - now hard wired to UAP cloud.id = 1
+      mem.getPointsData(userid,cloudid).then(pointsData => {
+        mem.getStatusLevels(cloudid).then(levels => {
+    
+          pointsData.map(record =>{
+              totalcredits += record.statuscredits
+          })  
+          
+          levels.map(level => {
+              if(totalcredits >= level.reachvalue){
+                currentLevel = level             
+              }
+          })
+          resolve(currentLevel)        
+        })
+      })
+      
+    })
+    
   }
 
   //------------------------------------------------------------------------------------------------
@@ -126,6 +174,7 @@ class MemoryCard extends Component {
           <Text style={styles.titleText}> {this.props.memory.title} </Text>
           <Text style={styles.italicText}>{this.props.memory.description}</Text>
           <Text style={styles.bodyText}> {this.props.memory.story}</Text>
+   
         </View>
       );
     } else {
@@ -137,15 +186,13 @@ class MemoryCard extends Component {
       );
     }
   };
-  showModel = (item) => {
-    if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
-      // StatusBar.setHidden(true);
+
+  //----------------------------------------------------------------
+
+  showModal = (item) => {
+   
       this.setState({modalVisible: true, activeImage: item});
-    } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-      return <VideoPlayer poster={item.thumburl} source={item.thumburl} />;
-    } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
-      return <VideoPlayer poster={item.fileurl} source={item.fileurl} />;
-    }
+    
   };
 
   //----------------------------------------------------------------
@@ -156,78 +203,77 @@ class MemoryCard extends Component {
     return (
       <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center'}}>
         <Carousel
-          layout={'tinder'}
-          ref={(ref) => (this.carousel = ref)}
-          data={this.state.files}
-          sliderWidth={width}
-          itemWidth={width}
-          hasParallaxImages={true}
-          firstItem={1}
-          inactiveSlideScale={0.94}
-          inactiveSlideOpacity={0.7}
-          // inactiveSlideShift={20}
-          containerCustomStyle={sliderStyles.slider}
+          layout                = {'default'}
+          ref                   = {(ref) => (this.carousel = ref)} 
+          data                  = {this.state.files}
+          sliderWidth           = {width}
+          itemWidth             = {width}
+          hasParallaxImages     = {false}
+          firstItem             = {1}
+          renderItem            = {this.renderFileView}
+          onSnapToItem          = {(index) => this.setState({activeIndex: index})}
+          scrollEnabled         = {this.state.scrollable}
+          containerCustomStyle  = {sliderStyles.slider}
           contentContainerCustomStyle={sliderStyles.sliderContentContainer}
-          renderItem={this.renderFileView}
-          onSnapToItem={(index) => this.setState({activeIndex: index})}
-          scrollEnabled={this.state.scrollable}
         />
-        {/* <Pagination
-          dotsLength={this.state.files.length}
-          activeDotIndex={1}
-          containerStyle={sliderStyles.paginationContainer}
-          dotColor={'rgba(255, 255, 255, 0.92)'}
-          dotStyle={sliderStyles.paginationDot}
-          inactiveDotColor={colors.black}
-          inactiveDotOpacity={0.4}
-          inactiveDotScale={0.6}
-          carouselRef={this.carousel}
-          tappableDots={this.carousel}
-          sliderWidth={width}
-        /> */}
+        
       </View>
     );
   };
+
+  //----------------------------------------------------------------
+
   renderFileView = ({item, index}) => {
-
-    // if (item.displayurl)
-    //   console.log('card renderFileView ',item.memid,item.displayurl, item.ishero );
-    // else
-    //   console.log('card renderFileView ',item.memid,item.thumburl,item.ishero  );
-
-    if (mem.isSupportedImageFile(mem.getFilename(item.fileurl))) {
-      return (
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() => {
-            this.showModel(item);
-          }}>
-          <Image style={styles.image} source={{uri: item.thumburl, cache: 'force-cache' }} />
-        </TouchableOpacity>
-      );
-    } else if (mem.isSupportedVideoFile(mem.getFilename(item.fileurl))) {
-      return (
-        <VideoPlayer
-          poster={item.thumburl}
-          source={item.displayurl ? item.displayurl : item.fileurl}
-        />
-      );
-    } else if (mem.isSupportedAudioFile(mem.getFilename(item.fileurl))) {
-      return (
-        <TouchableOpacity
-          activeOpacity={0.5}
-          onPress={() => {
-            this.props.navigation.navigate('Audio', {
-              title: this.props.title,
-              filepath: item.fileurl,
-            });
-          }}>
-          <Image
-            style={{...styles.image, width: '100%'}}
-            source={require('./images/audioThumb.png')}
-          />
-        </TouchableOpacity>
-      );
+    
+    if( item ) {
+      
+      let fname = mem.getFilename(item.fileurl)
+      
+      if (mem.isSupportedImageFile(fname)) {
+        return (
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => { this.showModal(item) }}>
+            <CacheImage style={styles.image} uri={ item.thumburl} filename = { fname } />
+          </TouchableOpacity>
+        );
+      } else if (mem.isSupportedVideoFile(fname)) {
+        return (
+          <View>
+            <VideoPlayer
+              poster={item.thumburl}
+              source={item.displayurl ? item.displayurl : item.fileurl}
+              hideFullScreenButton = { true} 
+              hideBackButton       = { true }
+              tapAnywhereToPause   = { true }
+            />
+            <TouchableOpacity
+              activeOpacity={0.5}
+              style   = {styles.expandToFullScreen}
+              onPress={() => { this.showModal(item) }}>
+              <Image
+                source  = {require('./images/expand.png')}
+                style   = {{width:'100%',height:'100%'} }
+              />
+            </TouchableOpacity>
+          </View>
+        );
+      } else if (mem.isSupportedAudioFile(fname)) {
+        return (
+          <TouchableOpacity
+            activeOpacity={0.5}
+            onPress={() => {
+              this.props.navigation.navigate('Audio', {
+                title: this.props.memory.title,
+                filepath: item.fileurl,
+              });
+            }}>
+            
+          </TouchableOpacity>
+        );
+      }
+    }else{
+      return null
     }
   };
 
@@ -236,13 +282,28 @@ class MemoryCard extends Component {
     let lower = this.getLower();
     let fileview = this.getCarousel();
     let initials = ''
-    let firstName = this.state.author.firstname
-    let lastName =  this.state.author.lastname
-    let authorname = firstName + ' ' + lastName
-    if(firstName){initials+=firstName[0]}
-    if(lastName){initials+=lastName[0]}
+    let authorLabel = null
+    let badge = null
+    let author = this.state.author
+    let d = new Date(this.props.memory.createdon)
+  
+    if(author){
+      if ( author.firstname) { initials += author.firstname[0] }
+      if ( author.lastname ) { initials += author.lastname[0]  }
+      if ( initials ){
+        authorLabel = <Text style={styles.authorText } >{author.firstname + ' ' + author.lastname}</Text>
+      }
+    }
 
-    
+    if(this.state.currentStatusLevel) {
+      badge = 
+      <Badge
+            badgeStyle  = {[ styles.statusBadge, {backgroundColor:this.state.currentStatusLevel.statuscolor }]}
+            value       = {this.state.currentStatusLevel.statusname[0]}
+      />
+    }
+
+        
     return (
       <View style={styles.card}>
         <View style={styles.author}>
@@ -250,13 +311,30 @@ class MemoryCard extends Component {
             size="small"
             rounded
             title={initials}
-            onPress={() => console.log("Works!")}
+            overlayContainerStyle={{backgroundColor:this.state.author.avatar}}
+            onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
             activeOpacity={0.7}
           />
-          <Text style={styles.authorText } >{authorname}</Text>
+          {badge}
+          {authorLabel}
+        </View>
+        <View style = {styles.location}>
+          <Image
+              source={require('./images/globe.png')}
+              style={styles.locationImage}
+            />
+          <Text style={styles.locationText } >{this.props.memory.location}</Text>          
+        </View>
+        <View style = {styles.dateTag}>
+          <Image
+              source={require('./images/calendar.png')}
+              style={styles.locationImage}
+            />          
+          <Text style={styles.locationText } >{monthNames[d.getMonth()] + ' ' + d.getFullYear()}</Text>
         </View>
         
         {fileview}
+        
         <View style={styles.iconrow}>
           <View style={styles.iconrow}>
             <SwitchIcon // Like heart
@@ -267,8 +345,8 @@ class MemoryCard extends Component {
 
             <SwitchIcon // Share icon
               onPress={this.handleOnShare}
-              upImage={require('./images/share_green.png')}
-              downImage={require('./images/share_green.png')}
+              upImage={require('./images/star.png')}
+              downImage={require('./images/star.png')}
             />
 
             <SwitchIcon // Comment icon
@@ -288,36 +366,66 @@ class MemoryCard extends Component {
         </View>
 
         {lower}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={this.state.modalVisible}
-          onRequestClose={() => {
-            this.setState({modalVisible: false});
-          }}>
-          <Text
-            style={styles.backButton}
-            onPress={() => {
-              this.setState({modalVisible: !this.state.modalVisible});
-            }}>
-            <Image
-              source={require('./images/back.png')}
-              style={styles.backButtonImage}
-            />
-          </Text>
-
-          <ImageViewer
-            imageUrls={[{url: this.state.activeImage.thumburl}]}
-            style={styles.imageFull}
-            renderHeader={() => {}}
-            renderIndicator={() => {}}
-          />
-        </Modal>
+        { this.renderModal() }
       </View>
     );
   }
-}
 
+
+  //------------------------------------------------------------------------------------
+
+  renderModal = () => {
+    if(this.state.activeImage.thumburl){
+      
+     
+      let content = null
+      if (mem.isSupportedImageFile(this.state.activeImage.fileext)) {
+        content =  <View>
+                      <CachedZoomableImage 
+                        style     = { styles.imageFull}
+                        uri       = { this.state.activeImage.thumburl}
+                        filename  = { mem.getFilename(this.state.activeImage.thumburl) }
+                      />
+                      <Text
+                        style={styles.backButton}
+                        onPress={() => {
+                          this.setState({modalVisible: !this.state.modalVisible});
+                        }}>
+                        <Image
+                          source={require('./images/back.png')}
+                          style={styles.backButtonImage}
+                        />
+                      </Text>
+                    </View>
+      } else if (mem.isSupportedVideoFile(this.state.activeImage.fileext)) {
+        content = <VideoPlayer
+                    poster          = {this.state.activeImage.thumburl}
+                    source          = {this.state.activeImage.displayurl ? this.state.activeImage.displayurl : this.state.activeImage.fileurl}
+                    style           = {{height:"100%"}}
+                    resizeMode      = 'cover'                     
+                    tapAnywhereToPause   = { true }
+                    onBack          = {() => { this.setState({modalVisible: !this.state.modalVisible})}}
+                  /> 
+        }
+
+      return (
+        <Modal
+              animationType="slide"
+              transparent={false}
+              visible={this.state.modalVisible}
+              onRequestClose={() => {
+                this.setState({modalVisible: false});
+              }}>
+              { content }
+              
+            </Modal>
+      )
+    }else{
+      return null
+    }
+    
+  }
+}
 //------------------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
@@ -338,12 +446,53 @@ const styles = StyleSheet.create({
     top:30,
     zIndex:2
   },
+  location:{
+    flex: 1,
+    flexDirection: 'row',
+    position:'absolute',
+    top: 312,
+    left:0,
+    zIndex:2
+  },
+
+  dateTag:{
+    flex: 1,
+    flexDirection: 'row',
+    position:'absolute',
+    top: 312,
+    right:5,
+    zIndex:2
+  },
+
+  locationText: {
+    color: 'black',
+    marginTop: 8,
+    marginBottom: 5,
+    marginLeft:12,
+    fontSize: 12,
+    borderColor:'darkgray',
+    borderWidth:1,
+    borderRadius:8,
+    padding:1,
+    paddingLeft:4,
+    paddingRight:4,
+    backgroundColor:'whitesmoke',
+    overflow:'hidden',
+    
+  },
+ 
+  statusBadge:{ 
+    position: 'absolute', 
+    top: -4, 
+    left: -10 ,
+    
+  },
 
   iconrow: {
     flex:1,
     flexDirection:'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: 5,
     marginLeft: 4,
     marginRight: 4,
   },
@@ -355,9 +504,15 @@ const styles = StyleSheet.create({
   },
   image: {
     height: 300,
-    resizeMode: 'cover',
+    resizeMode:'cover'
   },
-  imageFull: {width: '100%', height: '100%', zIndex: -1},
+  imageFull: {
+      
+      height: '100%', 
+      zIndex: -1,
+      resizeMode:'cover'
+      
+  },
   absText: {
     position: 'absolute',
     top: 0,
@@ -376,6 +531,24 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
   },
+
+  locationImage: {
+    top:8,
+    left:8,
+    width: 20,
+    height: 20,
+    
+  },
+
+  expandToFullScreen:{
+    position:'absolute',
+    top:20,
+    right:20,
+    width: 30,
+    height: 30,
+    
+  },
+
   close: {
     margin: 5,
     position: 'absolute',
@@ -406,8 +579,6 @@ const styles = StyleSheet.create({
     padding:2,
     backgroundColor:'whitesmoke',
     overflow:'hidden',
-    
-
     
   },
 
