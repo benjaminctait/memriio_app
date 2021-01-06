@@ -2,10 +2,12 @@ import React, {Component} from 'react';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {ZoomableImage} from './cachedImage'
+import {ZoomableImage,CachedZoomableImage} from './cachedImage'
 import Video from 'react-native-video'
 import Dialog from 'react-native-dialog'
 import {showMessage} from 'react-native-flash-message';
+import SearchPeople from './searchpeople'
+import SearchLocation from './searchlocation'
 
 import {
   StyleSheet,
@@ -187,11 +189,8 @@ class EditPost extends Component {
 
   getPeople = () => {
     Keyboard.dismiss();
-    this.props.navigation.navigate('SearchPeople', {
-      allPeople: this.state.allPeople,
-      taggedPeople: this.state.taggedPeople,
-      updatePeople: this.updatePeople
-    });
+    this.setState({peopleModalVisible:true})
+    
   };
 
   // ---------------------------------------------------------------------------------
@@ -216,13 +215,18 @@ class EditPost extends Component {
     
     
     if(memory){
+     
       this.setState(
         {
           memid         : memory.memid,
           title         : memory.title,
           story         : memory.story,      
           taggedPeople  : memory.taggedPeople,
-          location      : memory.location,
+          location      :{
+                          locid     : 0,
+                          firstname : memory.location,
+                          lastname  : ''
+                         },      
           taggedClouds  : memory.taggedClouds,
           userid        : memory.userid,
           activeUser    : null,
@@ -241,7 +245,7 @@ class EditPost extends Component {
           memid       : file.memid,
           thumbext    : file.thumbext,
           thumbnail   : file.thumburl,
-          origin      : 0 ,           // CAMERA || CAMERAROLL || AUDIO || VIDEO     
+          origin      : 0 ,             // CAMERA || CAMERAROLL || AUDIO || VIDEO     
           type        : ftype,          // IMAGE=0 || VIDEO=1 || AUDIO=2
           text        : '',             // needed only to match thumbScroll data structure            
           id          : fname,          // used only as unique identifier 
@@ -345,7 +349,7 @@ class EditPost extends Component {
   // ---------------------------------------------------------------------------------
 
   renderLocation = () => {
-    console.log('location : ' + this.state.location);
+    
     if (this.state.location) {
       return (
         <View style={styles.subtitle}>
@@ -448,7 +452,7 @@ class EditPost extends Component {
               <ThumbList
                 data              = { this.state.content}
                 handleThumbPress  = { this.showImageEditModal}    
-                handleDeletePress = { this.showDeleteDialog }            
+                handleDeletePress = { this.showDeleteDialog }                            
               />
           
         </View>
@@ -463,8 +467,9 @@ class EditPost extends Component {
                       Title={'Update'} />
         </View>
         
-        {this.renderImageEditModal()}
-        {this.renderDeleteDialog()}
+        { this.renderImageEditModal() }
+        { this.renderDeleteDialog()   }
+        { this.renderPeopleModal()    }
         
 
       </KeyboardShift>
@@ -488,30 +493,56 @@ class EditPost extends Component {
 
       location:     this.state.location,
       taggedClouds: this.state.taggedClouds,
-      user:         this.state.userid,
-      //content: this.state.content,
+      user:         this.state.userid,      
     }
-
-    //this.props.navigation.navigate('CaptureComponent')
+    
   }
 
   // ---------------------------------------------------------------------------------
 
+  renderPeopleModal = () =>{
+    
+      if(this.state.peopleModalVisible){
+        return (
+          <Modal
+              animationType   = "slide"
+              transparent     = {false}
+              visible         = {this.state.peopleModalVisible}
+              >
+              <SearchPeople 
+                  allPeople = { this.state.allPeople}
+                  taggedPeople = { this.state.taggedPeople }
+                  updatePeople = { this.updatePeople }
+                  close        = { () => {this.setState({peopleModalVisible: false})}}
+              />              
+            </Modal>
+        )
+      }else{
+        return null
+      }
+      
+  }
+  // ---------------------------------------------------------------------------------
+
   renderImageEditModal = () => {
     let content = null
+    
     if(this.state.activeItem){
+      console.log('image edit modal ',this.state.activeItem);
       switch (this.state.activeItem.type) {
         case IMAGE:
-          content = <ZoomableImage 
+          content = <CachedZoomableImage 
                       style     = { {height:'100%',width:'100%',resizeMode:'cover'}}
-                      localPath = { this.state.activeItem.thumbnail }
+                      uri       = { this.state.activeItem.thumbnail}
+                      filename  = { mem.getFilename(this.state.activeItem.thumbnail) }
                     />
           break;
         case VIDEO:
           content = <Video
-                      source   = { { uri: this.state.activeItem.filepath } }
+                      source   = { { uri: this.state.activeItem.displayurl } }
                       paused   = { true }
-                      muted    = { false }                      
+                      muted    = { false }    
+                      controls  = { true}                  
                       poster   = { this.state.activeItem.thumbnail }
                       style    = { styles.imageFull }
                       ignoreSilentSwitch = { 'ignore' }
@@ -590,6 +621,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    paddingTop:80,
   },
 
   imageFull: {

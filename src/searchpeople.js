@@ -24,6 +24,7 @@ class SearchPeople extends Component{
     
   }
 
+
 //--------------------------------------------------------------------------------
 
 handleTextChange = (value) => {
@@ -66,7 +67,7 @@ itemIsTagged = ( userid ) =>{
 filterPeopleList = () => {
 
   let stxt      = this.state.searchText
-  let allPeeps  = this.props.route.params.allPeople
+  let allPeeps  = this.props.route ? this.props.route.params.allPeople : this.props.allPeople
  
   if(this.state.searchText !== '' ){
     return allPeeps.filter((p)=>{ 
@@ -92,17 +93,24 @@ renderItem = ({ item  }) => (
 //--------------------------------------------------------------------------------
 
 goBack =() =>{
-  console.log('searchPeople : goBack ' + this.state.taggedPeople);
-  this.props.navigation.navigate('NewPost',{
-    taggedPeople: this.state.taggedPeople
-  });
+  if(this.props.route){
+    this.props.navigation.navigate('NewPost',{
+      taggedPeople: this.state.taggedPeople
+    });
+  }else{
+    this.props.close()
+  }
+  
 }
 //--------------------------------------------------------------------------------
 
 render(){
-
+  let toppadding = 0
+  if(!this.props.route){
+    toppadding = 50
+  }
   return(
-    <View style={styles.container}>
+    <View style={[styles.container,{paddingTop:toppadding}]}>
 
       <View  style={styles.searchArea}>
         <Input 
