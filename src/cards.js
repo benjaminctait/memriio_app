@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   
 } from 'react-native';
+import EditPost from './editpost';
 
 let monthNames =["Jan","Feb","Mar","Apr",
 "May","Jun","Jul","Aug",
@@ -32,15 +33,18 @@ class MemoryCard extends Component {
   }
 
   state = {
-    storyVisible: false,
-    files: [],
-    people: [],
-    activeIndex: 0,
-    scrollable: true,
-    modalVisible: false,
-    activeImage: {},
-    author:{},
-    currentStatusLevel:null,
+    storyVisible      : false,
+    files             : [],
+    people            : [],
+    activeIndex       : 0,
+    scrollable        : true,
+    modalVisible      : false,
+    editModalVisible  : false,
+    activeImage       : {},
+    author            : {},
+    currentStatusLevel: null,
+    activeUser        : null,
+    taggedClouds      : null,
     
   };
   //------------------------------------------------------------------------------------------------
@@ -91,8 +95,10 @@ class MemoryCard extends Component {
         })        
       })
 
-      
-      mem.getMemoryFiles(memory.memid, (memfiles) => {
+      mem.getActiveUser   (  ).then(user =>{ this.setState({activeUser:user})})
+      mem.getMemoryClouds ( memory.memid).then(clouds =>{ this.setState({taggedClouds:clouds})})
+      mem.getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
+      mem.getMemoryFiles  ( memory.memid, (memfiles) => {
       
       memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
         if(mfile.ishero){
@@ -108,7 +114,7 @@ class MemoryCard extends Component {
 
     });
 
-    // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
+    
   }
 
   //------------------------------------------------------------------------------------------------
@@ -338,39 +344,102 @@ class MemoryCard extends Component {
         <View style={styles.iconrow}>
           <View style={styles.iconrow}>
             <SwitchIcon // Like heart
-              onPress={this.handleOnLike}
-              upImage={require('./images/heart_blue.png')}
-              downImage={require('./images/heart_red.png')}
+              onPress   ={this.handleOnLike}
+              upImage   ={require('./images/heart_blue.png')}
+              downImage ={require('./images/heart_red.png')}
             />
 
             <SwitchIcon // Share icon
-              onPress={this.handleOnShare}
-              upImage={require('./images/star.png')}
-              downImage={require('./images/star.png')}
+              onPress   ={this.handleOnShare}
+              upImage   ={require('./images/star.png')}
+              downImage ={require('./images/star.png')}
             />
 
             <SwitchIcon // Comment icon
-              onPress={this.handleOnComment}
-              upImage={require('./images/comment_purple.png')}
-              downImage={require('./images/comment_purple.png')}
+              onPress   ={this.handleOnComment}
+              upImage   ={require('./images/comment_purple.png')}
+              downImage ={require('./images/comment_purple.png')}
             />
+
           </View>
           <View style={styles.iconrow} />
-          <View style={styles.iconrow}>
-            <SwitchIcon // Story expand icon
-              onPress={this.handleOnExpand}
-              upImage={require('./images/chevron_down_purple.png')}
-              downImage={require('./images/chevron_up_purple.png')}
-            />
-          </View>
+            <View style={styles.iconrow}>
+              <SwitchIcon // Story expand icon
+                onPress   ={this.handleOnExpand}
+                upImage   ={require('./images/chevron_down_purple.png')}
+                downImage ={require('./images/chevron_up_purple.png')}
+              />
+              { this.renderEditButton() }
+              
+            </View>
+            
         </View>
 
         {lower}
         { this.renderModal() }
+        { this.renderEditMemoryModal() }
       </View>
     );
   }
 
+  // ---------------------------------------------------------------------------------
+  
+  renderEditButton =() =>{
+    
+    if(this.props.memory && this.state.activeUser){
+      
+      if(this.props.memory.userid == this.state.activeUser.userid ){
+        return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
+                  <Text style={styles.PostButton} >{'Edit'} </Text>
+                </TouchableOpacity>
+      }else{
+        return null
+      }
+    }else{
+      return null
+    }
+  }
+
+  
+  //------------------------------------------------------------------------------------
+  
+  renderEditMemoryModal = () => {
+     if(this.state.editModalVisible) {
+       
+      let memory = {
+        memid         : this.props.memory.memid,
+        title         : this.props.memory.title,
+        story         : this.props.memory.story,    
+        description   : this.props.memory.description,
+        taggedPeople  : this.state.people,
+        location      : this.props.memory.location,
+        files         : this.state.files,
+        taggedClouds  : this.state.taggedClouds,
+        userid        : this.props.memory.userid,
+      }
+
+      return (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={this.state.editModalVisible}
+          
+          >
+          <EditPost 
+            capturedFiles = { null }
+            memory        = { memory }
+            close         = {() => {this.setState({editModalVisible: false})}}
+          />  
+        </Modal>
+        
+
+        
+      )
+    }else{
+      return null
+    }
+    
+  }
 
   //------------------------------------------------------------------------------------
 
@@ -410,22 +479,25 @@ class MemoryCard extends Component {
 
       return (
         <Modal
-              animationType="slide"
-              transparent={false}
-              visible={this.state.modalVisible}
-              onRequestClose={() => {
-                this.setState({modalVisible: false});
-              }}>
-              { content }
-              
-            </Modal>
+          animationType="slide"
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {
+            this.setState({modalVisible: false});
+          }}>
+          { content }
+          
+        </Modal>
       )
     }else{
       return null
     }
     
   }
+
 }
+
+
 //------------------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
@@ -446,6 +518,18 @@ const styles = StyleSheet.create({
     top:30,
     zIndex:2
   },
+  PostButton:{
+    borderWidth:1,
+    borderRadius:8,
+    borderColor:'#1E90FF',    
+    color:'black',
+    padding:2,
+    paddingLeft:6,
+    marginTop:4,
+    backgroundColor:'white',
+    overflow:'hidden',
+  },
+
   location:{
     flex: 1,
     flexDirection: 'row',

@@ -1,11 +1,11 @@
-import React, {Component, createRef} from 'react';
+import React, {Component} from 'react';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Spinner from 'react-native-loading-spinner-overlay';
 import {ZoomableImage} from './cachedImage'
 import Video from 'react-native-video'
 import Dialog from 'react-native-dialog'
-import {showMessage, hideMessage} from 'react-native-flash-message';
+import {showMessage} from 'react-native-flash-message';
 
 import {
   StyleSheet,
@@ -14,7 +14,7 @@ import {
   Text,
   Keyboard, 
   Modal,  
-  Animated, 
+  TouchableOpacity,
 } from 'react-native';
 
 import {
@@ -25,7 +25,7 @@ import {
   LocationTag,
 } from './buttons';
 
-import {Input, ListItem, CheckBox} from 'react-native-elements';
+import {Input, ListItem} from 'react-native-elements';
 
 import ThumbList from './thumbList.js'
 
@@ -37,7 +37,7 @@ const AUDIO = 2
 
 //--------------------------------------------------------------------------
 
-class NewPost extends Component {
+class EditPost extends Component {
   constructor() {
     super();
     this.setupCloudsAndPeople = this.setupCloudsAndPeople.bind(this);
@@ -45,12 +45,14 @@ class NewPost extends Component {
 
     this.state = {
 
+      memid:0,
       title: '',
+      description:'',
       story: '',      
       taggedPeople: [],
       location: null,
       taggedClouds: [],
-      user: null,
+      user:null,
       content: [],
 
       allPeople: [],
@@ -60,6 +62,7 @@ class NewPost extends Component {
       deleteDialogVisible:false,
       activeItem:null,
       deleteIndex:'',
+      initialCloudStatus:[],
     };
 
   };
@@ -67,27 +70,42 @@ class NewPost extends Component {
   //--------------------------------------------------------------------------
   
 
-  setupCloudsAndPeople = (clouds) => {
+   setupCloudsAndPeople =  (clouds) => {
     if (Array.isArray(clouds)) {
       const firstitem = [
         {
           id: 0,
           name: 'Personal',
-          administrator: this.state.userid,
+          administrator: this.state.user,
           createdon: null,
         },
       ];
 
       const newarray = firstitem.concat(clouds);
+
+      newarray.map((cloud,index) => {
+         mem.findArrayIndex(this.state.taggedClouds,(item)=>{return item.id == cloud.id})
+         .then(idx => {
+          if(idx != -1){
+              newarray[index].selected = true
+              this.setState({allClouds:newarray})
+            }
+         })
+      })
+
       mem.getCloudPeople(clouds, null).then((people) => {
         this.setState({allPeople: people, allClouds: newarray});
       });
+      
+
+      
     }
+
   };
 
   //--------------------------------------------------------------------------
 
-  sendPost = async () => {
+  updatePost = async () => {
     Keyboard.dismiss();
 
     let cloudarray = [];
@@ -113,63 +131,43 @@ class NewPost extends Component {
     });
 
     showMessage({
-      message: 'Memory uploading.. should be done shortly',
+      message: 'Updating.. should be done shortly',
       type: 'success',
       duration: 2000,
       autoHide: true,
       floating: true,
     });
 
-    console.log('SEND POST', this.props.screenProps);
-    this.props.route.params.resetCapture()
-    this.props.navigation.navigate('Feed');
+    console.log('UPDATE POST', this.props.screenProps);
+   
+    //this.props.navigation.navigate('Feed');
 
-    await mem.postNewMemory(
-      me.title,
-      me.story,
-      me.content,
-      personarray,
-      locationName,
-      cloudarray,
-      me.user.userid,
-      this.doPostLoad,
-    );
+    // await mem.updateMemory(
+    //   me.memid,
+    //   me.title,
+    //   me.description,
+    //   me.story,
+    //   me.content,
+    //   personarray,
+    //   locationName,
+    //   cloudarray,
+    //   me.user.userid,
+    //   this.doPostLoad,
+    // );
   };
 
   //--------------------------------------------------------------------------
 
   pushMemory = (memid) => {
     console.log('PUSH MEMORY');
-    console.log(this.props.navigation.screenProps);
+    
   };
 
   //--------------------------------------------------------------------------
 
   doPostLoad = (memid) => {
     
-    let uid = this.state.user.userid
-    this.pushMemory(memid)
-    if( Array.isArray ( this.state.taggedClouds ) && this.state.taggedClouds.length > 0 )
-    {
-      let cid = this.state.taggedClouds.findIndex( cloud => parseInt(cloud.id) === 1 ) // search for UAP cloud only
-      if(cid !== -1 )
-        {
-          cid = parseInt ( this.state.taggedClouds[cid].id ) // get the id of the UAP cloud
-          mem.postPointsEvent ( uid , 50 , memid , 'POINTS : Post new memory' , cid )
-          mem.postStatusEvent ( uid ,  5 , memid , 'STATUS : Post new memory' , cid )
-          console.log    ( 'refreshFeed Points & status: user : ', uid, ' memid : ', memid , ' cloud : ', cid )
-        }
-
-    }
-    showMessage({
-      message: 'Memory posted ',
-      type: 'success',
-      duration: 2000,
-      backgroundColor: '#5DADE2',
-      color: '#FDFEFE',
-      autoHide: true,
-      floating: true,
-    });
+    
   };
 
   // ---------------------------------------------------------------------------------
@@ -203,47 +201,59 @@ class NewPost extends Component {
     this.setState({taggedPeople:taggedPeople})
   }
 
-  componentDidUpdate() {
-    if (this.props.route.params) {
-      if (this.props.route.params.location) {
-        if (this.props.route.params.location !== this.state.location) {
-          this.setState({location: this.props.route.params.location});
-        }
-      }
-    }
-  }
-
   // ---------------------------------------------------------------------------------
   // Loads the state of the New Post view
   // pre :   AsyncStorage contains at least one content file
   // post :  state contains all captured content.
   //         Note : people, location and groups can load after the component is loaded.
 
-  async componentDidMount() {
+  componentDidMount = () => {
    
-    const { capturedFiles,memory } = this.props.route.params;
-    
-    console.log('NEWPOST - didmount');
+    const { capturedFiles,memory } = this.props
+    let newarray = []
+    console.log('EDITPOAST - didmount');
     console.log('');
+    
     
     if(memory){
       this.setState(
         {
-          content       : capturedFiles,
+          memid         : memory.memid,
           title         : memory.title,
           story         : memory.story,      
           taggedPeople  : memory.taggedPeople,
           location      : memory.location,
           taggedClouds  : memory.taggedClouds,
-          user          : memory.user,
+          userid        : memory.userid,
+          activeUser    : null,
         }
       )
-      mem.mapUserClouds(memory.user.userid, this.setupCloudsAndPeople);
+      mem.mapUserClouds(memory.userid, this.setupCloudsAndPeople);
+      memory.files.map(file =>{
+        let fname = mem.getFilename(file.thumburl)
+        let ftype = this.getFileType(file.fileext)
+        newarray.push({
+          displayurl  : file.displayurl,
+          fileext     : file.fileext,
+          filepath    : file.fileurl ,  // original filepath
+          id          : file.id,
+          isHero      : file.isHero,
+          memid       : file.memid,
+          thumbext    : file.thumbext,
+          thumbnail   : file.thumburl,
+          origin      : 0 ,           // CAMERA || CAMERAROLL || AUDIO || VIDEO     
+          type        : ftype,          // IMAGE=0 || VIDEO=1 || AUDIO=2
+          text        : '',             // needed only to match thumbScroll data structure            
+          id          : fname,          // used only as unique identifier 
+        })
+      })
+      this.setState({content:newarray})
+      
     }else{
       this.setState({content:capturedFiles})
       mem.getActiveUser().then(user =>{
         if(user){
-          this.setState( { user: user } )
+          this.setState( { activeUser: user } )
           mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
         }
       })
@@ -251,6 +261,13 @@ class NewPost extends Component {
   }
 
   // ---------------------------------------------------------------------------------
+
+  getFileType = (extension ) =>{
+    if(mem.isSupportedImageFile(extension)) return IMAGE
+    else if (mem.isSupportedVideoFile(extension)) return VIDEO
+    else if (mem.isSupportedAudioFile(extension)) return AUDIO
+    else return 0
+  }
 
   handleCloudTagPress = (cloudItem, buttonState) => {
     let selectedClouds = this.state.taggedClouds.map((cloud) => {
@@ -315,7 +332,7 @@ class NewPost extends Component {
       idx++
     }
     this.setState({deleteDialogVisible:false,content:tmp})
-    this.props.route.params.updateCaptureContent(tmp)
+    
   }
 
   // ---------------------------------------------------------------------------------
@@ -354,12 +371,7 @@ class NewPost extends Component {
         <View 
           style={styles.container}
           >
-          <Spinner
-            visible={this.state.spinner}
-            textContent={'Uploading memory...'}
-            textStyle={styles.spinnerTextStyle}
-          />
-
+          
           <Input // Title
             inputStyle={styles.titletext}
             onChangeText={(text) => {
@@ -377,7 +389,7 @@ class NewPost extends Component {
             onChangeText={(text) => {
               this.setState({story: text});
             }}
-            value={this.state.story?this.state.story:''}
+            value={this.state.description?this.state.description:''}
           />
 
           <View>
@@ -418,14 +430,16 @@ class NewPost extends Component {
               subtitle={
                 <View style={styles.subtitle}>
                   {this.state.allClouds.map((cloud, index) => (
+
                     <SubTag
-                      key               = { index}
-                      data              = { cloud}
+                      key               = { index }
+                      data              = { cloud }
                       greyOutOnTagPress = { !(cloud.name === 'Personal')} // Cant turn off the Personal cloud
-                      buttonDown        = { true}
+                      buttonDown        = { !cloud.selected  }
                       onTagPress        = { this.handleCloudTagPress}
                       title             = { cloud.name}
                     />
+                    
                   ))}
                 </View>
               }
@@ -442,8 +456,11 @@ class NewPost extends Component {
         <View style={styles.mainButtons}>
           <BackButton onPress={ this.goBackToCapture }
                       Title={'Capture'}/>
-          <PostButton onPress={ this.sendPost } 
-                      Title={'Upload'} />
+          <TouchableOpacity onPress={ this.cancelUpdate }>
+            <Text style={styles.PostButton} >{'Cancel'} </Text>
+          </TouchableOpacity> 
+          <PostButton onPress={ this.updatePost } 
+                      Title={'Update'} />
         </View>
         
         {this.renderImageEditModal()}
@@ -453,22 +470,29 @@ class NewPost extends Component {
       </KeyboardShift>
     );
   }
+  
+  // ---------------------------------------------------------------------------------
+
+  cancelUpdate = () => {
+   this.props.close()
+
+  }
 
   // ---------------------------------------------------------------------------------
 
   goBackToCapture = () => {
     let memobj = {
-      title: this.state.title,
-      story: this.state.story,      
+      title:        this.state.title,
+      story:        this.state.story,      
       taggedPeople: this.state.taggedPeople,
-      location: this.state.location,
+
+      location:     this.state.location,
       taggedClouds: this.state.taggedClouds,
-      user: this.state.user,
+      user:         this.state.userid,
       //content: this.state.content,
     }
 
-    this.props.route.params.updateMemoryDetails(memobj)
-    this.props.navigation.navigate('CaptureComponent')
+    //this.props.navigation.navigate('CaptureComponent')
   }
 
   // ---------------------------------------------------------------------------------
@@ -478,11 +502,10 @@ class NewPost extends Component {
     if(this.state.activeItem){
       switch (this.state.activeItem.type) {
         case IMAGE:
-          content = 
-                      <ZoomableImage 
-                        style     = { {height:'100%',width:'100%',resizeMode:'cover'}}
-                        localPath = { this.state.activeItem.thumbnail }
-                      />
+          content = <ZoomableImage 
+                      style     = { {height:'100%',width:'100%',resizeMode:'cover'}}
+                      localPath = { this.state.activeItem.thumbnail }
+                    />
           break;
         case VIDEO:
           content = <Video
@@ -492,7 +515,6 @@ class NewPost extends Component {
                       poster   = { this.state.activeItem.thumbnail }
                       style    = { styles.imageFull }
                       ignoreSilentSwitch = { 'ignore' }
-                      
                     />
 
           break;
@@ -514,12 +536,12 @@ class NewPost extends Component {
 
     return (
       <Modal
-          animationType="slide"
-          transparent={false}
-          visible={this.state.modalVisible}
-          onRequestClose={() => {
-            this.setState({modalVisible: false});
-          }}>
+          animationType   = "slide"
+          transparent     = {false}
+          visible         = {this.state.modalVisible}
+          onRequestClose  = {() => {
+              this.setState({modalVisible: false});
+            }}>
           
           {content}
           <Text
@@ -561,7 +583,7 @@ class NewPost extends Component {
 
 
 
-export default NewPost;
+export default EditPost;
 
 
 const styles = StyleSheet.create({
@@ -576,6 +598,15 @@ const styles = StyleSheet.create({
     height: '100%', 
     resizeMode:'cover',
     zIndex: -1
+  },
+  PostButton:{
+    borderWidth:2,
+    borderRadius:10,
+    borderColor:'#7d7a7a',
+    color:'#c7c5c5',
+    
+    padding:4,
+
   },
 
   backButton: {

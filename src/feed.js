@@ -149,7 +149,7 @@ class Feed extends Component {
 
   componentDidMount = async () => {
     console.log(' FEED : DIDMOUNT ');
-    this.state.user = await mem.activeUser();
+    this.state.user = await mem.getActiveUser();
 
     mem.mapUserClouds(this.state.user.userid, this.loadClouds);
     

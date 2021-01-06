@@ -15,12 +15,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler'
 
 let THUMBNAIL_WIDTH = 180
 
-const exampleData = [...Array(5)].map((d, index) => ({
-  key: `item-${index}`, // For example only -- don't use index as your key!
-  label: index,
-  backgroundColor: `rgb(${Math.floor(Math.random() * 255)}, ${index *
-    5}, ${132})`
-}));
+
 
 class ThumbList extends React.Component {
   

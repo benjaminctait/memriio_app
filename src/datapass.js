@@ -9,7 +9,6 @@ import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {LogBox, Platform} from 'react-native';
 import RNFS from 'react-native-fs';
-import { random } from 'lodash';
 
 const memory = {
   title: '', // short title of the memory : string
@@ -60,7 +59,7 @@ export async function createMemoryCloud(cloudName, administratorID) {
 
 // get details for the current user -----------------------------------------------------
 
-export async function activeUser() {
+export async function getActiveUser() {
 
   return new Promise((resolve,reject) =>{
     
@@ -704,7 +703,32 @@ export function getMemories_User(userid) {
 
 //-------------------------------------------------------------------------------
 
+export function getMemoryClouds(memid) {
+  console.log('getMemoryClouds memid : ',memid);
+  return new Promise((resolve,reject) =>{
+    fetch('https://memrii-api.herokuapp.com/get_associatedclouds_memoryid', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({memoryid: memid}),
+  })
+    .then((response) => response.json())
+    .then((response) => {
+      if (response.success) {
+        resolve(response.data);
+      } else {
+        reject(response);
+      }
+    });
+
+  })
+  
+}
+//-------------------------------------------------------------------------------
+
 export function getMemoryFiles(memid, callback) {
+  console.log('getMemoryFiles memid : ',memid);
   fetch('https://memrii-api.herokuapp.com/get_memfiles_memoryid', {
     method: 'post',
     headers: {
@@ -1467,6 +1491,22 @@ const createMemoryID = () => {
       });
   });
 };
+
+//---------------------------
+
+export async function findArrayIndex (array,test ){
+  return new Promise((resolve,reject)=>{
+    array.map((item,index) =>{
+      if(test(item)){
+        resolve (index)
+      }
+    })
+    resolve (-1)
+  })
+     
+}
+
+//---------------------------
 
 export function isSupportedImageFile(filename) {
   

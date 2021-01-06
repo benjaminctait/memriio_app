@@ -55,7 +55,7 @@ class Settings extends Component {
 
   componentDidMount = async () => {
   
-    const user = await mem.activeUser()
+    const user = await mem.getActiveUser()
     
     console.log('settings load : user - ' + user.userid + ' ' + user.firstName + ' ' + user.lastName + ' ' + user.email);
     
