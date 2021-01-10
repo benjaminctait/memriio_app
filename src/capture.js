@@ -21,6 +21,7 @@ import {
   IconButtonAudio,
   IconButtonFile,
   IconButtonVideo,
+  BlankButton,
 } from './buttons';
 import {AudioRecorder, AudioUtils} from 'react-native-audio';
 
@@ -67,7 +68,8 @@ class CaptureComponent extends Component {
     filesSelected: [],   
     fadeAnimation: new Animated.Value(0),
     shutterFlashVisible:false,
-    memory:null
+    memory:null,
+    editmode:false,
   };
 
   //--------------------------------------------------------------------------------------
@@ -75,8 +77,20 @@ class CaptureComponent extends Component {
   async componentDidMount() {
     
     console.log('capture did mount ');
+    const p = this.props
     
-    this.setState({captureContent:[],filesSelected:[],memory:null})
+    let cc = p.captureContent?p.captureContent:[]
+    let m  = p.memory?p.memory:null
+    let em = p.editmode?p.editmode:false
+    this.setState({ captureContent:cc , memory:m , editmode:em })
+    
+    this.setupAudioRecorder()
+
+    
+  }
+  //--------------------------------------------------------------------------------------
+
+  setupAudioRecorder = () =>{
     AudioRecorder.requestAuthorization().then((isAuthorised) => {
       console.log('audio authorization:', isAuthorised);
       this.setState({hasPermission: isAuthorised});
@@ -128,9 +142,9 @@ class CaptureComponent extends Component {
       };
     });
   }
+
   //--------------------------------------------------------------------------------------
 
-  
   startRecordingVideo = async () => {
     if (this.camera) {
       try {
@@ -229,7 +243,7 @@ class CaptureComponent extends Component {
     console.log('stopRecordingVideo xxx' + this.camera);
 
     if (this.camera) {
-      console.log('stopRecordingVideo : this.camera ' + this.camera);
+      //console.log('stopRecordingVideo : this.camera ' + this.camera);
       this.camera.stopRecording();
     }
   };
@@ -330,7 +344,7 @@ class CaptureComponent extends Component {
 
   takePicture = async () => {
     if (this.camera) {
-      console.log('capture.takePicture() ' + this.camera);
+      //console.log('capture.takePicture() ' + this.camera);
       try {
         this.showShutterFlash()
         const data = await this.camera.takePictureAsync();        
@@ -345,7 +359,7 @@ class CaptureComponent extends Component {
   //--------------------------------------------------------------------------------------
 
   goBackToFeed = () => {
-    console.log('removing files.....');
+    console.log('goBackToFeed....');
     
     this.setState({captureContent:[],filesSelected:[],memory:null})
     this.props.navigation.navigate('Feed');
@@ -384,15 +398,16 @@ class CaptureComponent extends Component {
 
   showPost = () => {
     console.log('new post navigation:');
+
+      this.props.navigation.navigate('NewPost',{
+        mode:'new',
+        capturedFiles:this.state.captureContent,
+        memory:this.state.memory,
+        updateMemoryDetails:this.updateCurrentMemoryDetails,
+        updateCaptureContent:this.updateContent,
+        resetCapture:this.resetAll
+      });
     
-    this.props.navigation.navigate('NewPost',{
-          mode:'new',
-          capturedFiles:this.state.captureContent,
-          memory:this.state.memory,
-          updateMemoryDetails:this.updateCurrentMemoryDetails,
-          updateCaptureContent:this.updateContent,
-          resetCapture:this.resetAll
-        });
     
   };
   
@@ -439,8 +454,7 @@ class CaptureComponent extends Component {
    
     await this.removeCameraRollcontent()
       images.forEach((img, i) => {
-        console.log(img);
-        console.log();
+       
         if (img.uri  ) {
           if (img.type === 'video') {
             if (Platform.OS === 'ios') {
@@ -601,20 +615,54 @@ class CaptureComponent extends Component {
             selected={this.state.mode == 'file'}
           />
         </View>
-
-        <View style={styles.mainButtons}>
           
+          { this.renderNavigation( bigButton ) }
+          
+        
+      </View>
+    );
+  }
+
+  renderNavigation = ( bigButton ) => {
+    
+    if(this.state.editmode){
+      return(
+        <View style={styles.mainButtons}>
+          <BlankButton 
+            onPress      = { this.closeModal } 
+            title        = { 'Back'} 
+            source       = { require('./images/back.png') }
+            buttonStyle  = { { height:40,width:40 }}
+            />
+            {bigButton}
+            <BlankButton 
+            onPress      = { null} 
+            title        = { ''} 
+            source       = { null }
+            buttonStyle  = { {height:40,width:40}}
+            />
+      </View>
+      )
+    }else{
+      return (
+        <View style={styles.mainButtons}>
           <TouchableOpacity onPress={this.goBackToFeed}>
             <Text style={styles.PostButton} >{'Cancel'}</Text>
           </TouchableOpacity>
-          {bigButton}
-          
+           {bigButton}
+        
           <TouchableOpacity onPress={this.showPost}>
             <Text style={styles.PostButton} >{'  Post'} </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    );
+      )
+    }
+    
+  }
+
+  closeModal = () =>{
+    this.props.updateContent(this.state.captureContent)
+    this.props.close()
   }
 }
 

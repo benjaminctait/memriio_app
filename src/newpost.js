@@ -238,13 +238,13 @@ class NewPost extends Component {
           user          : memory.user,
         }
       )
-      mem.mapUserClouds(memory.user.userid, this.setupCloudsAndPeople);
+      mem.getUserClouds(memory.user.userid, this.setupCloudsAndPeople);
     }else{
       this.setState({content:capturedFiles})
       mem.getActiveUser().then(user =>{
         if(user){
           this.setState( { user: user } )
-          mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
+          mem.getUserClouds(user.userid, this.setupCloudsAndPeople);
         }
       })
     }    

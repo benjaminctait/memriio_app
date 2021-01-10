@@ -76,6 +76,26 @@ class AudioStopButton extends Component{
   }
 }
 
+class BlankButton extends Component{
+  
+  
+  render(){
+    const { title,source,buttonStyle } = this.props
+    let subtitle = title ? <Text style={styles.iconTextUp}>{ title }</Text>:null
+   
+    return(
+        <TouchableOpacity onPress={this.props.onPress}>
+          <Image
+            style={[styles.mediumButton,buttonStyle]}
+            source={ source }
+          />
+          {subtitle}
+        </TouchableOpacity>
+    )
+  }
+
+}
+
 class PostButton extends Component{
   
   
@@ -424,9 +444,8 @@ class PersonListItem extends Component{
 
 class LocationTag extends Component{
 
- 
-
   render(){
+      
       return(
           <TouchableOpacity onPress={this.props.onPress}>
           <View style={[styles.ptag,this.props.tagstyle]}>
@@ -592,4 +611,5 @@ export {CameraClickButton,
         SubTag,
         SwitchIcon,
         PersonListItem,
+        BlankButton,
       }

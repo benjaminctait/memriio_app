@@ -7,7 +7,7 @@ import {
 import {RNS3} from 'react-native-aws3';
 import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage';
-import {LogBox, Platform} from 'react-native';
+import Platform from 'react-native';
 import RNFS from 'react-native-fs';
 
 const memory = {
@@ -209,7 +209,7 @@ export async function postNewMemory(
   callback,
 ) {
 
-  console.log('postNewMemory:location ',location);
+  console.log('postNewMemory title : ',title);
 
   memory.title = title;
   memory.story = story;
@@ -222,7 +222,7 @@ export async function postNewMemory(
   memory.memid = -1;
 
   uploadNewMemory(callback);
-  cleanupStorage();
+
 }
 
 // create a new memory ID -----------------------------------------------------
@@ -246,19 +246,19 @@ const uploadNewMemory = (callBackOnSuccess) => {
         if (isSupportedImageFile(memfile.filepath)) {
           Promises.push(
             uploadImageFile(memfile).then((result) => {
-              addFileToMemory(result, (idx === 0 )); // set the first file memory as the hero shot.
+              associateFileToMemory(result, (idx === 0 )); // set the first file memory as the hero shot.
             }),
           );
         } else if (isSupportedVideoFile(memfile.filepath)) {
           Promises.push(
             uploadVideoFile(memfile).then((result) => {
-              addFileToMemory(result, (idx === 0 ));
+              associateFileToMemory(result, (idx === 0 ));
             }),
           );
         } else if (isSupportedAudioFile(memfile.filepath)) {
           Promises.push(
             uploadAudioFile(memfile).then((result) => {
-              addFileToMemory(result, (idx === 0 ));
+              associateFileToMemory(result, (idx === 0 ));
             }),
           );
         }
@@ -275,6 +275,298 @@ const uploadNewMemory = (callBackOnSuccess) => {
 };
 
 // ---------------------------------------------------------------------------------
+export function addFileToMemory ( memid , userid, file ){
+
+  console.log(
+    'addFileToMemory : ' + memid + ' new file :' + JSON.stringify(file,null,3)
+  );
+  
+  memory.memid = memid
+  memory.userid = userid
+  file.filepath = file.fileurl
+  file.thumbnail = file.thumburl
+
+  
+  return new Promise ((resolve,reject) => {
+
+    if (isSupportedImageFile(file.fileurl)) {
+   
+      uploadImageFile(file).then((result) => {        
+        associateFileToMemory(result, file.ishero).then(result => {
+          if(result === 'success'){
+            resolve({success:true})
+          }else{
+            reject('upload or associate file failed')
+          }
+        })
+      })
+      
+    } else if (isSupportedVideoFile(file.fileurl)) {
+     
+      uploadVideoFile(file).then((result) => {
+        associateFileToMemory(result, file.ishero).then(result => {
+          if(result === 'success'){
+            resolve({success:true})
+          }else{
+            reject('upload or associate file failed')
+          }
+        })
+      })
+     
+    } else if (isSupportedAudioFile(file.fileurl)) {
+      
+      Promises.push(
+        uploadAudioFile(file).then((result) => {
+          associateFileToMemory(result, file.ishero).then(result => {
+            if(result === 'success'){
+              resolve({success:true})
+            }else{
+              reject('upload or associate file failed')
+            }
+          })
+        })
+      )
+    } 
+  })
+}
+
+
+// ---------------------------------------------------------------------------------
+
+export function updateMemoryTitle (  memid,  title ){
+
+  console.log(
+    'updateMemoryTitle : ' + memid + ' words :' + title,
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_title', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        newTitle: title,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+// ---------------------------------------------------------------------------------
+
+export function updateMemoryDescription	( memid,  description 	){
+
+  console.log(
+    'updateMemoryDescription : ' + memid + ' words :' + description,
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_description', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        newDescription: description,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+// ---------------------------------------------------------------------------------
+export function updateMemoryStory (  memid,  story 		){ // string
+  
+  console.log(
+    'updateMemoryStory : ' + memid + ' words :' + story,
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_story', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        newStory: story,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+// ---------------------------------------------------------------------------------
+export function updateMemoryLocation ( memid, location ){ // string
+  
+  console.log(
+    'updateMemoryLocation : ' + memid + ' words :' + location,
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_location', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        newLocation: location,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+// ---------------------------------------------------------------------------------
+export function updateMemoryPeople (  memid, people ){ // [ person ] with person.userid
+
+  console.log(
+    'updateMemoryPeople : memid ' + memid + ' people :' + JSON.stringify(people,null,2)
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_tagged_people', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        taggedPeople: people,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+}
+
+// ---------------------------------------------------------------------------------
+export function updateMemoryClouds ( memid,clouds ){ // [ clouds ] with cloud.id
+
+  console.log(
+    'updateMemoryClouds : ' + memid + ' clouds :' + JSON.stringify(clouds,null,3)
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_clouds', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        clouds: clouds,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+}
+
+// ---------------------------------------------------------------------------------
+export function updateMemoryAuthor ( memid,  userid ){
+
+  console.log(
+    'updateMemoryAuthor : ' + memid + ' words :' + userid,
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_author', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        newAuthor: userid,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+}
+
+// ---------------------------------------------------------------------------------
+export function removeFileFromMemory	(  memid,  file 	){ 
+  // memfile
+  // fileid		  : int
+  // memid		  : int
+  // fileurl	  : string
+  // ishero		  : boolean
+  // fileext	  : string
+  // thumburl	  : string
+  // thumbext	  : string
+	// displayurl	: string
+
+ // removeFileFromMemory_fileurl memid fileurl
+
+ console.log(
+  'removeFileFromMemory : ' + memid + ' words :' + file,
+  );
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/removeFileFromMemory_fileurl', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memoryid: memid,
+        fileurl: file.fileurl,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+// ---------------------------------------------------------------------------------
+
 
 const getSearchWords = () => {
   let words = [];
@@ -310,34 +602,15 @@ export async function getItems(options = {}) {
 // ---------------------------------------------------------------------------------
 
 export async function logStorageContent() {
-  let filearray = [];
-  let clouds = [];
   
-  const keys = AsyncStorage.getAllKeys().then((keys) => {
-    keys.map((key) => {
-      if (
-        key.includes('image') ||
-        key.includes('audio') ||
-        key.includes('video')
-      ) {
-        AsyncStorage.getItem(key).then((value) => {
-          filearray.push('key : ' + key + ' fileName : ' + getFilename(value));
-        });
-      } else if ( key.includes('activecloud') ) {
-        AsyncStorage.getItem(key).then((value) => { clouds.push('key : ' + key + ' fileName : ' + value ) });
-      }
-
-    });
-  });
 
   console.log('AsyncStorage Content');
   console.log();
-  console.log('Loggedin : ' + (await AsyncStorage.getItem('userLoggedin')));
-  console.log('userid : ' + (await AsyncStorage.getItem('userid')));
-  console.log('firstname : ' + (await AsyncStorage.getItem('firstname')));
-  console.log('lastname : ' + (await AsyncStorage.getItem('lastname')));
-  console.log('email : ' + (await AsyncStorage.getItem('email')));
-  filearray.map(file => console.log(file))
+  console.log('Loggedin : '     + (await AsyncStorage.getItem('userLoggedin')));
+  console.log('userid : '       + (await AsyncStorage.getItem('userid')));
+  console.log('firstname : '    + (await AsyncStorage.getItem('firstname')));
+  console.log('lastname : '     + (await AsyncStorage.getItem('lastname')));
+  console.log('email : '        + (await AsyncStorage.getItem('email')));
   console.log('active clouds : ', clouds);
 }
 
@@ -418,9 +691,9 @@ export async function getSelectedCloudsAsArray(){
 
 // rretrieve all clouds that user id if a member of ------------------------
 
-export function mapUserClouds(userid, callback) {
+export function getUserClouds(userid, callback) {
 
-  console.log('mapUserClouds : ', userid );
+  console.log('getUserClouds : ', userid );
   fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
     method: 'post',
     headers: {
@@ -704,7 +977,7 @@ export function getMemories_User(userid) {
 //-------------------------------------------------------------------------------
 
 export function getMemoryClouds(memid) {
-  console.log('getMemoryClouds memid : ',memid);
+  //console.log('getMemoryClouds memid : ',memid);
   return new Promise((resolve,reject) =>{
     fetch('https://memrii-api.herokuapp.com/get_associatedclouds_memoryid', {
     method: 'post',
@@ -728,7 +1001,7 @@ export function getMemoryClouds(memid) {
 //-------------------------------------------------------------------------------
 
 export function getMemoryFiles(memid, callback) {
-  console.log('getMemoryFiles memid : ',memid);
+  //console.log('getMemoryFiles memid : ',memid);
   fetch('https://memrii-api.herokuapp.com/get_memfiles_memoryid', {
     method: 'post',
     headers: {
@@ -790,7 +1063,7 @@ export function getCloudPeople(clouds, callback) {
 //---------------------------------------------------------------------------------
 
 export function getMemoryPeople(memid, callback) {
-  console.log('getMemoryPeople for memory : ' + memid);
+  //console.log('getMemoryPeople for memory : ' + memid);
   fetch('https://memrii-api.herokuapp.com/get_associatedpeople_memoryid', {
     method: 'post',
     headers: {
@@ -895,9 +1168,9 @@ const uploadImageFile = (fileObj) => {
                 _uploadFiletoS3(response, targetFileName).then((s3result) => {
                   if (s3result != 'failure') {
                     thumbS3URL = s3result;
-                    resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
+                    resolve({success:true, originalURL: origS3URL, thumbURL: thumbS3URL});
                   } else {
-                    reject(null);
+                    reject({success:false});
                   }
                 });
               }
@@ -1042,26 +1315,7 @@ const uploadAudioFile = (fileObj) => {
     let targetFileName = commonfileName + '-0-audio' + '.' + origExtension;
     _uploadFiletoS3(filepath, targetFileName).then((result) => {
       origS3URL = result;
-      resolve({originalURL: origS3URL, thumbURL: 'thumbS3URL'});
-
-      // console.log(
-      //   'uploadAudio pre transcode : targetFileName : ' + targetFileName,
-      // );
-      // if (result !== 'failure') {
-      //   let thumbTarget = commonfileName + '-thumb' + '.' + thumbExtension;
-      //   _uploadFiletoS3(require('./images/audioThumb.png'), thumbTarget).then(
-      //     (s3result) => {
-      //       if (s3result !== 'failure') {
-      //         thumbS3URL = s3result;
-      //         resolve({originalURL: origS3URL, thumbURL: thumbS3URL});
-      //       } else {
-      //         reject(null);
-      //       }
-      //     },
-      //   );
-      // } else {
-      //   reject(null);
-      // }
+      resolve({originalURL: origS3URL, thumbURL: 'thumbS3URL'});      
     });
   });
 };
@@ -1219,7 +1473,7 @@ const processMediumResImage = async (filepath, filetype) => {
 
 //--------------------------------------------------------------------------
 
-const addFileToMemory = (fileUrlObj, ishero) => {
+const associateFileToMemory = (fileUrlObj, ishero) => {
   console.log('ADD_FILE_TO_MEMORY : +++++++++++++ ');
 
 
@@ -1236,8 +1490,8 @@ const addFileToMemory = (fileUrlObj, ishero) => {
   const sourceext = getExtension(sourceURL);
   const thumbext = getExtension(thumbURL);
 
-  console.log('addFileToMemory : sourceURL ',getFilename(sourceURL),ishero);
-  console.log('addFileToMemory : thumbURL ' ,getFilename(thumbURL),ishero);
+  console.log('associateFileToMemory : sourceURL ',getFilename(sourceURL),ishero);
+  console.log('associateFileToMemory : thumbURL ' ,getFilename(thumbURL),ishero);
 
   return new Promise((resolve, reject) => {
     fetch('https://memrii-api.herokuapp.com/associateFile', {
@@ -1496,14 +1750,14 @@ const createMemoryID = () => {
 
 export async function findArrayIndex (array,test ){
   return new Promise((resolve,reject)=>{
-    array.map((item,index) =>{
-      if(test(item)){
+    for (let index = 0; index < array.length; index++) {
+      if( test(array[index]) ){
         resolve (index)
+        break
       }
-    })
-    resolve (-1)
-  })
-     
+    }
+    resolve( -1 )
+  }) 
 }
 
 //---------------------------
@@ -1565,4 +1819,11 @@ export function millisecsToHMSM(milliseconds) {
     (msecs < 10 ? '0' : '') +
     msecs
   );
+}
+
+//---------------------------
+
+export function log(obj,message)
+{
+  console.log(message,JSON.stringify(obj,null,3));
 }

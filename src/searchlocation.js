@@ -20,7 +20,13 @@ class SearchLocation extends Component{
 //--------------------------------------------------------------------------------
 
 handleSelectLocation = (location) => {
-  this.props.navigation.navigate('NewPost',{location: location})
+  if(this.props.route){
+    this.props.navigation.navigate('NewPost',{location: location})
+  }else{
+    this.props.updateLocation(location.firstname + ' ' + location.lastname)
+    this.props.close()
+  }
+  
 }
 
 //--------------------------------------------------------------------------------
@@ -75,15 +81,24 @@ renderItem = ({ item  }) => (
 //--------------------------------------------------------------------------------
 
 goBack =() =>{
-  this.props.navigation.navigate('NewPost')
+  if(this.props.route){
+    this.props.navigation.navigate('NewPost',{
+      taggedPeople: this.state.taggedPeople
+    });
+  }else{
+    this.props.close()
+  }
+  
 }
 //--------------------------------------------------------------------------------
 
 render(){
   
+  let toppadding = this.props.route ? 0 : toppadding = 50
+
   return(
     <KeyboardShift >      
-      <View style={styles.container}>
+      <View style={[styles.container,{paddingTop:toppadding}]}>
 
         <View style={styles.listArea}>
           <FlatList   

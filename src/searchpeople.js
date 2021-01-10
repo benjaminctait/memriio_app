@@ -25,6 +25,10 @@ class SearchPeople extends Component{
   }
 
 
+componentDidMount =() =>{
+  this.setState({tagged:this.props.taggedPeople})
+}
+
 //--------------------------------------------------------------------------------
 
 handleTextChange = (value) => {
@@ -36,8 +40,11 @@ handleTextChange = (value) => {
 
 handlePersonClick = (person) => {
 
-  const { params } = this.props.route
-  let tmp = params.taggedPeople
+  let route = this.props.route
+  if ( route ){
+
+  }
+  let tmp = route ? route.params.taggedPeople : this.props.taggedPeople
   let idx =  tmp.findIndex(taggedPerson => {return person.userid === taggedPerson.userid})
 
   if( idx > -1 )
@@ -49,7 +56,8 @@ handlePersonClick = (person) => {
   }
   this.inputRef.current.clear()  
   this.setState({ searchText:'' ,tagged:tmp})
-  params.updatePeople(tmp)
+  if ( route ) route.params.updatePeople(tmp)
+  else this.props.updatePeople(tmp)
     
 }
 
@@ -105,10 +113,9 @@ goBack =() =>{
 //--------------------------------------------------------------------------------
 
 render(){
-  let toppadding = 0
-  if(!this.props.route){
-    toppadding = 50
-  }
+  
+  let toppadding = this.props.route ? 0 : toppadding = 50
+  
   return(
     <View style={[styles.container,{paddingTop:toppadding}]}>
 

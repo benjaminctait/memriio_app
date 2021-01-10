@@ -119,6 +119,7 @@ class Feed extends Component {
   loadMemories = (memories) => {
 
     this.setState({memories: memories, isLoading: false});
+    
   };
 
   //----------------------------------------------------------------------------------------------
@@ -151,7 +152,7 @@ class Feed extends Component {
     console.log(' FEED : DIDMOUNT ');
     this.state.user = await mem.getActiveUser();
 
-    mem.mapUserClouds(this.state.user.userid, this.loadClouds);
+    mem.getUserClouds(this.state.user.userid, this.loadClouds);
     
   };
 
@@ -212,11 +213,35 @@ class Feed extends Component {
     this.state.refreshing = false;
   };
 
+  //----------------------------------------------------------------
+
+  updateMemory = ( memory ) => {
+    console.log('FEED updateMemory ')
+    tmp = []
+    
+    let memarray = Array.isArray(this.state.memories)?this.state.memories:[]
+    mem.findArrayIndex(memarray,(item) =>{return item.memid === memory.memid })
+    .then(idx => {
+                  if( idx > -1 ){
+                    memarray.map((mem,index) =>{
+                      if (idx === index )  tmp.push(memory)
+                      else tmp.push( memarray[index] )
+                    })
+                    this.setState({memories:tmp},() =>{
+                      
+                    })
+                  }
+    })
+    
+    
+  }
+
   //----------------------------------------------------------------------------------------------
+
 
   render() {
     let memisArray = Array.isArray(this.state.memories);
-
+    console.log('feed render');
     let memcount = 0;
     let feedview = {};
     if (memisArray) {
@@ -234,11 +259,14 @@ class Feed extends Component {
             />
           }>
           {this.state.memories.map((mem, index) => (
+            
             <MemoryCard
-              key={index}
-              memory={mem}
-              activeCloud={this.state.activeCloud}
-              navigation={this.props.navigation}
+              key          = { index                  }
+              memory       = { mem                    }
+              activeCloud  = { this.state.activeCloud }
+              navigation   = { this.props.navigation  }
+              updateMemory = { this.updateMemory      }
+              
             />
           ))}
         </ScrollView>

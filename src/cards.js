@@ -54,6 +54,10 @@ class MemoryCard extends Component {
     let mf = []
     let hero = null  
     
+    if (prevProps.memory.memfiles !== this.props.memory.memfiles) { // memfiles has been updated via a local memroy edit
+      this.setState({ files : this.props.memory.memfiles })
+        //mem.log( this.props.memory.memfiles )
+    }
 
     if (prevProps.memory.memid !== this.props.memory.memid) {
 
@@ -63,7 +67,7 @@ class MemoryCard extends Component {
           this.setState({currentStatusLevel:level})
         })        
       })
-
+      
       mem.getMemoryFiles(memory.memid, (memfiles) => {
         memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
           if(mfile.ishero){
@@ -98,6 +102,7 @@ class MemoryCard extends Component {
       mem.getActiveUser   (  ).then(user =>{ this.setState({activeUser:user})})
       mem.getMemoryClouds ( memory.memid).then(clouds =>{ this.setState({taggedClouds:clouds})})
       mem.getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
+      
       mem.getMemoryFiles  ( memory.memid, (memfiles) => {
       
       memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
@@ -173,13 +178,21 @@ class MemoryCard extends Component {
 
   //----------------------------------------------------------------
 
+  updateMemory = ( memory ) => {
+    console.log('CARD updateMemory ')
+    this.setState({files:[]})
+    this.props.updateMemory(memory)
+  }
+
+  //----------------------------------------------------------------
+
   getLower = () => {
     if (this.state.storyVisible) {
       return (
         <View style={styles.storyarea}>
-          <Text style={styles.titleText}> {this.props.memory.title} </Text>
-          <Text style={styles.italicText}>{this.props.memory.description}</Text>
-          <Text style={styles.bodyText}> {this.props.memory.story}</Text>
+          <Text style={styles.titleText}>   { this.props.memory.title       } </Text>
+          <Text style={styles.italicText}>  { this.props.memory.description } </Text>
+          <Text style={styles.bodyText}>    { this.props.memory.story       } </Text>
    
         </View>
       );
@@ -205,7 +218,10 @@ class MemoryCard extends Component {
 
   getCarousel = () => {
     const {width} = Dimensions.get('window');
-
+    if(this.props && this.props.memory.memid === 471) {
+      
+      mem.log(this.state.files,'getCarousel. state.files')
+    }
     return (
       <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center'}}>
         <Carousel
@@ -215,7 +231,7 @@ class MemoryCard extends Component {
           sliderWidth           = {width}
           itemWidth             = {width}
           hasParallaxImages     = {false}
-          firstItem             = {1}
+          firstItem             = {0}
           renderItem            = {this.renderFileView}
           onSnapToItem          = {(index) => this.setState({activeIndex: index})}
           scrollEnabled         = {this.state.scrollable}
@@ -236,10 +252,11 @@ class MemoryCard extends Component {
       let fname = mem.getFilename(item.fileurl)
       
       if (mem.isSupportedImageFile(fname)) {
+        
         return (
           <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => { this.showModal(item) }}>
+            activeOpacity = { 0.5}
+            onPress       = { () => { this.showModal(item) }}>
             <CacheImage style={styles.image} uri={ item.thumburl} filename = { fname } />
           </TouchableOpacity>
         );
@@ -386,18 +403,22 @@ class MemoryCard extends Component {
   
   renderEditButton =() =>{
     
-    if(this.props.memory && this.state.activeUser){
+    // if(this.props.memory && this.state.activeUser){
       
-      if(this.props.memory.userid == this.state.activeUser.userid ){
-        return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
+    //   if(this.props.memory.userid == this.state.activeUser.userid ){
+    //     return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
+    //               <Text style={styles.PostButton} >{'Edit'} </Text>
+    //             </TouchableOpacity>
+    //   }else{
+    //     return null
+    //   }
+    // }else{
+    //   return null
+    // }
+
+    return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
                   <Text style={styles.PostButton} >{'Edit'} </Text>
                 </TouchableOpacity>
-      }else{
-        return null
-      }
-    }else{
-      return null
-    }
   }
 
   
@@ -405,7 +426,7 @@ class MemoryCard extends Component {
   
   renderEditMemoryModal = () => {
      if(this.state.editModalVisible) {
-       
+      
       let memory = {
         memid         : this.props.memory.memid,
         title         : this.props.memory.title,
@@ -416,7 +437,12 @@ class MemoryCard extends Component {
         files         : this.state.files,
         taggedClouds  : this.state.taggedClouds,
         userid        : this.props.memory.userid,
+        cardtype      : this.props.memory.cardtype,
+        editcount     : this.props.memory.editcount,
+        createdon     : this.props.memory.createdon,
       }
+      console.log('CARD rendereditmodal')
+      
 
       return (
         <Modal
@@ -429,6 +455,7 @@ class MemoryCard extends Component {
             capturedFiles = { null }
             memory        = { memory }
             close         = {() => {this.setState({editModalVisible: false})}}
+            updateMemory  = { this.updateMemory }
           />  
         </Modal>
         

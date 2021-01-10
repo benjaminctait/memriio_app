@@ -72,7 +72,7 @@ class Settings extends Component {
     })
     
     this.getPointsAndStatus()
-    mem.mapUserClouds(user.userid,this.setupClouds)
+    mem.getUserClouds(user.userid,this.setupClouds)
 
     this.setState({
       userid: user.userid,

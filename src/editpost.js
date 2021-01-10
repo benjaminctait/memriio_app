@@ -8,6 +8,7 @@ import Dialog from 'react-native-dialog'
 import {showMessage} from 'react-native-flash-message';
 import SearchPeople from './searchpeople'
 import SearchLocation from './searchlocation'
+import Capture from './capture'
 
 import {
   StyleSheet,
@@ -21,8 +22,7 @@ import {
 
 import {
   
-  BackButton,
-  PostButton,
+  BlankButton,
   SubTag,
   LocationTag,
 } from './buttons';
@@ -43,8 +43,7 @@ class EditPost extends Component {
   constructor() {
     super();
     this.setupCloudsAndPeople = this.setupCloudsAndPeople.bind(this);
-    this.pushMemory = this.pushMemory.bind(this);
-
+    
     this.state = {
 
       memid:0,
@@ -54,14 +53,20 @@ class EditPost extends Component {
       taggedPeople: [],
       location: null,
       taggedClouds: [],
-      user:null,
+      userid:null,
       content: [],
+      cardtype:0,
+      editcount:0,
+      createdon: null,
 
       allPeople: [],
       allClouds: [],
       spinner: false,
       modalVisible:false,
       deleteDialogVisible:false,
+      locationModalVisible:false,
+      peopleModalVisible:false,
+      captureModalVisible:false,
       activeItem:null,
       deleteIndex:'',
       initialCloudStatus:[],
@@ -109,78 +114,115 @@ class EditPost extends Component {
 
   updatePost = async () => {
     Keyboard.dismiss();
-
-    let cloudarray = [];
-    let personarray = [];
+    let mf = []
     let me = this.state;
-    let locationName = ''
-    if (me.location){
-      locationName =
-      me.location.firstname && me.location.lastname
-        ? me.location.firstname + ' ' + me.location.lastname
-        : ''; // a temporary treatment until we have gps implemented
+    let pr = this.props;
+    let memory = {
+      memid         : this.state.memid,
+      title         : this.state.title,
+      description   : this.state.description,
+      story         : this.state.story,      
+      location      : this.state.location,
+      taggedPeople  : this.state.taggedPeople,      
+      taggedClouds  : this.state.taggedClouds,
+      userid        : this.state.userid,
+      createdon     : this.state.createdon,
+      cardtype      : this.state.cardtype,
+      editcount     : this.state.editcount,
+      memfiles      : await this.formatContentForFeed(this.state.content)
     }
-    
-    me.taggedClouds.map((cloud) => {
-      if (cloud.id !== 0) {
-        cloudarray.push(parseInt(cloud.id));
-      }
-    }); // push all but the personal cloud
-
-
-    me.taggedPeople.map((person, i) => {
-      personarray[i] = person.userid;
-    });
-
+        
     showMessage({
-      message: 'Updating.. should be done shortly',
+      message: 'Memory updated',
       type: 'success',
-      duration: 2000,
+      duration: 600,
       autoHide: true,
       floating: true,
     });
 
-    console.log('UPDATE POST', this.props.screenProps);
-   
-    //this.props.navigation.navigate('Feed');
+    this.props.updateMemory(memory)   
+    this.props.close()
 
-    // await mem.updateMemory(
-    //   me.memid,
-    //   me.title,
-    //   me.description,
-    //   me.story,
-    //   me.content,
-    //   personarray,
-    //   locationName,
-    //   cloudarray,
-    //   me.user.userid,
-    //   this.doPostLoad,
-    // );
-  };
+    mem.updateMemoryTitle       ( me.memid , me.title        )
+    mem.updateMemoryDescription ( me.memid , me.description  )
+    mem.updateMemoryStory       ( me.memid , me.story        )
+    mem.updateMemoryLocation    ( me.memid , me.location     )
+    mem.updateMemoryPeople      ( me.memid , me.taggedPeople )
+    mem.updateMemoryClouds      ( me.memid , me.taggedClouds )
 
-  //--------------------------------------------------------------------------
+    // // check for delete content
+    
+    pr.memory.files.map ( oldfile => {
+      mem.findArrayIndex ( memory.memfiles , (( item ) => { return item.fileid === oldfile.fileid }))
+      .then(idx =>{
+        if ( idx < 0 ){
+          //mem.log(oldfile,'file for removal')
+          mem.removeFileFromMemory( me.memid, oldfile )
+        }
+      })
+      
+    })
 
-  pushMemory = (memid) => {
-    console.log('PUSH MEMORY');
+    // // check for added content 
+
+    memory.memfiles.map (newfile => {
+      mem.findArrayIndex( pr.memory.files,(( item ) => { return item.fileid === newfile.fileid }))
+      .then(idx => {
+        if ( idx < 0 ){
+          
+          //mem.log(newfile,'file fo addition')
+          mem.addFileToMemory( memory.memid , memory.userid  , newfile )
+        }
+      })
+      
+    })
     
   };
 
   //--------------------------------------------------------------------------
-
-  doPostLoad = (memid) => {
+  
+  formatContentForFeed = async ( content ) =>{
+    let filearray = []
+    content.map( ( old, index ) => {
+      let newfile = {
+        fileid      : old.fileid,
+        memid       : this.state.memid,
+        fileurl     : old.filepath,
+        fileext     : mem.getExtension(old.filepath),
+        thumburl    : old.thumbnail?old.thumbnail:'',
+        thumbext    : mem.getExtension(old.thumbnail),
+        displayurl  : old.displayurl?old.displayurl:'',
+        ishero      : old.ishero?old.ishero:false,
+      }
+      filearray.push(newfile)
+    })
     
-    
-  };
-
-  // ---------------------------------------------------------------------------------
+    return filearray
+  }
+  
+  //--------------------------------------------------------------------------
 
   getLocation = () => {
     Keyboard.dismiss();
-    this.props.navigation.navigate('SearchLocation');
+    this.setState({locationModalVisible:true})
   };
 
   // ---------------------------------------------------------------------------------
 
+  showCapture = () => {
+    this.setState({captureModalVisible:true})
+
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  updateLocation = ( location  ) => {
+    console.log('update location called');
+    this.setState({ location : location})
+  }
+  
+  // ---------------------------------------------------------------------------------
+  
   getClouds = () => {
     Keyboard.dismiss();
   };
@@ -196,7 +238,7 @@ class EditPost extends Component {
   // ---------------------------------------------------------------------------------
 
   updatePeople = ( taggedPeople  ) => {
-    console.log('update called');
+    console.log('update people called');
     this.setState({taggedPeople:taggedPeople})
   }
 
@@ -211,7 +253,7 @@ class EditPost extends Component {
     const { capturedFiles,memory } = this.props
     let newarray = []
     console.log('EDITPOAST - didmount');
-    console.log('');
+    console.log('Editing memory ',memory.memid);
     
     
     if(memory){
@@ -220,32 +262,34 @@ class EditPost extends Component {
         {
           memid         : memory.memid,
           title         : memory.title,
-          story         : memory.story,      
+          story         : memory.story,   
+          description   : memory.description,   
           taggedPeople  : memory.taggedPeople,
-          location      :{
-                          locid     : 0,
-                          firstname : memory.location,
-                          lastname  : ''
-                         },      
+          location      : memory.location,
           taggedClouds  : memory.taggedClouds,
           userid        : memory.userid,
+          cardtype      : memory.cardtype,
+          editcount     : memory.editcount,
+          createdon     : memory.createdon,
+
           activeUser    : null,
         }
       )
-      mem.mapUserClouds(memory.userid, this.setupCloudsAndPeople);
+      mem.getUserClouds(memory.userid, this.setupCloudsAndPeople);
       memory.files.map(file =>{
         let fname = mem.getFilename(file.thumburl)
         let ftype = this.getFileType(file.fileext)
         newarray.push({
-          displayurl  : file.displayurl,
-          fileext     : file.fileext,
-          filepath    : file.fileurl ,  // original filepath
-          id          : file.id,
-          isHero      : file.isHero,
+          fileid      : file.fileid,
           memid       : file.memid,
-          thumbext    : file.thumbext,
+          filepath    : file.fileurl ,  // original filepath
+          ishero      : file.ishero,
+          fileext     : file.fileext,          
           thumbnail   : file.thumburl,
-          origin      : 0 ,             // CAMERA || CAMERAROLL || AUDIO || VIDEO     
+          thumbext    : file.thumbext,
+          displayurl  : file.displayurl,
+          
+          id          : file.id,        // CAMERA || CAMERAROLL || AUDIO || VIDEO     
           type        : ftype,          // IMAGE=0 || VIDEO=1 || AUDIO=2
           text        : '',             // needed only to match thumbScroll data structure            
           id          : fname,          // used only as unique identifier 
@@ -258,7 +302,7 @@ class EditPost extends Component {
       mem.getActiveUser().then(user =>{
         if(user){
           this.setState( { activeUser: user } )
-          mem.mapUserClouds(user.userid, this.setupCloudsAndPeople);
+          mem.getUserClouds(user.userid, this.setupCloudsAndPeople);
         }
       })
     }    
@@ -272,25 +316,31 @@ class EditPost extends Component {
     else if (mem.isSupportedAudioFile(extension)) return AUDIO
     else return 0
   }
+ 
+  // ---------------------------------------------------------------------------------
 
   handleCloudTagPress = (cloudItem, buttonState) => {
+    
+    let newarray = this.state.taggedClouds;    
+
     let selectedClouds = this.state.taggedClouds.map((cloud) => {
       return cloud.id;
     });
-    let newarray = [];
+    
     let exists = selectedClouds.includes(cloudItem.id);
 
     if (buttonState && !exists) {
-      this.state.taggedClouds.push(cloudItem);
+      newarray.push(cloudItem);
     }
 
     if (!buttonState && exists) {
+      newarray = []
       this.state.taggedClouds.map((cloud) => {
         if (cloud.id !== cloudItem.id) {
           newarray.push(cloud);
         }
       });
-      this.state.taggedClouds = newarray;
+      this.setState({taggedClouds:newarray})
     }
 
     console.log(
@@ -354,10 +404,8 @@ class EditPost extends Component {
       return (
         <View style={styles.subtitle}>
           <LocationTag
-            key={this.state.location.locid}
-            title={
-              this.state.location.firstname + ' ' + this.state.location.lastname
-            }
+            key= 'locid'
+            title={this.state.location}
           />
         </View>
       );
@@ -369,6 +417,7 @@ class EditPost extends Component {
   // ---------------------------------------------------------------------------------
 
   render() {
+    // console.log('edit post content ');
     
     return (
       <KeyboardShift>
@@ -391,7 +440,7 @@ class EditPost extends Component {
             placeholder="Description.."
             placeholderTextColor="grey"
             onChangeText={(text) => {
-              this.setState({story: text});
+              this.setState({description: text});
             }}
             value={this.state.description?this.state.description:''}
           />
@@ -450,26 +499,43 @@ class EditPost extends Component {
             />
           </View>
               <ThumbList
-                data              = { this.state.content}
-                handleThumbPress  = { this.showImageEditModal}    
-                handleDeletePress = { this.showDeleteDialog }                            
+                data               = { this.state.content}
+                handleThumbPress   = { this.showImageEditModal}    
+                handleDeletePress  = { this.showDeleteDialog }      
+                changeContentOrder = { (newcontent ) => this.setState({content:newcontent})}
               />
           
         </View>
 
         <View style={styles.mainButtons}>
-          <BackButton onPress={ this.goBackToCapture }
-                      Title={'Capture'}/>
-          <TouchableOpacity onPress={ this.cancelUpdate }>
-            <Text style={styles.PostButton} >{'Cancel'} </Text>
-          </TouchableOpacity> 
-          <PostButton onPress={ this.updatePost } 
-                      Title={'Update'} />
+          
+          <BlankButton 
+            onPress      = { this.cancelUpdate } 
+            title        = { 'Cancel'} 
+            source       = { require('./images/cancel.png') }
+            buttonStyle  = { {height:40,width:40}}
+            />
+
+          <BlankButton 
+            onPress     = { this.showCapture } 
+            title       = { 'Add File'} 
+            source      = { require('./images/plus_green.png') }
+            buttonStyle  = { {height:40,width:40}}
+            />
+
+          <BlankButton 
+            onPress  = { this.updatePost } 
+            title    = { 'Update'} 
+            source   = { require('./images/upload.png') }
+            buttonStyle  = { {height:40,width:40}}
+            />
         </View>
         
         { this.renderImageEditModal() }
         { this.renderDeleteDialog()   }
         { this.renderPeopleModal()    }
+        { this.renderLocationModal()  }
+        { this.renderCaptureModal()   }
         
 
       </KeyboardShift>
@@ -478,24 +544,34 @@ class EditPost extends Component {
   
   // ---------------------------------------------------------------------------------
 
+  renderCaptureModal = () =>{
+    
+    if(this.state.captureModalVisible){
+      return (
+        <Modal
+            animationType   = "slide"
+            transparent     = { false}
+            visible         = { this.state.captureModalVisible}
+            >
+            <Capture 
+              captureContent = { this.state.content }
+              editmode       = { true }
+              close          = { () => this.setState({captureModalVisible:false})}
+              updateContent  = { ( newContent ) => this.setState({content:newContent}) }
+              
+            />
+          </Modal>
+      )
+    }else{
+      return null
+    }
+  }
+  
+  // ---------------------------------------------------------------------------------
+
   cancelUpdate = () => {
    this.props.close()
 
-  }
-
-  // ---------------------------------------------------------------------------------
-
-  goBackToCapture = () => {
-    let memobj = {
-      title:        this.state.title,
-      story:        this.state.story,      
-      taggedPeople: this.state.taggedPeople,
-
-      location:     this.state.location,
-      taggedClouds: this.state.taggedClouds,
-      user:         this.state.userid,      
-    }
-    
   }
 
   // ---------------------------------------------------------------------------------
@@ -522,6 +598,31 @@ class EditPost extends Component {
       }
       
   }
+
+  // ---------------------------------------------------------------------------------
+
+  renderLocationModal = () =>{
+    
+    if(this.state.locationModalVisible){
+      return (
+        <Modal
+            animationType   = "slide"
+            transparent     = {false}
+            visible         = {this.state.locationModalVisible}
+            >
+            <SearchLocation
+                location        = { this.state.location}
+                updateLocation  = { this.updateLocation }
+                close           = { () => {this.setState({locationModalVisible: false})}}
+            />              
+          </Modal>
+      )
+    }else{
+      return null
+    }
+    
+  }
+
   // ---------------------------------------------------------------------------------
 
   renderImageEditModal = () => {

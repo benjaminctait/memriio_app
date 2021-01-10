@@ -2,6 +2,7 @@ import React from 'react' ;
 import { View, Image, Dimensions, TouchableHighlightBase} from 'react-native';
 import RNFS from 'react-native-fs'
 import ImageZoom from 'react-native-image-pan-zoom'
+import * as mem from './datapass'
 
 let shorthash = require("shorthash");
 
@@ -24,21 +25,35 @@ class CacheImage extends React.Component {
   }
   
   //----------------------------------------------------------------
-
+  
   componentDidMount(){
-    const { uri,filename } = this.props ; 
+    const { uri,filename,flag } = this.props ; 
     
-    const name = shorthash.unique(filename);
-    const extension = (Platform.OS === 'android') ? 'file://' : '' 
-    const path =`${extension}${RNFS.CachesDirectoryPath}/${name}.png`;
-    RNFS.exists(path).then( exists => {
-          if(exists)this.loadFile(path) ;
-          else this.downloadFile(uri,path) ;
-        })
+    if( this.isLocalPath ( uri ) ){
+      this.loadFile(uri)
+      
+    }else{
+      let name    =  shorthash.unique(filename);
+      let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
+      let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+      RNFS.exists(path).then( exists => {
+        if(exists)this.loadFile(path) ;
+        else this.downloadFile(uri,path) ;
+      })
+    }
+    
    }
    
    //----------------------------------------------------------------
+   
+   isLocalPath = ( path ) => {
+    
+    if ( path[0] === '/' ) return true 
+    else return false
+   }
 
+   //----------------------------------------------------------------
+   
    render(){
      return(
        <Image style={this.props.style} source={this.state.source} />

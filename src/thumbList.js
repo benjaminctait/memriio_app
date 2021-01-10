@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -26,11 +26,19 @@ class ThumbList extends React.Component {
 
   componentDidMount = () =>{
     
-    this.setState(this.setStateFunction)
+    this.setState(this.setStateFunction )
+    
   }
-  
+
+  componentDidUpdate = (prevProps,prevState) =>{
+    if(prevProps !== this.props ){
+      this.setState({data:this.props.data})
+    }
+  }
+
   setStateFunction = (state, props) => {
     const newState = {...state, data: props.data};
+    //console.log(JSON.stringify(props.data,null,3));
     return newState;
   }
   
@@ -72,7 +80,13 @@ class ThumbList extends React.Component {
   }
 
   handleDragEnd = (newdata) => {
+    newdata.forEach(element => {
+      element.ishero = false
+    });
+    newdata[0].ishero = true
+    
     this.setState({data:newdata})
+    this.props.changeContentOrder(newdata)
   }
 
   render() {
