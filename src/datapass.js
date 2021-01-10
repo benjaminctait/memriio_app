@@ -528,18 +528,7 @@ export function updateMemoryAuthor ( memid,  userid ){
 
 // ---------------------------------------------------------------------------------
 export function removeFileFromMemory	(  memid,  file 	){ 
-  // memfile
-  // fileid		  : int
-  // memid		  : int
-  // fileurl	  : string
-  // ishero		  : boolean
-  // fileext	  : string
-  // thumburl	  : string
-  // thumbext	  : string
-	// displayurl	: string
-
- // removeFileFromMemory_fileurl memid fileurl
-
+  
  console.log(
   'removeFileFromMemory : ' + memid + ' words :' + file,
   );
@@ -549,7 +538,7 @@ export function removeFileFromMemory	(  memid,  file 	){
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        memoryid: memid,
+        memid: memid,
         fileurl: file.fileurl,
       }),
     })

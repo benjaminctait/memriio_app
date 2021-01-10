@@ -149,33 +149,27 @@ class EditPost extends Component {
     mem.updateMemoryLocation    ( me.memid , me.location     )
     mem.updateMemoryPeople      ( me.memid , me.taggedPeople )
     mem.updateMemoryClouds      ( me.memid , me.taggedClouds )
-
-    // // check for delete content
     
+
+    // check for delete content
     pr.memory.files.map ( oldfile => {
       mem.findArrayIndex ( memory.memfiles , (( item ) => { return item.fileid === oldfile.fileid }))
       .then(idx =>{
         if ( idx < 0 ){
-          //mem.log(oldfile,'file for removal')
           mem.removeFileFromMemory( me.memid, oldfile )
         }
       })
-      
     })
 
-    // // check for added content 
-
-    memory.memfiles.map (newfile => {
+    // check for added content 
+    memory.memfiles.map ( newfile => {
       mem.findArrayIndex( pr.memory.files,(( item ) => { return item.fileid === newfile.fileid }))
       .then(idx => {
         if ( idx < 0 ){
-          
-          //mem.log(newfile,'file fo addition')
           mem.addFileToMemory( memory.memid , memory.userid  , newfile )
         }
-      })
-      
-    })
+      })      
+    })   
     
   };
 
