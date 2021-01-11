@@ -415,7 +415,7 @@ class PersonListItem extends Component{
               size="small"
               rounded
               title={initials}
-              overlayContainerStyle={{backgroundColor:person.avatar,justifyContent:'flex-start'}}
+              overlayContainerStyle={{backgroundColor:person.color,justifyContent:'flex-start'}}
               onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
               activeOpacity={0.7}
             />

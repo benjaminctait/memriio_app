@@ -69,15 +69,12 @@ class MemoryCard extends Component {
       })
       
       mem.getMemoryFiles(memory.memid, (memfiles) => {
-        memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
-          if(mfile.ishero){
-            hero = mfile
-          }else{
-            mf.push(mfile)
-          } 
-        })      
-        if (hero ) mf.push(hero)   // push the hero last - displayed first
         
+        memfiles.map(mfile=>{   
+          if(mfile.ishero) hero = mfile
+          else mf.push(mfile)
+        })      
+        if (hero ) mf.unshift(hero) 
         this.setState({files: mf});
       });
       // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
@@ -105,16 +102,11 @@ class MemoryCard extends Component {
       
       mem.getMemoryFiles  ( memory.memid, (memfiles) => {
       
-      memfiles.map(mfile=>{   // need to ensure the hero file is displayed first in the carousel 
-        if(mfile.ishero){
-          hero = mfile
-        }else{
-          mf.push(mfile)
-        } 
+      memfiles.map(mfile=>{   
+        if ( mfile.ishero ) hero = mfile
+        else mf.push(mfile)
       })      
-      if (hero) {  // push the hero last - displayed first
-        mf.push(hero)                 
-      }
+      if (hero) mf.unshift(hero) 
       this.setState({files: mf});
 
     });
@@ -218,10 +210,7 @@ class MemoryCard extends Component {
 
   getCarousel = () => {
     const {width} = Dimensions.get('window');
-    if(this.props && this.props.memory.memid === 471) {
-      
-      mem.log(this.state.files,'getCarousel. state.files')
-    }
+    
     return (
       <View style={{flex: 0, flexDirection: 'row', justifyContent: 'center'}}>
         <Carousel
@@ -334,7 +323,7 @@ class MemoryCard extends Component {
             size="small"
             rounded
             title={initials}
-            overlayContainerStyle={{backgroundColor:this.state.author.avatar}}
+            overlayContainerStyle={{backgroundColor:this.state.author.color}}
             onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
             activeOpacity={0.7}
           />
@@ -403,22 +392,22 @@ class MemoryCard extends Component {
   
   renderEditButton =() =>{
     
-    // if(this.props.memory && this.state.activeUser){
+    if(this.props.memory && this.state.activeUser){
       
-    //   if(this.props.memory.userid == this.state.activeUser.userid ){
-    //     return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
-    //               <Text style={styles.PostButton} >{'Edit'} </Text>
-    //             </TouchableOpacity>
-    //   }else{
-    //     return null
-    //   }
-    // }else{
-    //   return null
-    // }
-
-    return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
+      if(this.props.memory.userid == this.state.activeUser.userid ){
+        return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
                   <Text style={styles.PostButton} >{'Edit'} </Text>
                 </TouchableOpacity>
+      }else{
+        return null
+      }
+    }else{
+      return null
+    }
+
+    // return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
+    //               <Text style={styles.PostButton} >{'Edit'} </Text>
+    //             </TouchableOpacity>
   }
 
   

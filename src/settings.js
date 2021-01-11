@@ -29,6 +29,7 @@ class Settings extends Component {
     familyname: '',
     clouds: [],
     avatar: null,
+    color:'',
     userid: 0,
   };
 
@@ -113,8 +114,8 @@ getPointsAndStatus = () => {
             currentLevel = level.statusname
             if(nextLevelIndex < (levels.length -1) ){
               nextLevelIndex++
-              nextLevel   = levels[nextLevelIndex].statusname
-              gapToReach  = levels[nextLevelIndex].reachvalue - totalcredits      // gap in creadits to reach next status level
+              nextLevel   = levels[nextLevelIndex  ].statusname
+              gapToReach  = levels[nextLevelIndex  ].reachvalue - totalcredits      // gap in creadits to reach next status level
               gapToRetain = levels[nextLevelIndex-1].retainvalue - totalcredits   // gap in credits to retain current level
             }
           }
@@ -150,26 +151,26 @@ getPointsAndStatus = () => {
           <View style={styles.container} >
                 
                 <Input 
-                  label ='First Name'
-                  labelStyle={styles.labelText}
-                  containerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText} 
-                  onChangeText = {(text) => {this.setState({firstname:text})}}
-                  placeholder={this.state.firstname}
-                  placeholderTextColor='black'
+                  label                = 'First Name'
+                  labelStyle           = { styles.labelText}
+                  containerStyle       = { styles.inputContainer}
+                  inputStyle           = { styles.inputText} 
+                  onChangeText         = { (text) => {this.setState({firstname:text})}}
+                  placeholder          = { this.state.firstname}
+                  placeholderTextColor = 'black'
             
                 />
 
 
           <Input
-            label="Family Name"
-            labelStyle={styles.labelText}
-            containerStyle={styles.inputContainer}
-            inputStyle={styles.inputText}
-            onChangeText={(text) => {
+            label           = "Family Name"
+            labelStyle      = {styles.labelText}
+            containerStyle  = {styles.inputContainer}
+            inputStyle      = {styles.inputText}
+            onChangeText    = {(text) => {
               this.setState({familyname: text});
             }}
-            placeholder={this.state.familyname}
+            placeholder     = {this.state.familyname}
             placeholderTextColor="black"
           />
 

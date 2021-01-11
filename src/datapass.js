@@ -330,6 +330,32 @@ export function addFileToMemory ( memid , userid, file ){
   })
 }
 
+// ---------------------------------------------------------------------------------
+
+export function updateMemoryHero (  memid,  memfile ){
+
+  console.log('updateMemoryHero : ' + memid + 'to memfile :' + JSON.stringify(memfile,null,3));
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/set_memory_herofile', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memid: memid,
+        fileurl: memfile.fileurl,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
 
 // ---------------------------------------------------------------------------------
 
@@ -530,7 +556,7 @@ export function updateMemoryAuthor ( memid,  userid ){
 export function removeFileFromMemory	(  memid,  file 	){ 
   
  console.log(
-  'removeFileFromMemory : ' + memid + ' words :' + file,
+  'removeFileFromMemory : ' + memid + ' file :' + JSON.stringify(file,null,3)
   );
 
   return new Promise((resolve, reject) => {
@@ -559,7 +585,7 @@ export function removeFileFromMemory	(  memid,  file 	){
 
 const getSearchWords = () => {
   let words = [];
-  let titlewords = memory.title.split(' '); // need to replace with a proper extractor
+  let titlewords = updateMemoryHero.title.split(' '); // need to replace with a proper extractor
   let storywords = memory.story.split(' '); // need to replace with a proper extractor
 
   titlewords.map((word) => {

@@ -113,11 +113,10 @@ class EditPost extends Component {
   //--------------------------------------------------------------------------
 
   updatePost = async () => {
-    Keyboard.dismiss();
-    let mf = []
-    let me = this.state;
-    let pr = this.props;
-    let memory = {
+
+    Keyboard.dismiss();    
+    let oldMemory = this.props.memory;
+    let newMemory = {
       memid         : this.state.memid,
       title         : this.state.title,
       description   : this.state.description,
@@ -140,36 +139,48 @@ class EditPost extends Component {
       floating: true,
     });
 
-    this.props.updateMemory(memory)   
+    this.props.updateMemory( newMemory )
     this.props.close()
 
-    mem.updateMemoryTitle       ( me.memid , me.title        )
-    mem.updateMemoryDescription ( me.memid , me.description  )
-    mem.updateMemoryStory       ( me.memid , me.story        )
-    mem.updateMemoryLocation    ( me.memid , me.location     )
-    mem.updateMemoryPeople      ( me.memid , me.taggedPeople )
-    mem.updateMemoryClouds      ( me.memid , me.taggedClouds )
+    mem.updateMemoryTitle       ( newMemory.memid , newMemory.title        )
+    mem.updateMemoryDescription ( newMemory.memid , newMemory.description  )
+    mem.updateMemoryStory       ( newMemory.memid , newMemory.story        )
+    mem.updateMemoryLocation    ( newMemory.memid , newMemory.location     )
+    mem.updateMemoryPeople      ( newMemory.memid , newMemory.taggedPeople )
+    mem.updateMemoryClouds      ( newMemory.memid , newMemory.taggedClouds )
     
 
     // check for delete content
-    pr.memory.files.map ( oldfile => {
-      mem.findArrayIndex ( memory.memfiles , (( item ) => { return item.fileid === oldfile.fileid }))
+    oldMemory.files.map ( oldfile => {
+      mem.findArrayIndex ( newMemory.memfiles , (( item ) => { return item.fileid === oldfile.fileid }))
       .then(idx =>{
-        if ( idx < 0 ){
-          mem.removeFileFromMemory( me.memid, oldfile )
-        }
+        if ( idx < 0 ) mem.removeFileFromMemory( newMemory.memid, oldfile )
       })
     })
 
     // check for added content 
-    memory.memfiles.map ( newfile => {
-      mem.findArrayIndex( pr.memory.files,(( item ) => { return item.fileid === newfile.fileid }))
+    newMemory.memfiles.map ( newfile => {
+      mem.findArrayIndex( oldMemory.files,(( item ) => { return item.fileid === newfile.fileid }))
       .then(idx => {
-        if ( idx < 0 ){
-          mem.addFileToMemory( memory.memid , memory.userid  , newfile )
-        }
+        if ( idx < 0 ) mem.addFileToMemory( newMemory.memid , newMemory.userid  , newfile )
       })      
     })   
+
+    // check to see if hero file was changed
+    
+    newMemory.memfiles.map( newfile => {
+      
+      if(newfile.ishero && typeof newfile.fileid !== 'undefined' ){
+        
+        oldMemory.files.map(oldfile => { 
+          if( oldfile.ishero ){
+            if ( newfile.fileurl !== oldfile.fileurl ){
+              mem.updateMemoryHero( newMemory.memid, newfile )
+            }
+          }
+        })
+      }
+    })
     
   };
 
