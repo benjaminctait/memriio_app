@@ -11,7 +11,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import NewPost from './newpost';
 import SearchPeople from './searchpeople';
 import SearchLocation from './searchlocation';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet,Image} from 'react-native';
 
 const BottomNav = createBottomTabNavigator();
 const RootNav = createStackNavigator();
@@ -27,8 +27,12 @@ class Main extends Component {
           component={Feed}
           options={{
             tabBarLabel: 'Home',
-            tabBarIcon: () => (
-              <MaterialIcon name="home" color={'black'} size={26} />
+            tabBarIcon: ({ focused, tintColor }) => (
+              <Image
+                focused = { focused}
+                source  = { require('./images/home.png')}
+                style   = { styles.mediumButton }                
+              />
             ),
           }}
         />
@@ -41,8 +45,12 @@ class Main extends Component {
               CardStyleInterpolators.forModalPresentationIOS,
             tabBarVisible: false,
             tabBarLabel: 'Capture',
-            tabBarIcon: () => (
-              <MaterialIcon name="control-point" color={'black'} size={26} />
+            tabBarIcon: ({ focused, tintColor }) => (
+              <Image
+                focused = { focused}
+                source  = { require('./images/plus_green.png')}
+                style   = { [styles.mediumButton,{height:40,width:40} ]}                
+              />
             ),
           }}
         />
@@ -112,9 +120,20 @@ const styles = StyleSheet.create({
   iconrow: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    paddingTop:5,
     marginTop: 4,
-    marginLeft: 4,
-    marginRight: 4,
+    marginLeft: 2,
+    marginRight: 2,
   },
+
+  mediumButton: {
+    marginTop:3,
+    height: 30,
+    width: 30,
+    alignSelf:'center',
+    backgroundColor: 'transparent',
+    
+  },
+
 });

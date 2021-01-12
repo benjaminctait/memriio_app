@@ -47,6 +47,7 @@ class ThumbList extends React.Component {
     this.props.handleDeletePress(index)
   }
 
+  
   renderItem = ({ item, index, drag, isActive }) => {
     let st = isActive ? styles.activeThumb : styles.thumb
     let im = isActive ? styles.activeImage : styles.image
@@ -86,7 +87,10 @@ class ThumbList extends React.Component {
     newdata[0].ishero = true
     
     this.setState({data:newdata})
-    this.props.changeContentOrder(newdata)
+    if(this.props.handleOrderChange){
+      this.props.handleOrderChange(newdata)
+    }
+    
   }
 
   render() {

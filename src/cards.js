@@ -7,7 +7,7 @@ import * as mem from './datapass';
 import sliderStyles  from './styles/index.style';
 import {CacheImage,CachedZoomableImage} from './cachedImage'
 
-import { Avatar,Badge, Icon } from 'react-native-elements'
+import { Avatar,Badge, Overlay } from 'react-native-elements'
 import {
   StyleSheet,
   View,
@@ -45,6 +45,7 @@ class MemoryCard extends Component {
     currentStatusLevel: null,
     activeUser        : null,
     taggedClouds      : null,
+    profileVisible    : false,
     
   };
   //------------------------------------------------------------------------------------------------
@@ -92,7 +93,9 @@ class MemoryCard extends Component {
       mem.getUserDetails(memory.userid).then(user => {
         this.setState({author:user})
         this.getUserStatus(user.userid,this.props.activeCloud).then(level =>{
-          this.setState({currentStatusLevel:level})
+          temp = this.state.author
+          temp.status = level
+          this.setState({currentStatusLevel:level,author:temp})
         })        
       })
 
@@ -141,6 +144,12 @@ class MemoryCard extends Component {
       
     })
     
+  }
+
+  //------------------------------------------------------------------------------------------------
+
+  handleAuthorPress = () => {
+    this.setState({profileVisible:true})
   }
 
   //------------------------------------------------------------------------------------------------
@@ -324,7 +333,7 @@ class MemoryCard extends Component {
             rounded
             title={initials}
             overlayContainerStyle={{backgroundColor:this.state.author.color}}
-            onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
+            onPress={this.handleAuthorPress}
             activeOpacity={0.7}
           />
           {badge}
@@ -384,12 +393,113 @@ class MemoryCard extends Component {
         {lower}
         { this.renderModal() }
         { this.renderEditMemoryModal() }
+        { this.renderUserProfileOverlay(this.state.author)}
       </View>
     );
   }
 
   // ---------------------------------------------------------------------------------
+
+  renderUserProfileOverlay = (person) =>{
+   
+
+    // <TouchableOpacity 
+    //           onPress = { () => console.log('name pressed')} 
+    //           style   = {{flex:1,flexDirection:'row'}}
+    //           >
+    //           <Image 
+    //             source = {require('./images/nametag.png')}
+    //             style = {{height:20,width:20}}/>
+    //           <Text >{`${person.firstname} ${person.lastname}`} </Text>
+    //         </TouchableOpacity>
+
+    let statusname = ''
+    if( person.status ){
+      statusname = person.status.statusname
+    }
+    return <Overlay 
+              isVisible             = { this.state.profileVisible } 
+              overlayStyle          = { [styles.profileOverlay,{borderWidth:2,borderColor:person.color}] }
+              
+              onBackdropPress       = {() => this.setState({profileVisible:false})}>
+            <Image 
+              source ={require('./images/amandaharris.jpg')}
+              style = {{height:150,width:150,borderRadius:8,overflow:'hidden'}}
+            />
+            
+            { this.renderTextCard( require('./images/nametag.png'), `${person.firstname} ${person.lastname}` ) }
+
+            <TouchableOpacity 
+              onPress = { () => console.log('title pressed')} 
+              style   = {{flex:1,flexDirection:'row'}}
+              >
+              <Image 
+                source = {require('./images/dogtags.png')}
+                style = {{height:20,width:20}}/>
+              <Text >{person.title} </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress = { () => console.log('location pressed')} 
+              style   = {{flex:1,flexDirection:'row'}}
+              >
+              <Image 
+                source = {require('./images/location.png')}
+                style = {{height:20,width:20}}/>
+              <Text >{person.company} </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress = { () => console.log('email pressed')} 
+              style   = {{flex:1,flexDirection:'row'}}
+              >
+              <Image 
+                source = {require('./images/atsymbol.png')}
+                style = {{height:20,width:20}}/>
+              <Text >{person.email} </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress = { () => console.log('phone pressed')} 
+              style   = {{flex:1,flexDirection:'row'}}
+              >
+              <Image 
+                source = {require('./images/phonepad.png')}
+                style = {{height:20,width:20}}/>
+              <Text >{person.mobile} </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress = { () => console.log('status pressed')} 
+              style   = {{flex:1,flexDirection:'row'}}
+              >
+              <Image 
+                source = {require('./images/medal.png')}
+                style = {{height:20,width:20}}/>
+              <Text >{statusname} </Text>
+            </TouchableOpacity>
+
+
+          </Overlay>
+  }
+
   
+  // ---------------------------------------------------------------------------------
+  
+  renderTextCard = (src,text ) =>{
+    return <TouchableOpacity 
+            onPress = { () => console.log('status pressed')} 
+            style   = {{flex:1,flexDirection:'row'}}
+            >
+            <Image 
+              source = {src}
+              style = {{height:20,width:20}}/>
+            <Text >{text} </Text>
+          </TouchableOpacity>
+  }
+  
+  // ---------------------------------------------------------------------------------
+
   renderEditButton =() =>{
     
     if(this.props.memory && this.state.activeUser){
@@ -398,6 +508,7 @@ class MemoryCard extends Component {
         return  <TouchableOpacity onPress={ () => this.setState({editModalVisible:true}) }>
                   <Text style={styles.PostButton} >{'Edit'} </Text>
                 </TouchableOpacity>
+                
       }else{
         return null
       }
@@ -517,8 +628,20 @@ class MemoryCard extends Component {
 //------------------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  
   titleblock: {
     marginLeft: 8,
+  },
+
+  profileOverlay :{
+    position:'relative',
+    backgroundColor:'white',
+    borderWidth:5,
+    borderColor:'darkgray',
+    borderRadius:15,
+    maxHeight:'50%',
+   
+
   },
 
   storyarea: {

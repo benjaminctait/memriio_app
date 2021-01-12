@@ -221,14 +221,9 @@ getPointsAndStatus = () => {
                             height={80}
                             width={300}
                             >
-                          <Text style={styles.pointsSubText}>{`${this.state.statusGapInCredits} credits to reach ${this.state.nextStatusLevel}`}</Text>
-                        </Tooltip>
-                       
+                          <Text style={styles.pointsSubText}>{this.getStatusGapMessage()}</Text>
+                        </Tooltip>                       
                       </View>
-                      
-                      
-                     
-
                     </View>
                   </View>
                   
@@ -244,13 +239,8 @@ getPointsAndStatus = () => {
                         onPress = {() =>{this.props.route.params.logoutcallback()}}
                       >Logout</Text>
                     </TouchableOpacity>
-                    
                   </View>
-                  
-                  
-                
               </View> 
-           
     
             <View style={styles.mainButtons}>
                       
@@ -262,6 +252,18 @@ getPointsAndStatus = () => {
         )
     }
 
+    //--------------------------------------------------------------------------
+    
+    getStatusGapMessage(){
+
+      let gap = Math.ceil(this.state.statusGapInCredits/20)
+      if(gap === 1 ){
+        return `${this.state.statusGapInCredits/20} more post to reach ${this.state.nextStatusLevel}`
+      }else{
+        return `${this.state.statusGapInCredits/20} more posts to reach ${this.state.nextStatusLevel}`
+      }
+      
+    }
 }
 
 export default Settings;

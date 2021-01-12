@@ -209,17 +209,17 @@ export async function postNewMemory(
   callback,
 ) {
 
-  console.log('postNewMemory title : ',title);
+  memory.title        = title;
+  memory.story        = story;
+  memory.files        = files;
+  memory.people       = people;
+  memory.location     = location;
+  memory.groups       = groups;
+  memory.userid       = userid;
+  memory.searchWords  = [];
+  memory.memid        = -1;
 
-  memory.title = title;
-  memory.story = story;
-  memory.files = files;
-  memory.people = people;
-  memory.location = location;
-  memory.groups = groups;
-  memory.userid = userid;
-  memory.searchWords = [];
-  memory.memid = -1;
+  console.log('postNewMemory memory : ',JSON.stringify(memory,null,3));
 
   uploadNewMemory(callback);
 
@@ -584,14 +584,14 @@ export function removeFileFromMemory	(  memid,  file 	){
 
 
 const getSearchWords = () => {
-  let words = [];
-  let titlewords = updateMemoryHero.title.split(' '); // need to replace with a proper extractor
-  let storywords = memory.story.split(' '); // need to replace with a proper extractor
+  let words        = [];
+  let titlewords  = memory.title.split(' '); // need to replace with a proper extractor
+  let descwords   = memory.story.split(' '); // need to replace with a proper extractor
 
   titlewords.map((word) => {
     words.push({keyword: word, strength: 0});
   });
-  storywords.map((word) => {
+  descwords.map((word) => {
     words.push({keyword: word, strength: 0});
   });
 
@@ -1489,7 +1489,7 @@ const processMediumResImage = async (filepath, filetype) => {
 //--------------------------------------------------------------------------
 
 const associateFileToMemory = (fileUrlObj, ishero) => {
-  console.log('ADD_FILE_TO_MEMORY : +++++++++++++ ');
+  console.log(`associateFileToMemory filename = ${getFilename(fileUrlObj.originalURL)} : ishero = ${ishero}`);
 
 
   let {displayurl = ''} = fileUrlObj.thumbURL;
@@ -1750,7 +1750,7 @@ const createMemoryID = () => {
         if (result.success) {
           memory.memid = parseInt(result.data);
           console.log(
-            'creatememid : ' + memory.memid + 'remoteid ' + result.data,
+            'creatememid : ' + memory.memid 
           );
           resolve('success');
         } else {

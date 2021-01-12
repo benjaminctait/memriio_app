@@ -304,6 +304,7 @@ class Feed extends Component {
 
             placeholder="Search..."
             placeholderTextColor="grey"
+            inputStyle  = {{color:'black'}}
             containerStyle={styles.searchContainer}
             inputContainerStyle={[styles.searchContainer,this.props.style]}            
             onChangeText={(text) => {

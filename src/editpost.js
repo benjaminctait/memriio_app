@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import KeyboardShift from './keyboardShift';
 import * as mem from './datapass';
 import Spinner from 'react-native-loading-spinner-overlay';
-import {ZoomableImage,CachedZoomableImage} from './cachedImage'
+import {CachedZoomableImage} from './cachedImage'
 import Video from 'react-native-video'
 import Dialog from 'react-native-dialog'
 import {showMessage} from 'react-native-flash-message';
@@ -507,7 +507,7 @@ class EditPost extends Component {
                 data               = { this.state.content}
                 handleThumbPress   = { this.showImageEditModal}    
                 handleDeletePress  = { this.showDeleteDialog }      
-                changeContentOrder = { (newcontent ) => this.setState({content:newcontent})}
+                handleOrderChange  = { (newdata ) => this.setState({content:newdata})}
               />
           
         </View>

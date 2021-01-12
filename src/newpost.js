@@ -120,13 +120,14 @@ class NewPost extends Component {
       floating: true,
     });
 
-    console.log('SEND POST', this.props.screenProps);
+    console.log('SEND POST');
     this.props.route.params.resetCapture()
     this.props.navigation.navigate('Feed');
+    
 
     await mem.postNewMemory(
       me.title,
-      me.story,
+      me.story,     
       me.content,
       personarray,
       locationName,
@@ -434,7 +435,8 @@ class NewPost extends Component {
               <ThumbList
                 data              = { this.state.content}
                 handleThumbPress  = { this.showImageEditModal}    
-                handleDeletePress = { this.showDeleteDialog }            
+                handleDeletePress = { this.showDeleteDialog }    
+                handleOrderChange = { newdata => this.setState({content:newdata})}
               />
           
         </View>

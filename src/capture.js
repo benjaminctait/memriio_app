@@ -396,9 +396,9 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
-  showPost = () => {
+  showPost = async () => {
     console.log('new post navigation:');
-
+      await this.processSelectedFiles()
       this.props.navigation.navigate('NewPost',{
         mode:'new',
         capturedFiles:this.state.captureContent,
@@ -450,11 +450,12 @@ class CaptureComponent extends Component {
 
   //--------------------------------------------------------------------------------------
 
-  getSelectedImages = async (images) => {
-   
-    await this.removeCameraRollcontent()
-      images.forEach((img, i) => {
-       
+  processSelectedFiles = async () =>{
+
+    await this.removeCameraRollcontent()    
+    
+      this.state.filesSelected.forEach((img, i) => {
+
         if (img.uri  ) {
           if (img.type === 'video') {
             if (Platform.OS === 'ios') {
@@ -468,7 +469,8 @@ class CaptureComponent extends Component {
             if (Platform.OS === 'ios') {
               
               cameraRollPathToAbsolutePath(img.uri, img.type).then( assetPath => {
-                    this.addFileToContent(assetPath,CAMERAROLL_SRC,IMAGE,img.filename)
+                
+                this.addFileToContent(assetPath,CAMERAROLL_SRC,IMAGE,img.filename)
                 })
             } else {
               this.addFileToContent(img.uri,CAMERAROLL_SRC,IMAGE,null)
@@ -476,7 +478,15 @@ class CaptureComponent extends Component {
           }
         }
       })
-      this.setState({filesSelected:images})
+  }
+  
+  //--------------------------------------------------------------------------------------
+
+  getSelectedImages = async (images) => {
+   
+    this.setState({filesSelected:images})
+    
+      
   };
 
   //--------------------------------------------------------------------------------------
@@ -485,6 +495,7 @@ class CaptureComponent extends Component {
     let bigButton = null 
     let content = null
     let effect = null
+    let filestyle = null
 
     switch (this.state.mode) {
       case 'camera':
@@ -571,7 +582,8 @@ class CaptureComponent extends Component {
         }
         break;
       case 'file':
-        bigButton = (
+        filestyle = {opacity:0.90}
+        bigButton =   (
           <View>
             <Text style={styles.photosCountText}>
               {this.state.filesSelected.length > 0
@@ -597,7 +609,7 @@ class CaptureComponent extends Component {
       <View style={styles.container}>
         {content}
         {effect}
-        <View style={styles.modeButtons}>
+        <View style={[styles.modeButtons,filestyle]}>
           <IconButtonCamera
             onPress={() => this.showMode('camera')}
             selected={this.state.mode == 'camera'}
@@ -646,14 +658,23 @@ class CaptureComponent extends Component {
     }else{
       return (
         <View style={styles.mainButtons}>
-          <TouchableOpacity onPress={this.goBackToFeed}>
-            <Text style={styles.PostButton} >{'Cancel'}</Text>
-          </TouchableOpacity>
+          
+          <BlankButton 
+            onPress     = { this.goBackToFeed } 
+            title       = { 'Cancel'} 
+            source      = { require('./images/cancel.png') }
+            buttonStyle  = { {height:40,width:40}}
+            />
+
            {bigButton}
-        
-          <TouchableOpacity onPress={this.showPost}>
-            <Text style={styles.PostButton} >{'  Post'} </Text>
-          </TouchableOpacity>
+
+           <BlankButton 
+            onPress     = { this.showPost } 
+            title       = { ' Post'} 
+            source      = { require('./images/upload.png') }
+            buttonStyle  = { {height:40,width:40}}
+            />
+          
         </View>
       )
     }
@@ -700,7 +721,7 @@ const styles = StyleSheet.create({
 
   mainButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'transparent',
     margin: 10,
@@ -708,13 +729,16 @@ const styles = StyleSheet.create({
   },
 
   modeButtons: {
+    position:'absolute',
+    bottom:100,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignSelf: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-    margin: 5,
-    width: '80%',
+    backgroundColor: 'black',
+    opacity:0.7,
+    margin: 0,
+    width: '100%',
   },
   audioContainer: {
     flex: 1,

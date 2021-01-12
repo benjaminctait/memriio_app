@@ -34,3 +34,46 @@ return(
       </TouchableOpacity>     
     )
   }
+
+
+  <BottomNav.Navigator>
+        
+        <BottomNav.Screen
+          name="Feed"
+          component={Feed}
+          options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: () => (
+              <MaterialIcon name="home" color={'black'} size={26} />
+            ),
+          }}
+        />
+
+
+
+        options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: ({ focused, tintColor }) => (
+              <Image
+                focused = { focused}
+                source  = { require('./images/home.png')}
+                style   = { styles.mediumButton }                
+              />
+            ),
+          }}
+
+
+          <BottomNav.Screen
+          name="Feed"
+          component={Feed}
+          options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: ({ focused, tintColor }) => (
+              <Image
+                focused = { focused}
+                source  = { require('./images/home.png')}
+                style   = { styles.mediumButton }                
+              />
+            ),
+          }}
+        />
