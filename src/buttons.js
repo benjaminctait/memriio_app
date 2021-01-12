@@ -96,6 +96,32 @@ class BlankButton extends Component{
 
 }
 
+class TextCard extends Component{
+  
+  
+  render(){
+    const { text ,source,imageStyle,textStyle,containerstyle } = this.props
+    
+    return(
+        <TouchableOpacity 
+            onPress={this.props.onPress}
+            style = {[{flex:1,flexDirection:'row',alignItems:'center'},containerstyle]}
+            >
+          <Image
+            style={[{ height: 30,
+                      width: 30,
+                      alignSelf:'center',
+                      backgroundColor: 'transparent',
+                    },imageStyle]}
+            source={ source }
+          />
+          <Text style={[{marginLeft:5 },textStyle]}>{text}</Text>
+        </TouchableOpacity>
+    )
+  }
+
+}
+
 class PostButton extends Component{
   
   
@@ -612,4 +638,5 @@ export {CameraClickButton,
         SwitchIcon,
         PersonListItem,
         BlankButton,
+        TextCard,
       }

@@ -1623,6 +1623,30 @@ const addCloudtoMemory = (groupID) => {
   });
 };
 
+// -------------------------------------------------------------------------------
+
+export function addLikeToMemory ( memid,userid ) {
+  console.log(`addLikeToMemory memid : ${memid} userid : ${userid}`)
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/add_memory_like', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({memid: memid, userid: userid}),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+}
+
 // add a keyword to a memory -----------------------------------------------------
 
 export function setMemorySearchWords(searchwords) {

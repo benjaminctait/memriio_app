@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {SwitchIcon} from './buttons';
+import {SwitchIcon,TextCard} from './buttons';
 import VideoPlayer from './videoplayer';
 import Carousel  from 'react-native-snap-carousel';
 import * as mem from './datapass';
@@ -161,7 +161,22 @@ class MemoryCard extends Component {
   //----------------------------------------------------------------
 
   handleOnLike = () => {
-    console.log('MemoryCard : handleOnLike ');
+    mem.addLikeToMemory( this.state.activeUser.userid, this.props.memory.memid )
+    .then(result =>{
+      if(result.success){
+        console.log('handleOnLike returned new prasieid :',result.data);
+        if (this.props.memory.likearray){
+          let tmp = this.props.memory
+          tmp.likearray.push(this.state.activeUser.userid)
+          this.props.updateMemory(tmp)
+        }else{
+          let tmp = this.props.memory
+          tmp.likearray = [this.state.activeUser.userid]          
+          this.props.updateMemory(tmp)
+        }
+      }
+    })
+    
   };
 
   //----------------------------------------------------------------
@@ -341,14 +356,14 @@ class MemoryCard extends Component {
         </View>
         <View style = {styles.location}>
           <Image
-              source={require('./images/globe.png')}
+              source={require('./images/location.png')}
               style={styles.locationImage}
             />
           <Text style={styles.locationText } >{this.props.memory.location}</Text>          
         </View>
         <View style = {styles.dateTag}>
           <Image
-              source={require('./images/calendar.png')}
+              source={require('./images/calendar.png')}sd
               style={styles.locationImage}
             />          
           <Text style={styles.locationText } >{monthNames[d.getMonth()] + ' ' + d.getFullYear()}</Text>
@@ -401,22 +416,18 @@ class MemoryCard extends Component {
   // ---------------------------------------------------------------------------------
 
   renderUserProfileOverlay = (person) =>{
-   
-
-    // <TouchableOpacity 
-    //           onPress = { () => console.log('name pressed')} 
-    //           style   = {{flex:1,flexDirection:'row'}}
-    //           >
-    //           <Image 
-    //             source = {require('./images/nametag.png')}
-    //             style = {{height:20,width:20}}/>
-    //           <Text >{`${person.firstname} ${person.lastname}`} </Text>
-    //         </TouchableOpacity>
-
-    let statusname = ''
+    
+    let statusname = '',statusstyle = null
     if( person.status ){
       statusname = person.status.statusname
+      statusstyle = {   borderWidth:1,
+                        borderRadius:4,
+                        overflow:'hidden',
+                        borderColor:person.status.statuscolor,
+                        padding:3,                        
+                        }
     }
+
     return <Overlay 
               isVisible             = { this.state.profileVisible } 
               overlayStyle          = { [styles.profileOverlay,{borderWidth:2,borderColor:person.color}] }
@@ -424,83 +435,54 @@ class MemoryCard extends Component {
               onBackdropPress       = {() => this.setState({profileVisible:false})}>
             <Image 
               source ={require('./images/amandaharris.jpg')}
-              style = {{height:150,width:150,borderRadius:8,overflow:'hidden'}}
+              style = {{height:150,width:150,borderRadius:75,overflow:'hidden',alignSelf:'center'}}
+            />
+       
+            <TextCard 
+              source      = { require('./images/nametag.png') }   
+              imageStyle  = { {height:20,width:20} }
+              text        = { `${person.firstname} ${person.lastname}` }  
             />
             
-            { this.renderTextCard( require('./images/nametag.png'), `${person.firstname} ${person.lastname}` ) }
+            <TextCard 
+              source      = { require('./images/dogtags.png') }   
+              imageStyle  = { {height:20,width:20} }
+              text        = { person.title }  
+            />            
+            
+            <TextCard 
+              source      = { require('./images/location.png') }   
+              imageStyle  = { {height:20,width:20} }
+              text        = { person.company }  
+            />     
+            
+            <TextCard 
+              source      = { require('./images/atsymbol.png') }   
+              imageStyle  = { {height:20,width:20} }
+              text        = { person.email }  
+            />    
 
-            <TouchableOpacity 
-              onPress = { () => console.log('title pressed')} 
-              style   = {{flex:1,flexDirection:'row'}}
-              >
-              <Image 
-                source = {require('./images/dogtags.png')}
-                style = {{height:20,width:20}}/>
-              <Text >{person.title} </Text>
-            </TouchableOpacity>
+            <TextCard 
+              source      = { require('./images/phonepad.png') }   
+              imageStyle  = { {height:20,width:20} }
+              text        = { person.mobile }  
+            />  
 
-            <TouchableOpacity 
-              onPress = { () => console.log('location pressed')} 
-              style   = {{flex:1,flexDirection:'row'}}
-              >
-              <Image 
-                source = {require('./images/location.png')}
-                style = {{height:20,width:20}}/>
-              <Text >{person.company} </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress = { () => console.log('email pressed')} 
-              style   = {{flex:1,flexDirection:'row'}}
-              >
-              <Image 
-                source = {require('./images/atsymbol.png')}
-                style = {{height:20,width:20}}/>
-              <Text >{person.email} </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress = { () => console.log('phone pressed')} 
-              style   = {{flex:1,flexDirection:'row'}}
-              >
-              <Image 
-                source = {require('./images/phonepad.png')}
-                style = {{height:20,width:20}}/>
-              <Text >{person.mobile} </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress = { () => console.log('status pressed')} 
-              style   = {{flex:1,flexDirection:'row'}}
-              >
-              <Image 
-                source = {require('./images/medal.png')}
-                style = {{height:20,width:20}}/>
-              <Text >{statusname} </Text>
-            </TouchableOpacity>
-
+             <TextCard 
+              source      = { require('./images/medal.png') }   
+              imageStyle  = { {height:20,width:20} }
+              text        = { `${statusname} status` }  
+              textStyle   = { statusstyle }
+            />  
 
           </Overlay>
   }
 
-  
-  // ---------------------------------------------------------------------------------
-  
-  renderTextCard = (src,text ) =>{
-    return <TouchableOpacity 
-            onPress = { () => console.log('status pressed')} 
-            style   = {{flex:1,flexDirection:'row'}}
-            >
-            <Image 
-              source = {src}
-              style = {{height:20,width:20}}/>
-            <Text >{text} </Text>
-          </TouchableOpacity>
-  }
-  
-  // ---------------------------------------------------------------------------------
 
-  renderEditButton =() =>{
+  
+  // ---------------------------------------------------------------------------------
+  
+    renderEditButton =() =>{
     
     if(this.props.memory && this.state.activeUser){
       
@@ -558,9 +540,6 @@ class MemoryCard extends Component {
             updateMemory  = { this.updateMemory }
           />  
         </Modal>
-        
-
-        
       )
     }else{
       return null
@@ -638,10 +617,9 @@ const styles = StyleSheet.create({
     backgroundColor:'white',
     borderWidth:5,
     borderColor:'darkgray',
-    borderRadius:15,
-    maxHeight:'50%',
-   
-
+    borderRadius:30,
+    maxHeight:380,
+    maxWidth:300,
   },
 
   storyarea: {
