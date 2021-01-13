@@ -65,15 +65,22 @@ export async function getActiveUser() {
     
     AsyncStorage.getItem('userLoggedin').then(logged => {
       
-      
       if (logged) {
 
         AsyncStorage.getItem('userid').then(userid =>{
+          userid = parseInt(userid)
           AsyncStorage.getItem('firstname').then(firstName =>{
             AsyncStorage.getItem('lastname').then(lastName =>{
               AsyncStorage.getItem('email').then(email => {
                 AsyncStorage.getItem('activecloud').then(activeCloud =>{
-                  let user = {userid, firstName, lastName, email, activeCloud };
+                  activeCloud = parseInt(activeCloud)
+                  let user = {
+                    userid, 
+                    firstName, 
+                    lastName, 
+                    email, 
+                    activeCloud 
+                  };
                   resolve(user)
                 })
               })
@@ -719,13 +726,37 @@ export function getUserClouds(userid, callback) {
     .then((response) => response.json())
     .then((res) => {
       if (res.success) {
-        console.log('server response : ' + res.success);
-        console.log('server data : ' + res.data);
+        console.log('getUserClouds success ? : ' + res.success);
+        
         callback(res.data);
       } else {
         console.log('server response : ' + res.success + ' with ' + res.error);
       }
     });
+}
+
+//---------------------------------------------------------------------------------------------
+
+export function getMaxMemoryID(cloudid) {
+
+  console.log('getMaxMemoryID : ', cloudid );
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/get_latest_memid', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        cloudid: cloudid,
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
 }
 
 //---------------------------------------------------------------------------------------------

@@ -6,12 +6,13 @@ import * as mem from './datapass'
       // memid         : integer
       // title         : string
       // description   : string
-      // story         : string
+      // story         : string 
       // location      : string
       // taggedPeople  : [{}]      
       // taggedClouds  : [{}]
       // userid        : int,
       // createdon     : string
+      // modifiedon    : string
       // cardtype      : int
       // editcount     : int
       // memfiles      : [{}]

@@ -431,7 +431,6 @@ class MemoryCard extends Component {
     return <Overlay 
               isVisible             = { this.state.profileVisible } 
               overlayStyle          = { [styles.profileOverlay,{borderWidth:2,borderColor:person.color}] }
-              
               onBackdropPress       = {() => this.setState({profileVisible:false})}>
             <Image 
               source ={require('./images/amandaharris.jpg')}

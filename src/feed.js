@@ -19,6 +19,8 @@ class Feed extends Component {
 
   state = {
     memories: [],
+    localMemories:[],
+    
     userClouds: [],
     user: null,
     searchwordcount: 1,
@@ -127,6 +129,7 @@ class Feed extends Component {
   loadClouds = (clouds) => {
 
     console.log('loadclouds - activecloud : ',this.state.activeCloud);
+    
 
     let personal = {
       id: 0,
@@ -136,23 +139,41 @@ class Feed extends Component {
     };
     clouds.push(personal);
     clouds.reverse();
+    mem.log(clouds,'userclouds')
     if(this.state.activeCloud === 0){
       this.handleSearchChange('')
     }else{
       mem.getMemories([this.state.activeCloud], this.loadMemories);
     }
    
-    this.setState({userClouds: clouds});
+    this.setState({userClouds: clouds},()=>{
+      this.checkForUpdates(this.state.activeCloud)
+    });
 
   };
 
   //----------------------------------------------------------------------------------------------
 
+  checkForUpdates = ( cloudid ) => {
+    AsyncStorage.getItem(`cloud_maxid_${cloudid}`).then( localmax =>{
+      
+      mem.getMaxMemoryID( cloudid ).then( remotemax =>{
+        console.log(`checkForUpdates for cloud ${ cloudid} with localmax ${localmax} and remotemax ${remotemax}`)
+      })
+    })
+    
+  }
+
+  //----------------------------------------------------------------------------------------------
+
   componentDidMount = async () => {
     console.log(' FEED : DIDMOUNT ');
-    this.state.user = await mem.getActiveUser();
-
-    mem.getUserClouds(this.state.user.userid, this.loadClouds);
+    mem.getActiveUser().then(user =>{
+      mem.log(user,'Active User : ');
+      this.setState({ user:user , activeCloud:user.activeCloud },()=>{
+        mem.getUserClouds(this.state.user.userid, this.loadClouds);
+      })
+    })
     
   };
 
@@ -164,7 +185,10 @@ class Feed extends Component {
 
     if(shouldInclude){
       AsyncStorage.setItem('activecloud',cloud.id.toString())
-      this.setState({activeCloud:cloud.id})
+      
+      this.setState({activeCloud: cloud.id},()=>{
+        this.checkForUpdates(this.state.activeCloud)
+      });
       
     }
     this.handleSearchChange(this.state.searchwords);
@@ -321,7 +345,7 @@ class Feed extends Component {
               key               = { index }
               data              = { cloud }
               title             = { cloud.name}
-              buttonDown        = { (cloud.id !== this.state.activeCloud) }
+              buttonDown        = { (cloud.id != this.state.activeCloud) }
               greyOutOnTagPress = { true }
               onTagPress        = { this.handleCloudChange }
             />
