@@ -17,7 +17,9 @@ class CacheImage extends React.Component {
         this.setState({ source:{uri:path}}) ;
       }
   
+  
   //----------------------------------------------------------------
+
   downloadFile = (uri,path) => {
   
     RNFS.downloadFile({fromUrl:uri, toFile: path}).promise

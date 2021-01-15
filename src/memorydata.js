@@ -4,17 +4,32 @@ import * as mem from './datapass'
 
 
       // memid         : integer
+      // createdon     : string
+      // userid        : int,
       // title         : string
       // description   : string
-      // story         : string 
       // location      : string
-      // taggedPeople  : [{}]      
-      // taggedClouds  : [{}]
-      // userid        : int,
-      // createdon     : string
-      // modifiedon    : string
+      // story         : string 
       // cardtype      : int
       // editcount     : int
+      // modifiedon    : string
+
+      // author        : {}
+      //                 userid     : int
+      //                 firstname  : int
+      //                 lastname   : int
+      //                 email      : string
+      //                 avatar     : string
+      //                 mobile     : string
+      //                 statusid   : int
+      //                 color      : string
+      //                 title      : string
+      //                 company    : string
+      //                 status     : {}
+                        //            
+      
+      // taggedPeople  : [{}]      
+      // taggedClouds  : [{}]
       // memfiles      : [{}]
                   // fileid      : int
                   // memid       : int
@@ -24,6 +39,8 @@ import * as mem from './datapass'
                   // thumbext    : string
                   // displayurl  : string
                   // ishero      : bool
+      // likes         : [{}]      
+      // 
 
 export function writeMemories(memories) {
 

@@ -5,6 +5,8 @@ import {StyleSheet, View, ScrollView, Text, RefreshControl} from 'react-native';
 import {SubTag} from './buttons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { SearchBar } from 'react-native-elements'
+import { Button } from 'react-native';
+
 
 
 
@@ -20,7 +22,7 @@ class Feed extends Component {
   state = {
     memories: [],
     localMemories:[],
-    
+    newmemorycache:[],
     userClouds: [],
     user: null,
     searchwordcount: 1,
@@ -34,6 +36,7 @@ class Feed extends Component {
 
   refreshFeed = () => {
     this.handleSearchChange(this.state.searchwords);
+    
   };
 
   //----------------------------------------------------------------------------------------------
@@ -139,7 +142,7 @@ class Feed extends Component {
     };
     clouds.push(personal);
     clouds.reverse();
-    mem.log(clouds,'userclouds')
+    
     if(this.state.activeCloud === 0){
       this.handleSearchChange('')
     }else{
@@ -147,8 +150,10 @@ class Feed extends Component {
     }
    
     this.setState({userClouds: clouds},()=>{
-      this.checkForUpdates(this.state.activeCloud)
+      //this.checkForUpdates(this.state.activeCloud)
     });
+
+
 
   };
 
@@ -156,12 +161,81 @@ class Feed extends Component {
 
   checkForUpdates = ( cloudid ) => {
     AsyncStorage.getItem(`cloud_maxid_${cloudid}`).then( localmax =>{
-      
       mem.getMaxMemoryID( cloudid ).then( remotemax =>{
-        console.log(`checkForUpdates for cloud ${ cloudid} with localmax ${localmax} and remotemax ${remotemax}`)
+        console.log(`checkForUpdates for cloud ${ cloudid} with localmax ${localmax} and remotemax ${remotemax} should update = ${localmax < remotemax}`)        
+        this.downloadNewMemories( cloudid ,localmax )
       })
     })
     
+  }
+
+  //----------------------------------------------------------------------------------------------
+  
+  downloadNewMemories = ( cloudid, aboveIndex  )=>{
+    
+    let Promises = [],temp = []
+    console.log(`downloadNewMemories for cloud ${cloudid} and above memid ${aboveIndex}`);
+
+    mem.getMemoriesAbove( cloudid, aboveIndex )
+    .then ( mems =>{ 
+      
+        mems.map( newmem => {
+          Promises.push(
+            this.downloadMemory( newmem , cloudid ).then( newmemory =>{
+              temp.push(newmemory)
+            })
+          )
+          
+      })
+      Promise.all(Promises).then( ()=>{
+        this.setState( { newmemorycache:temp } ,()=>{
+          temp.map(memfile =>{
+            console.log(`memory downloaded memid : ${memfile.memid} ${memfile.title}`)
+          })
+        }) 
+      })
+    })
+  }
+
+  //----------------------------------------------------------------------------------------------
+
+  downloadMemory = ( newmemory , cloudid ) =>{
+    
+    let xmem = newmemory
+    let proms = []
+    return new Promise((resolve,reject)=>{
+        
+      mem.getUserDetails( xmem.userid ).then( author =>{
+        xmem.author = author     
+        mem.getUserStatus( author.userid , cloudid).then(status =>{
+          xmem.author.status = status            
+          mem.getMemoryClouds( newmemory.memid ).then( uclouds =>{
+            xmem.taggedClouds = uclouds              
+            mem.getMemoryPeople ( newmemory.memid, (people) =>{
+              xmem.taggedPeople = people
+              mem.getMemoryFiles ( newmemory.memid, (files) =>{                  
+                xmem.memfiles = files
+                mem.getMemoryLikes ( newmemory.memid, cloudid ).then ( likes =>{
+                  xmem.likes = likes
+
+                  proms = Promise.all(
+                    xmem.memfiles.map(async (file,index) =>{ 
+                        return mem.downloadRemoteFileToCache( file.thumburl )
+                                .then( localpath =>{
+                                  xmem.memfiles[index].thumburl = localpath
+                                })   
+                    })
+                    ).then(values=>{
+                      resolve ( xmem )
+                    })
+                  })
+                })
+              })
+            })
+          })
+        })
+      })
+  
   }
 
   //----------------------------------------------------------------------------------------------
@@ -187,7 +261,7 @@ class Feed extends Component {
       AsyncStorage.setItem('activecloud',cloud.id.toString())
       
       this.setState({activeCloud: cloud.id},()=>{
-        this.checkForUpdates(this.state.activeCloud)
+        //this.checkForUpdates(this.state.activeCloud)
       });
       
     }
@@ -273,7 +347,7 @@ class Feed extends Component {
     }
     
     if (memisArray && !this.state.isLoading && memcount) {
-      feedview = (
+      feedview = (        
         <ScrollView
           style={styles.scrollarea}
           refreshControl={
@@ -336,7 +410,10 @@ class Feed extends Component {
             }}
             value={this.state.searchwords}
         />
-        
+        <Button 
+          title = 'TEST BUTTON'
+          onPress = {() => this.checkForUpdates(this.state.activeCloud)}
+        />
         {feedview}
         <View style={styles.cloudarea}>
           {this.state.userClouds.map((cloud, index) => (

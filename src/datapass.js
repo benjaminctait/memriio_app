@@ -99,7 +99,11 @@ export async function getActiveUser() {
 // -----------------------------------------------------------------------
 
 export async function getPointsData( userid,cloudid ){
+  
+  //console.log(`getPointsData ${userid} ${cloudid}`);
+  
   return new Promise((resolve,reject) => {
+
     fetch(
       'https://memrii-api.herokuapp.com/get_points_data',
       {
@@ -116,6 +120,7 @@ export async function getPointsData( userid,cloudid ){
         if (res.success) {
           resolve(res.data);
         } else {
+          console.log(`getpointsdata error ${res.error}`);
           reject(res.error);
         }
       });
@@ -125,6 +130,37 @@ export async function getPointsData( userid,cloudid ){
 
 // -----------------------------------------------------------------------
 
+export function getUserStatus (userid,cloudid) {
+  
+  let status = {
+    credits : 0,
+    level : ''
+  }
+  
+  return new Promise((resolve,reject ) =>{
+    
+    getPointsData(userid,cloudid)
+    .then(pointsData => {
+      getStatusLevels(cloudid)
+      .then(levels => {
+            pointsData.map(record =>{
+              status.credits += record.statuscredits
+        })  
+        
+        levels.map(level => {
+            if(status.credits >= level.reachvalue){
+              status.level = level             
+            }
+        })
+        resolve(status)        
+      })
+    })
+    
+  })
+  
+}
+
+// -----------------------------------------------------------------------
 
 export async function getUserDetails( userid ){
   
@@ -282,6 +318,9 @@ const uploadNewMemory = (callBackOnSuccess) => {
 };
 
 // ---------------------------------------------------------------------------------
+
+
+
 export function addFileToMemory ( memid , userid, file ){
 
   console.log(
@@ -508,9 +547,9 @@ export function updateMemoryPeople (  memid, people ){ // [ person ] with person
 // ---------------------------------------------------------------------------------
 export function updateMemoryClouds ( memid,clouds ){ // [ clouds ] with cloud.id
 
-  console.log(
-    'updateMemoryClouds : ' + memid + ' clouds :' + JSON.stringify(clouds,null,3)
-  );
+  // console.log(
+  //   'updateMemoryClouds : ' + memid + ' clouds :' + JSON.stringify(clouds,null,3)
+  // );
 
   return new Promise((resolve, reject) => {
     fetch('https://memrii-api.herokuapp.com/set_memory_clouds', {
@@ -739,7 +778,7 @@ export function getUserClouds(userid, callback) {
 
 export function getMaxMemoryID(cloudid) {
 
-  console.log('getMaxMemoryID : ', cloudid );
+  //console.log('getMaxMemoryID : ', cloudid );
   return new Promise((resolve, reject) => {
     fetch('https://memrii-api.herokuapp.com/get_latest_memid', {
       method: 'post',
@@ -760,6 +799,60 @@ export function getMaxMemoryID(cloudid) {
 }
 
 //---------------------------------------------------------------------------------------------
+
+export function getMemoriesAbove ( cloudid, aboveIndex ) {
+
+  //console.log(`getMemoriesAbove for cloud ${cloudid} and above index ${aboveIndex}`);
+
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/get_memories_above_index', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memid   : aboveIndex,
+        cloudid : cloudid
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+//---------------------------------------------------------------------------------------------
+
+export function getMemoryLikes ( memid, cloudid ) {
+  //console.log(`getMemoryLikes for memid ${memid} and cloud ${cloudid}`);
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/get_memory_likes', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memid   : memid,
+        cloudid : cloudid
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        
+        if (res.success) {
+
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
+// ---------------------------------------------------------------------------------
 
 export function searchMemories(userid, cloudids, searchwords, callback) {
   fetch(
@@ -1023,7 +1116,9 @@ export function getMemories_User(userid) {
 //-------------------------------------------------------------------------------
 
 export function getMemoryClouds(memid) {
+
   //console.log('getMemoryClouds memid : ',memid);
+
   return new Promise((resolve,reject) =>{
     fetch('https://memrii-api.herokuapp.com/get_associatedclouds_memoryid', {
     method: 'post',
@@ -1047,7 +1142,7 @@ export function getMemoryClouds(memid) {
 //-------------------------------------------------------------------------------
 
 export function getMemoryFiles(memid, callback) {
-  //console.log('getMemoryFiles memid : ',memid);
+  //console.log((`getMemoryFiles ${memid}`));
   fetch('https://memrii-api.herokuapp.com/get_memfiles_memoryid', {
     method: 'post',
     headers: {
@@ -1073,7 +1168,7 @@ export function getCloudPeople(clouds, callback) {
       JSON.stringify(clouds.map((cloud) => parseInt(cloud.id))),
   );
 
-  return new Promise((resolve, reject) => {
+ 
     fetch('https://memrii-api.herokuapp.com/get_cloud_people_clouds', {
       method: 'post',
       headers: {
@@ -1092,7 +1187,7 @@ export function getCloudPeople(clouds, callback) {
           if (callback) {
             callback(res.data);
           }
-          resolve(res.data);
+ 
         } else {
           console.log(
             'getCloudPeople server response : ' +
@@ -1100,31 +1195,34 @@ export function getCloudPeople(clouds, callback) {
               ' with ' +
               res.error,
           );
-          reject(null);
+        
         }
       });
-  });
+ 
 }
 
 //---------------------------------------------------------------------------------
 
 export function getMemoryPeople(memid, callback) {
+  
   //console.log('getMemoryPeople for memory : ' + memid);
-  fetch('https://memrii-api.herokuapp.com/get_associatedpeople_memoryid', {
+  
+    fetch('https://memrii-api.herokuapp.com/get_associatedpeople_memoryid', {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({memoryid: memid}),
-  })
-    .then((response) => response.json())
-    .then((response) => {
-      if (response.success) {
-        callback(response.data);
-      } else {
-        callback(null);
-      }
-    });
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        if (response.success) {
+          callback ( response.data )
+        } else {
+          callback ( null );
+        }
+      });
+  
 }
 
 //---------------------------------------------------------------------------------
@@ -1815,6 +1913,59 @@ const createMemoryID = () => {
       });
   });
 };
+
+//---------------------------
+
+export function getLocalMemoryCache(){
+  
+  let prefix        = (Platform.OS === 'android') ? 'file://' : '' 
+  let folder        = `${prefix}${RNFS.CachesDirectoryPath}/MemoryFiles`
+  let MkdirOptions  = (Platform.OS === 'android') ? { NSURLIsExcludedFromBackupKey: true }:null
+  
+  return new Promise((resolve, reject) => {
+    RNFS.exists(`${folder}`).then(exists => {
+      if(exists){
+        resolve(folder)
+      }else{
+        RNFS.mkdir( folder ,MkdirOptions)
+          .then(result => {   
+            console.log(result);
+            resolve(folder)
+          })
+          .catch((err) => {
+            console.warn('err', err)
+            reject(err)
+          })
+      }
+    })
+  })
+}
+
+//---------------------------
+
+export async function downloadRemoteFileToCache ( remoteUri ) {
+
+  let filename = getFilename(remoteUri)   
+  //console.log(`downloadRemteFileToCache ${filename}`)
+  
+  return new Promise((resolve, reject) => {    
+    
+    getLocalMemoryCache()
+    .then(cacheFolder=>{
+      let localpath   = `${cacheFolder}/${filename}.png`;
+
+      RNFS.downloadFile( { fromUrl:remoteUri , toFile:localpath }).promise
+      .then( (res ) =>{
+       
+        resolve(localpath)
+      })
+      .catch(err => {
+        console.log(err);
+        reject(err)
+      })
+    })
+  })
+}
 
 //---------------------------
 

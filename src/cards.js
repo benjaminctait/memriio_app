@@ -98,10 +98,13 @@ class MemoryCard extends Component {
           this.setState({currentStatusLevel:level,author:temp})
         })        
       })
-
+      
       mem.getActiveUser   (  ).then(user =>{ this.setState({activeUser:user})})
       mem.getMemoryClouds ( memory.memid).then(clouds =>{ this.setState({taggedClouds:clouds})})
-      mem.getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
+      mem.getMemoryPeople ( this.props.memory.memid, (people  ) =>{ 
+        this.setState({ people:people  })
+        
+      })
       
       mem.getMemoryFiles  ( memory.memid, (memfiles) => {
       
