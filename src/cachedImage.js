@@ -14,7 +14,10 @@ class CacheImage extends React.Component {
   //----------------------------------------------------------------
 
   loadFile = ( path )=> {
-        this.setState({ source:{uri:path}}) ;
+      
+        this.setState({ source:{uri:path}},()=>{
+       
+        }); ;
       }
   
   
@@ -32,6 +35,7 @@ class CacheImage extends React.Component {
     const { uri,filename,flag } = this.props ; 
     
     if( this.isLocalPath ( uri ) ){
+      
       this.loadFile(uri)
       
     }else{
@@ -47,6 +51,29 @@ class CacheImage extends React.Component {
    }
    
    //----------------------------------------------------------------
+
+   componentDidUpdate(prevProps){
+     if(this.props.uri != prevProps.uri)
+     {
+      const { uri,filename,flag } = this.props ; 
+    
+      if( this.isLocalPath ( uri ) ){
+        
+        this.loadFile(uri)
+        
+      }else{
+        let name    =  shorthash.unique(filename);
+        let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
+        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+        RNFS.exists(path).then( exists => {
+          if(exists)this.loadFile(path) ;
+          else this.downloadFile(uri,path) ;
+        })
+      }
+     }
+   }
+   
+   //----------------------------------------------------------------
    
    isLocalPath = ( path ) => {
     
@@ -57,6 +84,7 @@ class CacheImage extends React.Component {
    //----------------------------------------------------------------
    
    render(){
+     
      return(
        <Image style={this.props.style} source={this.state.source} />
      );
@@ -76,6 +104,14 @@ class CacheImage extends React.Component {
     }
 
     //----------------------------------------------------------------
+    isLocalPath = ( path ) => {
+    
+      if ( path[0] === '/' ) return true 
+      else return false
+     }
+    
+    //----------------------------------------------------------------
+
     downloadFile = (uri,path) => {
 
       RNFS.downloadFile({fromUrl:uri, toFile: path}).promise
@@ -87,14 +123,45 @@ class CacheImage extends React.Component {
     componentDidMount(){
       const { uri,filename } = this.props ; 
       
-      const name = shorthash.unique(filename);
-      const extension = (Platform.OS === 'android') ? 'file://' : '' 
-      const path =`${extension}${RNFS.CachesDirectoryPath}/${name}.png`;
-      RNFS.exists(path).then( exists => {
-            if(exists)this.loadFile(path) ;
-            else this.downloadFile(uri,path) ;
-          })
+      if( this.isLocalPath ( uri ) ){
+        
+        this.loadFile(uri)
+        
+      }else{
+        let name    =  shorthash.unique(filename);
+        let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
+        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+        RNFS.exists(path).then( exists => {
+          if(exists)this.loadFile(path) ;
+          else this.downloadFile(uri,path) ;
+        })
+      }
+     
     }
+
+    //----------------------------------------------------------------
+
+    componentDidUpdate(prevProps){
+      if(this.props.uri != prevProps.uri)
+      {
+      const { uri,filename,flag } = this.props ; 
+    
+      if( this.isLocalPath ( uri ) ){
+        
+        this.loadFile(uri)
+        
+      }else{
+        let name    =  shorthash.unique(filename);
+        let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
+        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+        RNFS.exists(path).then( exists => {
+          if(exists)this.loadFile(path) ;
+          else this.downloadFile(uri,path) ;
+        })
+      }
+      }
+    }
+
     //----------------------------------------------------------------
     render(){
       

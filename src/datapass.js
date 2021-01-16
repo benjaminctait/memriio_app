@@ -1916,7 +1916,7 @@ const createMemoryID = () => {
 
 //---------------------------
 
-export function getLocalMemoryCache(){
+export function getLocalCacheFolder(){
   
   let prefix        = (Platform.OS === 'android') ? 'file://' : '' 
   let folder        = `${prefix}${RNFS.CachesDirectoryPath}/MemoryFiles`
@@ -1950,7 +1950,7 @@ export async function downloadRemoteFileToCache ( remoteUri ) {
   
   return new Promise((resolve, reject) => {    
     
-    getLocalMemoryCache()
+    getLocalCacheFolder()
     .then(cacheFolder=>{
       let localpath   = `${cacheFolder}/${filename}.png`;
 

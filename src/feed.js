@@ -6,6 +6,7 @@ import {SubTag} from './buttons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { SearchBar } from 'react-native-elements'
 import { Button } from 'react-native';
+import RNFS from 'react-native-fs'
 
 
 
@@ -173,6 +174,7 @@ class Feed extends Component {
   
   downloadNewMemories = ( cloudid, aboveIndex  )=>{
     
+    aboveIndex = 420
     let Promises = [],temp = []
     console.log(`downloadNewMemories for cloud ${cloudid} and above memid ${aboveIndex}`);
 
@@ -182,18 +184,77 @@ class Feed extends Component {
         mems.map( newmem => {
           Promises.push(
             this.downloadMemory( newmem , cloudid ).then( newmemory =>{
+              
               temp.push(newmemory)
             })
           )
           
       })
       Promise.all(Promises).then( ()=>{
+        
         this.setState( { newmemorycache:temp } ,()=>{
           temp.map(memfile =>{
             console.log(`memory downloaded memid : ${memfile.memid} ${memfile.title}`)
+
           })
+          this.writeNewMemoriesToFile()
         }) 
       })
+    })
+  }
+
+  //----------------------------------------------------------------------------------------------
+
+  writeNewMemoriesToFile = () =>{
+
+ 
+    mem.getLocalCacheFolder()
+    .then(cacheFolder =>{
+      let path = `${cacheFolder}/feed.txt`
+      let json = JSON.stringify(this.state.newmemorycache);
+      console.log(`writeFile ${path}`);
+      console.log(`json ${json}`);
+      
+      RNFS.writeFile(path, json, 'utf8')
+      .then((success) => {
+        console.log('FILE WRITTEN! : ',path);
+      })
+      .catch((err) => {
+          console.log(err.message);
+      });  
+    })
+    .catch(err =>{
+      console.log(err);
+    })
+    
+
+  }
+
+  //----------------------------------------------------------------------------------------------
+  
+  pushNewMemories = () =>{
+
+    mem.getLocalCacheFolder()
+    .then(cacheFolder =>{
+      let path = `${cacheFolder}/feed.txt`
+      console.log(`readingFile ${path}`);
+      
+      RNFS.readFile(path,'utf8')
+      .then((file) => {
+        let memarray = JSON.parse(file)
+    
+        memarray.map(memory=>{console.log(`load memory ${memory.memid} ${memory.title}`);})
+        this.setState({newmemorycache:memarray},()=>{
+          //this.loadMemories(null)
+          this.loadMemories(this.state.newmemorycache)
+        })
+      })
+      .catch((err) => {
+          console.log(err.message);
+      });  
+    })
+    .catch(err =>{
+      console.log(err);
     })
   }
 
@@ -218,8 +279,9 @@ class Feed extends Component {
                 mem.getMemoryLikes ( newmemory.memid, cloudid ).then ( likes =>{
                   xmem.likes = likes
 
-                  proms = Promise.all(
+                  Promise.all(
                     xmem.memfiles.map(async (file,index) =>{ 
+                      
                         return mem.downloadRemoteFileToCache( file.thumburl )
                                 .then( localpath =>{
                                   xmem.memfiles[index].thumburl = localpath
@@ -412,7 +474,7 @@ class Feed extends Component {
         />
         <Button 
           title = 'TEST BUTTON'
-          onPress = {() => this.checkForUpdates(this.state.activeCloud)}
+          onPress = {() => this.pushNewMemories()}
         />
         {feedview}
         <View style={styles.cloudarea}>
