@@ -72,14 +72,14 @@ export async function getActiveUser() {
           AsyncStorage.getItem('firstname').then(firstName =>{
             AsyncStorage.getItem('lastname').then(lastName =>{
               AsyncStorage.getItem('email').then(email => {
-                AsyncStorage.getItem('activecloud').then(activeCloud =>{
-                  activeCloud = parseInt(activeCloud)
+                AsyncStorage.getItem('activeCloudID').then(activeCloudID =>{
+                  activeCloudID = parseInt(activeCloudID)
                   let user = {
                     userid, 
                     firstName, 
                     lastName, 
                     email, 
-                    activeCloud 
+                    activeCloudID 
                   };
                   resolve(user)
                 })
@@ -666,13 +666,17 @@ export async function logStorageContent() {
   
 
   console.log('AsyncStorage Content');
-  console.log();
-  console.log('Loggedin : '     + (await AsyncStorage.getItem('userLoggedin')));
-  console.log('userid : '       + (await AsyncStorage.getItem('userid')));
-  console.log('firstname : '    + (await AsyncStorage.getItem('firstname')));
-  console.log('lastname : '     + (await AsyncStorage.getItem('lastname')));
-  console.log('email : '        + (await AsyncStorage.getItem('email')));
-  console.log('active clouds : ', clouds);
+ 
+  AsyncStorage.getAllKeys()
+  .then((keys) => {
+      keys.map((key) => {
+        AsyncStorage.getItem(key)
+        .then((value) => {
+          console.log(`${key} : ${value}`);
+        })
+      })
+  })
+  
 }
 
 // ---------------------------------------------------------------------------------
@@ -737,7 +741,7 @@ export async function getSelectedCloudsAsArray(){
   let cids = []
   
   keys.map((key) => {
-    if (key.includes('activecloud')) {
+    if (key.includes('activeCloudID')) {
       Promises.push(AsyncStorage.getItem(key).then(value =>{ cids.push(parseInt(value)) }))
     }})
       

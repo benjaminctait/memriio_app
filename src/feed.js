@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { SearchBar } from 'react-native-elements'
 import { Button } from 'react-native';
 import RNFS from 'react-native-fs'
+import {showMessage, hideMessage} from 'react-native-flash-message';
+
 
 
 
@@ -21,16 +23,14 @@ class Feed extends Component {
   }
 
   state = {
-    memories: [],
-    localMemories:[],
-    newmemorycache:[],
+    memories: [],        
     userClouds: [],
     user: null,
     searchwordcount: 1,
     searchwords: '',  
     isLoading: true,    
     refreshing: false,
-    activeCloud:0,
+    activeCloudID:0,
   };
 
   //----------------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class Feed extends Component {
     if (searchwords) {
       wordarray = searchwords.toLowerCase().split(' ');
     }
-    let cloudids = [this.state.activeCloud]
+    let cloudids = [this.state.activeCloudID]
     let userid = this.state.user.userid;
 
     console.log(
@@ -132,8 +132,7 @@ class Feed extends Component {
 
   loadClouds = (clouds) => {
 
-    console.log('loadclouds - activecloud : ',this.state.activeCloud);
-    
+    console.log('loadclouds - activeCloudID : ',this.state.activeCloudID);
 
     let personal = {
       id: 0,
@@ -143,81 +142,110 @@ class Feed extends Component {
     };
     clouds.push(personal);
     clouds.reverse();
-    
-    if(this.state.activeCloud === 0){
-      this.handleSearchChange('')
-    }else{
-      mem.getMemories([this.state.activeCloud], this.loadMemories);
-    }
-   
     this.setState({userClouds: clouds},()=>{
-      //this.checkForUpdates(this.state.activeCloud)
+      
+      for (let index = 0; index < clouds.length; index++) {
+        if( clouds[index].id == this.state.activeCloudID){
+          this.readCloudMemoriesFromFile(clouds[index].id , clouds[index].name); 
+          this.setState({ activeCloud : clouds[index] })
+        }
+      }
     });
 
-
-
+    setTimeout(()=>{ this.checkForUpdates( this.state.activeCloudID ) },5000)
+    
   };
 
-  //----------------------------------------------------------------------------------------------
-
-  checkForUpdates = ( cloudid ) => {
-    AsyncStorage.getItem(`cloud_maxid_${cloudid}`).then( localmax =>{
-      mem.getMaxMemoryID( cloudid ).then( remotemax =>{
-        console.log(`checkForUpdates for cloud ${ cloudid} with localmax ${localmax} and remotemax ${remotemax} should update = ${localmax < remotemax}`)        
-        this.downloadNewMemories( cloudid ,localmax )
-      })
-    })
-    
-  }
-
+  
   //----------------------------------------------------------------------------------------------
   
-  downloadNewMemories = ( cloudid, aboveIndex  )=>{
-    
-    aboveIndex = 420
-    let Promises = [],temp = []
-    console.log(`downloadNewMemories for cloud ${cloudid} and above memid ${aboveIndex}`);
+  checkForUpdates = ( cloudid  )=>{
 
-    mem.getMemoriesAbove( cloudid, aboveIndex )
-    .then ( mems =>{ 
-      
+    let Promises = [],temp = []
+    console.log(`checking for updates in cloud ${cloudid}`);
+
+    mem.getMemories_Clouds( [cloudid] )
+    .then ( mems => { 
+       
         mems.map( newmem => {
-          Promises.push(
-            this.downloadMemory( newmem , cloudid ).then( newmemory =>{
-              
-              temp.push(newmemory)
-            })
-          )
+          if(newmem.memid < 125 ){
+            if(this.memoryIsNewOrUpdated( newmem  )){
+              console.log(`newmem  ${newmem.memid} is new`);
+              Promises.push(
+                this.downloadMemory( newmem , cloudid ).then( newmemory =>{
+                  temp.push(newmemory)
+                })
+              )
+            }else{
+              console.log(`newmem  ${newmem.memid} exists`);
+            }
+          }else{
+            console.log(`newmem ${newmem.memid} above threshold`);
+          }
           
       })
       Promise.all(Promises).then( ()=>{
-        
-        this.setState( { newmemorycache:temp } ,()=>{
-          temp.map(memfile =>{
-            console.log(`memory downloaded memid : ${memfile.memid} ${memfile.title}`)
-
-          })
-          this.writeNewMemoriesToFile()
-        }) 
+          showMessage({
+            message: 'Show New Posts ',
+            type: 'success',
+            autoHide:false,
+            hideOnPress:true,            
+            floating: true,
+            onPress: ()=>{this.pushNewMemories(temp)}
+          });
       })
     })
   }
 
   //----------------------------------------------------------------------------------------------
 
-  writeNewMemoriesToFile = () =>{
+  pushNewMemories = ( newMemories ) =>{
+    newMemories.map(memfile =>{
+      console.log(`memory downloaded memid : ${memfile.memid} ${memfile.title}`)
+      mem.log(memfile)
+    }) 
+    let x = this.state.memories.concat(newMemories)
+    
+    this.loadMemories(x)
+    this.writeCloudMemoriesToFile(this.state.activeCloudID)
+    
+  }
 
- 
+  //----------------------------------------------------------------------------------------------
+
+  memoryIsNewOrUpdated = ( memory ) =>{
+    let localMemories =  this.state.memories
+   
+    
+    for (let index = 0; index < localMemories.length; index++) {
+      let localMem = localMemories[index];
+      
+      if(localMem.memid == memory.memid ) {
+        if(localMem.modifiedon > memory.modifiedon){
+          return true   // memory already exists in local feed but needs to be updated
+        }else {
+          return false  // memory already exists and does not need updating
+        }        
+      }      
+    }
+    
+    return true // search was unable to find the memory in localMemorys ( neither new nor updated )
+  }
+
+  //----------------------------------------------------------------------------------------------
+
+  writeCloudMemoriesToFile = (cloudid) =>{
+
+    let cloudfile = `cloudfile-${cloudid}`
     mem.getLocalCacheFolder()
     .then(cacheFolder =>{
-      let path = `${cacheFolder}/feed.txt`
-      let json = JSON.stringify(this.state.newmemorycache);
-      console.log(`writeFile ${path}`);
-      console.log(`json ${json}`);
+      let path = `${cacheFolder}/${cloudfile}.txt`
+      let json = JSON.stringify(this.state.memories);
+      console.log(`writeFile Attempt ${path}`);      
       
       RNFS.writeFile(path, json, 'utf8')
       .then((success) => {
-        console.log('FILE WRITTEN! : ',path);
+        console.log('writeFile success ! : ',path);
       })
       .catch((err) => {
           console.log(err.message);
@@ -232,21 +260,22 @@ class Feed extends Component {
 
   //----------------------------------------------------------------------------------------------
   
-  pushNewMemories = () =>{
-
+  readCloudMemoriesFromFile = (cloudid,cloudname) =>{
+    
+    let cloudfile = `cloudfile-${cloudid}`
+    console.log(`readCloudMemoriesFromFile ${cloudfile}`);
     mem.getLocalCacheFolder()
     .then(cacheFolder =>{
-      let path = `${cacheFolder}/feed.txt`
+      let path = `${cacheFolder}/${cloudfile}.txt`
       console.log(`readingFile ${path}`);
       
       RNFS.readFile(path,'utf8')
       .then((file) => {
         let memarray = JSON.parse(file)
     
-        memarray.map(memory=>{console.log(`load memory ${memory.memid} ${memory.title}`);})
-        this.setState({newmemorycache:memarray},()=>{
-          //this.loadMemories(null)
-          this.loadMemories(this.state.newmemorycache)
+        memarray.map(memory=>{console.log(`loading memory ${memory.memid} ${memory.title}`);})
+        this.setState({memories:memarray},()=>{
+          this.loadMemories(this.state.memories)
         })
       })
       .catch((err) => {
@@ -263,7 +292,7 @@ class Feed extends Component {
   downloadMemory = ( newmemory , cloudid ) =>{
     
     let xmem = newmemory
-    let proms = []
+    
     return new Promise((resolve,reject)=>{
         
       mem.getUserDetails( xmem.userid ).then( author =>{
@@ -278,18 +307,18 @@ class Feed extends Component {
                 xmem.memfiles = files
                 mem.getMemoryLikes ( newmemory.memid, cloudid ).then ( likes =>{
                   xmem.likes = likes
-
-                  Promise.all(
-                    xmem.memfiles.map(async (file,index) =>{ 
+                  // Promise.all(
+                  //   xmem.memfiles.map(async (file,index) =>{ 
                       
-                        return mem.downloadRemoteFileToCache( file.thumburl )
-                                .then( localpath =>{
-                                  xmem.memfiles[index].thumburl = localpath
-                                })   
-                    })
-                    ).then(values=>{
-                      resolve ( xmem )
-                    })
+                  //       return mem.downloadRemoteFileToCache( file.thumburl )
+                  //               .then( localpath =>{
+                  //                 xmem.memfiles[index].thumburl = localpath
+                  //               })   
+                  //   })
+                  //   ).then(values=>{
+                  //     resolve ( xmem )
+                  //   })
+                  resolve ( xmem )
                   })
                 })
               })
@@ -306,7 +335,7 @@ class Feed extends Component {
     console.log(' FEED : DIDMOUNT ');
     mem.getActiveUser().then(user =>{
       mem.log(user,'Active User : ');
-      this.setState({ user:user , activeCloud:user.activeCloud },()=>{
+      this.setState({ user:user , activeCloudID:user.activeCloudID },()=>{
         mem.getUserClouds(this.state.user.userid, this.loadClouds);
       })
     })
@@ -317,13 +346,13 @@ class Feed extends Component {
   handleCloudChange = async (cloud, shouldInclude) => {
     this.flushFeed();
 
-    await mem.cleanupStorage({key:'activecloud'})
+    await mem.cleanupStorage({key:'activeCloudID'})
 
     if(shouldInclude){
-      AsyncStorage.setItem('activecloud',cloud.id.toString())
+      AsyncStorage.setItem('activeCloudID',cloud.id.toString())
       
-      this.setState({activeCloud: cloud.id},()=>{
-        //this.checkForUpdates(this.state.activeCloud)
+      this.setState({activeCloudID: cloud.id},()=>{
+        //this.checkForUpdates(this.state.activeCloudID)
       });
       
     }
@@ -423,7 +452,7 @@ class Feed extends Component {
             <MemoryCard
               key          = { index                  }
               memory       = { mem                    }
-              activeCloud  = { this.state.activeCloud }
+              activeCloudID  = { this.state.activeCloudID }
               navigation   = { this.props.navigation  }
               updateMemory = { this.updateMemory      }
               
@@ -472,10 +501,10 @@ class Feed extends Component {
             }}
             value={this.state.searchwords}
         />
-        <Button 
+        {/* <Button 
           title = 'TEST BUTTON'
           onPress = {() => this.pushNewMemories()}
-        />
+        /> */}
         {feedview}
         <View style={styles.cloudarea}>
           {this.state.userClouds.map((cloud, index) => (
@@ -484,7 +513,7 @@ class Feed extends Component {
               key               = { index }
               data              = { cloud }
               title             = { cloud.name}
-              buttonDown        = { (cloud.id != this.state.activeCloud) }
+              buttonDown        = { (cloud.id != this.state.activeCloudID) }
               greyOutOnTagPress = { true }
               onTagPress        = { this.handleCloudChange }
             />

@@ -2,21 +2,19 @@ import React from 'react' ;
 import { View, Image, Dimensions, TouchableHighlightBase} from 'react-native';
 import RNFS from 'react-native-fs'
 import ImageZoom from 'react-native-image-pan-zoom'
-import * as mem from './datapass'
 
-let shorthash = require("shorthash");
 
 class CacheImage extends React.Component {
   state = { 
-    source:null, 
+    source: null, 
    
   }
   //----------------------------------------------------------------
 
   loadFile = ( path )=> {
-      
-        this.setState({ source:{uri:path}},()=>{
-       
+        
+        this.setState({ source:{isStatic:true,uri:path}},()=>{
+          //console.log(this.state.source);
         }); ;
       }
   
@@ -39,9 +37,9 @@ class CacheImage extends React.Component {
       this.loadFile(uri)
       
     }else{
-      let name    =  shorthash.unique(filename);
+      
       let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
-      let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+      let path    =  `${prefix}${RNFS.CachesDirectoryPath}/MemoryFiles/${filename}.png`;
       RNFS.exists(path).then( exists => {
         if(exists)this.loadFile(path) ;
         else this.downloadFile(uri,path) ;
@@ -58,13 +56,11 @@ class CacheImage extends React.Component {
       const { uri,filename,flag } = this.props ; 
     
       if( this.isLocalPath ( uri ) ){
-        
         this.loadFile(uri)
-        
       }else{
-        let name    =  shorthash.unique(filename);
+        
         let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
-        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/MemoryFiles/${filename}.png`;
         RNFS.exists(path).then( exists => {
           if(exists)this.loadFile(path) ;
           else this.downloadFile(uri,path) ;
@@ -84,7 +80,7 @@ class CacheImage extends React.Component {
    //----------------------------------------------------------------
    
    render(){
-     
+     //console.log('cahched image',this.state.source);
      return(
        <Image style={this.props.style} source={this.state.source} />
      );
@@ -98,6 +94,7 @@ class CacheImage extends React.Component {
     state = { source:null, imageWidth:0, imageHeight:0 }
 
     loadFile = ( path )=> {
+
       Image.getSize(path, (width, height) => {
         this.setState({ source:{uri:path}, imageHeight:height, imageWidth:width})
       })
@@ -105,7 +102,7 @@ class CacheImage extends React.Component {
 
     //----------------------------------------------------------------
     isLocalPath = ( path ) => {
-    
+      
       if ( path[0] === '/' ) return true 
       else return false
      }
@@ -128,9 +125,9 @@ class CacheImage extends React.Component {
         this.loadFile(uri)
         
       }else{
-        let name    =  shorthash.unique(filename);
+        
         let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
-        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/MemoryFiles/${filename}.png`;
         RNFS.exists(path).then( exists => {
           if(exists)this.loadFile(path) ;
           else this.downloadFile(uri,path) ;
@@ -147,13 +144,10 @@ class CacheImage extends React.Component {
       const { uri,filename,flag } = this.props ; 
     
       if( this.isLocalPath ( uri ) ){
-        
         this.loadFile(uri)
-        
       }else{
-        let name    =  shorthash.unique(filename);
         let prefix  =  (Platform.OS === 'android') ? 'file://' : '' 
-        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/${name}.png`;
+        let path    =  `${prefix}${RNFS.CachesDirectoryPath}/MemoryFiles/${filename}.png`;
         RNFS.exists(path).then( exists => {
           if(exists)this.loadFile(path) ;
           else this.downloadFile(uri,path) ;

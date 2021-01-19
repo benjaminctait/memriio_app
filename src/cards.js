@@ -64,7 +64,7 @@ class MemoryCard extends Component {
 
       mem.getUserDetails(memory.userid).then(user => {
         this.setState({author:user})
-        this.getUserStatus(user.userid,this.props.activeCloud).then(level =>{
+        this.getUserStatus(user.userid,this.props.activeCloudID).then(level =>{
           this.setState({currentStatusLevel:level})
         })        
       })
@@ -92,7 +92,7 @@ class MemoryCard extends Component {
       
       mem.getUserDetails(memory.userid).then(user => {
         this.setState({author:user})
-        this.getUserStatus(user.userid,this.props.activeCloud).then(level =>{
+        this.getUserStatus(user.userid,this.props.activeCloudID).then(level =>{
           temp = this.state.author
           temp.status = level
           this.setState({currentStatusLevel:level,author:temp})
@@ -106,17 +106,12 @@ class MemoryCard extends Component {
         
       })
       
-      mem.getMemoryFiles  ( memory.memid, (memfiles) => {
-      
-      memfiles.map(mfile=>{   
+      memory.memfiles.map(mfile=>{   
         if ( mfile.ishero ) hero = mfile
         else mf.push(mfile)
       })      
       if (hero) mf.unshift(hero) 
-      this.setState({files: mf});
-
-    });
-
+      this.setState({files: mf});  
     
   }
 
@@ -266,6 +261,7 @@ class MemoryCard extends Component {
     if( item ) {
       
       let fname = mem.getFilename(item.fileurl)
+      let thumbname = mem.getFilename(item.thumburl)
       
       if (mem.isSupportedImageFile(fname)) {
         
@@ -273,7 +269,7 @@ class MemoryCard extends Component {
           <TouchableOpacity
             activeOpacity = { 0.5}
             onPress       = { () => { this.showModal(item) }}>
-            <CacheImage style={styles.image} uri={ item.thumburl} filename = { fname } />
+            <CacheImage style={styles.image} uri={ item.thumburl} filename = { thumbname } />
           </TouchableOpacity>
         );
       } else if (mem.isSupportedVideoFile(fname)) {
@@ -553,7 +549,7 @@ class MemoryCard extends Component {
 
   renderModal = () => {
     if(this.state.activeImage.thumburl){
-      
+   
      
       let content = null
       if (mem.isSupportedImageFile(this.state.activeImage.fileext)) {
