@@ -56,30 +56,29 @@ class MemoryCard extends Component {
     let hero = null  
     
     if (prevProps.memory.memfiles !== this.props.memory.memfiles) { // memfiles has been updated via a local memroy edit
+      //console.log('didupdate',this.props.memory.memid,this.props.memory.author);
       this.setState({ files : this.props.memory.memfiles })
         //mem.log( this.props.memory.memfiles )
     }
 
     if (prevProps.memory.memid !== this.props.memory.memid) {
-
-      mem.getUserDetails(memory.userid).then(user => {
-        this.setState({author:user})
-        this.getUserStatus(user.userid,this.props.activeCloudID).then(level =>{
-          this.setState({currentStatusLevel:level})
-        })        
-      })
-      
-      mem.getMemoryFiles(memory.memid, (memfiles) => {
+      //console.log('didupdate',this.props.memory.memid,this.props.memory.author);
+      this.setState(
+        { currentStatusLevel: memory.author.status.level.statusname,
+          author            : memory.author,
+          taggedClouds      : memory.taggedClouds,
+          people            : memory.taggedPeople,
+        })
+    
+        mem.getActiveUser   (  ).then(user =>{ this.setState({activeUser:user})})
         
-        memfiles.map(mfile=>{   
-          if(mfile.ishero) hero = mfile
+        memory.memfiles.map(mfile=>{   
+          if ( mfile.ishero ) hero = mfile
           else mf.push(mfile)
         })      
-        if (hero ) mf.unshift(hero) 
-        this.setState({files: mf});
-      });
-      // getMemoryPeople ( this.props.memory.memid, (people  ) =>{ this.setState({ people:people  })})
-    }
+        if (hero) mf.unshift(hero) 
+        this.setState({files: mf}); 
+      }
   }
 
   //------------------------------------------------------------------------------------------------
@@ -89,22 +88,16 @@ class MemoryCard extends Component {
       let memory = this.props.memory;
       let mf = []
       let hero = null
+      //console.log('didmount',this.props.memory.memid,this.props.memory.author);
       
-      mem.getUserDetails(memory.userid).then(user => {
-        this.setState({author:user})
-        this.getUserStatus(user.userid,this.props.activeCloudID).then(level =>{
-          temp = this.state.author
-          temp.status = level
-          this.setState({currentStatusLevel:level,author:temp})
-        })        
-      })
+      this.setState(
+          { currentStatusLevel: memory.author.status.level,
+            author            : memory.author,
+            taggedClouds      : memory.taggedClouds,
+            people            : memory.taggedPeople,
+          })
       
       mem.getActiveUser   (  ).then(user =>{ this.setState({activeUser:user})})
-      mem.getMemoryClouds ( memory.memid).then(clouds =>{ this.setState({taggedClouds:clouds})})
-      mem.getMemoryPeople ( this.props.memory.memid, (people  ) =>{ 
-        this.setState({ people:people  })
-        
-      })
       
       memory.memfiles.map(mfile=>{   
         if ( mfile.ishero ) hero = mfile
@@ -334,7 +327,7 @@ class MemoryCard extends Component {
       badge = 
       <Badge
             badgeStyle  = {[ styles.statusBadge, {backgroundColor:this.state.currentStatusLevel.statuscolor }]}
-            value       = {this.state.currentStatusLevel.statusname[0]}
+            value       = { this.state.currentStatusLevel.statusname?this.state.currentStatusLevel.statusname.charAt(0):'' }
       />
     }
 
@@ -416,13 +409,14 @@ class MemoryCard extends Component {
 
   renderUserProfileOverlay = (person) =>{
     
+    
     let statusname = '',statusstyle = null
     if( person.status ){
-      statusname = person.status.statusname
+      statusname = person.status.level.statusname
       statusstyle = {   borderWidth:1,
                         borderRadius:4,
                         overflow:'hidden',
-                        borderColor:person.status.statuscolor,
+                        borderColor:person.status.level.statuscolor,
                         padding:3,                        
                         }
     }

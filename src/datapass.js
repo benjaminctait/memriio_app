@@ -1095,14 +1095,14 @@ export function getMemories_Clouds(cloudids) {
 //-------------------------------------------------------------------------------
 
 export function getMemories_User(userid) {
-  console.log('getMemories_Clouds - cloudids : ' + cloudids);
+  console.log('getMemories_User - userid : ' + userid);
 
   return new Promise((resolve, reject) => {
-    fetch('https://memrii-api.herokuapp.com/get_memories_cloudids', {
+    fetch('https://memrii-api.herokuapp.com/get_memories_userid', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        cloudids: cloudids,
+        userid: userid,
       }),
     })
       .then((response) => response.json())

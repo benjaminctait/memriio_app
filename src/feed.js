@@ -31,12 +31,20 @@ class Feed extends Component {
     isLoading: true,    
     refreshing: false,
     activeCloudID:0,
+    loadingMessage:'Loading..'
   };
 
   //----------------------------------------------------------------------------------------------
 
   refreshFeed = () => {
-    this.handleSearchChange(this.state.searchwords);
+    this.checkForUpdates(this.state.activeCloudID)
+    showMessage({
+      message: `Checking for updates`,
+      type: 'success',
+      autoHide:true,
+      duration:1000,    
+      floating: true,
+      })      
     
   };
 
@@ -44,7 +52,6 @@ class Feed extends Component {
 
   handleSearchChange = (searchwords) => {
 
-  
     let wordarray = [];
     this.setState({searchwords:searchwords})
     if (searchwords) {
@@ -142,38 +149,72 @@ class Feed extends Component {
     };
     clouds.push(personal);
     clouds.reverse();
+
     this.setState({userClouds: clouds},()=>{
       
       for (let index = 0; index < clouds.length; index++) {
         if( clouds[index].id == this.state.activeCloudID){
-          this.readCloudMemoriesFromFile(clouds[index].id , clouds[index].name); 
           this.setState({ activeCloud : clouds[index] })
         }
       }
-    });
 
-    setTimeout(()=>{ this.checkForUpdates( this.state.activeCloudID ) },5000)
+      this.readCloudMemoriesFromFile( this.state.activeCloudID )
+      .then( memoryArray =>{
+        if( memoryArray === null ){ // no cloud file exists 
+        
+          this.setState({loadingMessage:`Setting up cloud...`})
+          this.checkForUpdates(this.state.activeCloudID,false)
+
+        }else{  // cloud file found  
+
+          this.loadMemories( memoryArray )
+          setTimeout(() => { this.checkForUpdates( this.state.activeCloudID ,true ) },5000)
+
+        }
+      })
+    });
     
   };
 
+  //----------------------------------------------------------------------------------------------
+
+  getClouds = (cloudid) => {
+    console.log(`getClouds : ${cloudid} `);
+    return new Promise((resolve, reject) =>{
+      if (cloudid === 0 ){
+        console.log(`cloud is personal for user ${this.state.user.userid}`);
+        mem.getMemories_User ( this.state.user.userid )
+        .then( mems =>{
+          resolve ( mems)
+        })
+      }else{
+        console.log(`cloud is shared `);
+        mem.getMemories_Clouds( [cloudid] )
+        .then ( mems => { 
+          resolve ( mems )
+        })
+      }
+    })
+  }
   
   //----------------------------------------------------------------------------------------------
   
-  checkForUpdates = ( cloudid  )=>{
+  checkForUpdates = ( cloudid  , awaitUser )=>{
 
     let Promises = [],temp = []
     console.log(`checking for updates in cloud ${cloudid}`);
 
-    mem.getMemories_Clouds( [cloudid] )
+    this.getClouds( cloudid )
     .then ( mems => { 
-       
         mems.map( newmem => {
-          if(newmem.memid < 125 ){
+          if(newmem.memid < 500 ){
             if(this.memoryIsNewOrUpdated( newmem  )){
               console.log(`newmem  ${newmem.memid} is new`);
               Promises.push(
-                this.downloadMemory( newmem , cloudid ).then( newmemory =>{
+                this.downloadMemory( newmem , cloudid )
+                .then( newmemory =>{
                   temp.push(newmemory)
+                  if (!awaitUser ) this.pushNewMemories([newmemory])
                 })
               )
             }else{
@@ -184,15 +225,38 @@ class Feed extends Component {
           }
           
       })
-      Promise.all(Promises).then( ()=>{
-          showMessage({
-            message: 'Show New Posts ',
-            type: 'success',
-            autoHide:false,
-            hideOnPress:true,            
-            floating: true,
-            onPress: ()=>{this.pushNewMemories(temp)}
-          });
+      Promise.all(Promises).then( (values)=>{
+        
+        console.log(`Promise.all : values.length ${values.length}`);
+        console.log(`Promise.all : temp.length ${temp.length}`);
+        console.log(`Promise.all : awaitUser ${awaitUser}`);
+        if(temp.length > 0)
+        {
+          if( cloudid === this.state.activeCloudID ){
+            if( awaitUser ){
+              showMessage({
+                message: `You have ${temp.length} new posts`,
+                type: 'success',
+                autoHide:false,
+                hideOnPress:true,            
+                floating: true,
+                onPress: ()=>{
+                  this.pushNewMemories(temp)
+                  this.writeCloudMemoriesToFile(this.state.activeCloudID)
+                  }
+                })              
+            }else{
+              console.log(`Promise.all : just before writecloud`);
+              this.writeCloudMemoriesToFile(this.state.activeCloudID)
+            }
+          }else{
+            console.log(`check for updates in cloud ${cloudid} aborted. activecloudID changed to ${this.state.activeCloudID}`);
+          }
+          
+        }else{
+          console.log(`no new memories for cloud : ${ cloudid }`);
+        }
+          
       })
     })
   }
@@ -200,35 +264,37 @@ class Feed extends Component {
   //----------------------------------------------------------------------------------------------
 
   pushNewMemories = ( newMemories ) =>{
-    newMemories.map(memfile =>{
-      console.log(`memory downloaded memid : ${memfile.memid} ${memfile.title}`)
-      mem.log(memfile)
-    }) 
-    let x = this.state.memories.concat(newMemories)
     
-    this.loadMemories(x)
-    this.writeCloudMemoriesToFile(this.state.activeCloudID)
+      newMemories.map(memfile =>{
+        console.log(`memory downloaded memid : ${memfile.memid} ${memfile.title}`)
+        let x = this.state.memories
+        x.push(memfile)
+        x.sort(this.memoryCompare)
+        this.loadMemories(x)
+      })
     
   }
 
+  memoryCompare = (a,b) => {
+    if( a.memid > b.memid ) return -1
+    if( a.memid < b.memid ) return 1
+  }
   //----------------------------------------------------------------------------------------------
 
   memoryIsNewOrUpdated = ( memory ) =>{
+
     let localMemories =  this.state.memories
-   
-    
+       
     for (let index = 0; index < localMemories.length; index++) {
-      let localMem = localMemories[index];
-      
-      if(localMem.memid == memory.memid ) {
-        if(localMem.modifiedon > memory.modifiedon){
+      let localMem = localMemories[index];      
+      if( localMem.memid == memory.memid ) {
+        if( localMem.modifiedon > memory.modifiedon ){
           return true   // memory already exists in local feed but needs to be updated
         }else {
           return false  // memory already exists and does not need updating
         }        
       }      
     }
-    
     return true // search was unable to find the memory in localMemorys ( neither new nor updated )
   }
 
@@ -239,7 +305,7 @@ class Feed extends Component {
     let cloudfile = `cloudfile-${cloudid}`
     mem.getLocalCacheFolder()
     .then(cacheFolder =>{
-      let path = `${cacheFolder}/${cloudfile}.txt`
+      let path = `${cacheFolder}/${cloudfile}.json`
       let json = JSON.stringify(this.state.memories);
       console.log(`writeFile Attempt ${path}`);      
       
@@ -260,31 +326,46 @@ class Feed extends Component {
 
   //----------------------------------------------------------------------------------------------
   
-  readCloudMemoriesFromFile = (cloudid,cloudname) =>{
+  readCloudMemoriesFromFile = (cloudid) =>{
     
     let cloudfile = `cloudfile-${cloudid}`
-    console.log(`readCloudMemoriesFromFile ${cloudfile}`);
-    mem.getLocalCacheFolder()
-    .then(cacheFolder =>{
-      let path = `${cacheFolder}/${cloudfile}.txt`
-      console.log(`readingFile ${path}`);
+
+    return new Promise((resolve, reject) => {
       
-      RNFS.readFile(path,'utf8')
-      .then((file) => {
-        let memarray = JSON.parse(file)
-    
-        memarray.map(memory=>{console.log(`loading memory ${memory.memid} ${memory.title}`);})
-        this.setState({memories:memarray},()=>{
-          this.loadMemories(this.state.memories)
+      console.log(`readCloudMemoriesFromFile ${cloudfile}`);
+      mem.getLocalCacheFolder()
+      .then(cacheFolder =>{
+        let path = `${cacheFolder}/${cloudfile}.json`
+        console.log(`readingFile ${path}`);
+        RNFS.exists(path)
+        .then(exists =>{
+          
+          if(exists){
+            console.log(`cloud file ${cloudfile} found`);
+            RNFS.readFile(path,'utf8')
+                  .then((file) => {
+                    let memarray = JSON.parse(file)
+                    memarray.map(memory=>{console.log(`loading memory ${memory.memid} ${memory.title}`)})
+                    resolve(memarray)
+                  })
+                  .catch((err) => {
+                      console.log(err.message);
+                      reject(err);
+                  }); 
+          }else{
+            console.log(`cloud file : ${cloudfile} not found `);
+            resolve(null);
+          }
         })
+        
       })
-      .catch((err) => {
-          console.log(err.message);
-      });  
+      .catch(err =>{
+        console.log(err);
+        reject(err)
+      })
+
     })
-    .catch(err =>{
-      console.log(err);
-    })
+    
   }
 
   //----------------------------------------------------------------------------------------------
@@ -307,17 +388,6 @@ class Feed extends Component {
                 xmem.memfiles = files
                 mem.getMemoryLikes ( newmemory.memid, cloudid ).then ( likes =>{
                   xmem.likes = likes
-                  // Promise.all(
-                  //   xmem.memfiles.map(async (file,index) =>{ 
-                      
-                  //       return mem.downloadRemoteFileToCache( file.thumburl )
-                  //               .then( localpath =>{
-                  //                 xmem.memfiles[index].thumburl = localpath
-                  //               })   
-                  //   })
-                  //   ).then(values=>{
-                  //     resolve ( xmem )
-                  //   })
                   resolve ( xmem )
                   })
                 })
@@ -352,16 +422,29 @@ class Feed extends Component {
       AsyncStorage.setItem('activeCloudID',cloud.id.toString())
       
       this.setState({activeCloudID: cloud.id},()=>{
-        //this.checkForUpdates(this.state.activeCloudID)
+
+        this.readCloudMemoriesFromFile( cloud.id ) 
+        .then( memarray => {
+
+          if(memarray === null){ // cloud file does not exist
+
+            this.setState({loadingMessage:`Setting up cloud...`})
+            this.checkForUpdates(this.state.activeCloudID,false)
+
+          }else{
+
+            this.loadMemories ( memarray )
+            this.checkForUpdates( cloud.id ,true)
+
+          }
+        })
       });
-      
     }
-    this.handleSearchChange(this.state.searchwords);
   };
 
   //----------------------------------------------------------------------------------------------
   flushFeed = () => {
-    this.setState({isLoading: true});
+    this.setState({memories:[],isLoading: true,loadingMessage:''});
   };
 
   //----------------------------------------------------------------------------------------------
@@ -411,15 +494,15 @@ class Feed extends Component {
     let memarray = Array.isArray(this.state.memories)?this.state.memories:[]
     mem.findArrayIndex(memarray,(item) =>{return item.memid === memory.memid })
     .then(idx => {
-                  if( idx > -1 ){
-                    memarray.map((mem,index) =>{
-                      if (idx === index )  tmp.push(memory)
-                      else tmp.push( memarray[index] )
-                    })
-                    this.setState({memories:tmp},() =>{
-                      
-                    })
-                  }
+              if( idx > -1 ){
+                memarray.map((mem,index) =>{
+                  if (idx === index )  tmp.push(memory)
+                  else tmp.push( memarray[index] )
+                })
+                this.setState({memories:tmp},() =>{
+                  
+                })
+              }
     })
     
     
@@ -463,7 +546,7 @@ class Feed extends Component {
     } else if (memisArray && this.state.isLoading) {
       feedview = (
         <View style={styles.nomemory}>
-          <Text style={styles.textMain}>Loading...</Text>
+          <Text style={styles.textMain}>{this.state.loadingMessage}</Text>
         </View>
       );
     } else if (memisArray && !this.state.isLoading && memcount == 0) {
@@ -475,7 +558,7 @@ class Feed extends Component {
     } else if (this.state.isLoading) {
       feedview = (
         <View style={styles.nomemory}>
-          <Text style={styles.textMain}>Loading...</Text>
+          <Text style={styles.textMain}>yLoading...</Text>
         </View>
       );
     } else {
