@@ -23,12 +23,14 @@ class Feed extends Component {
   }
 
   state = {
-    memories: [],        
+    memories: [],       
+    searchResult:[],
     userClouds: [],
     user: null,
     searchwordcount: 1,
     searchwords: '',  
-    isLoading: true,    
+    isLoading: true,   
+    isSearching:false, 
     refreshing: false,
     activeCloudID:0,
     loadingMessage:'Loading..'
@@ -52,80 +54,46 @@ class Feed extends Component {
 
   handleSearchChange = (searchwords) => {
 
-    let wordarray = [];
-    this.setState({searchwords:searchwords})
-    if (searchwords) {
-      wordarray = searchwords.toLowerCase().split(' ');
-    }
-    let cloudids = [this.state.activeCloudID]
-    let userid = this.state.user.userid;
+    this.setState({searchwords:searchwords,searchResult:[]})
+    
 
-    console.log(
-      'handleSearchChange ' + cloudids + ': searchwords ' + wordarray,
-    );
-
-    if (cloudids.length === 0) {
-      this.loadMemories(null);
-    } else if (cloudids.length === 1 && cloudids[0].value === 0) {
-      // personal only
-        
-        mem.searchMemories_User(userid, wordarray).then(
-          (memories) => {
-            this.loadMemories(memories);
-          },
-          (error) => {
-            this.loadMemories(null);
-          },
-        );
+    if (searchwords ) {
+      let wordarray = searchwords.toLowerCase().split(' ')  
       
-    } else if (cloudids.includes(0)) {
-      // personal cloud + other clouds
-
-      if (wordarray.length > 0) {
-        // clouds + searchwords
-        mem.getMemories_User_Words_Clouds(userid, wordarray, cloudids).then(
-          (memories) => {
-            this.loadMemories(memories);
-          },
-          (error) => {
-            this.loadMemories(null);
-          },
-        );
-      } else {
-        // clouds but no search words
-        mem.getMemories_User_Clouds(userid, cloudids).then(
-          (memories) => {
-            this.loadMemories(memories);
-          },
-          (error) => {
-            this.loadMemories(null);
-          },
-        );
-      }
-    } else {
-      if (wordarray.length > 0) {
-        // clouds + searchwords
-        mem.getMemories_Words_Clouds(cloudids, wordarray).then(
-          (memories) => {
-            this.loadMemories(memories);
-          },
-          (error) => {
-            this.loadMemories(null);
-          },
-        );
-      } else {
-        // clouds but no search words
-        mem.getMemories_Clouds(cloudids).then(
-          (memories) => {
-            this.loadMemories(memories);
-          },
-          (error) => {
-            this.loadMemories(null);
-          },
-        );
-      }
+      this.setState({isSearching : true , loadingMessage:'searching..'},()=>{
+        for (let ind = 0; ind < wordarray.length; ind++) {
+          const wordtofind = wordarray[ind].toLowerCase();
+          if( wordtofind != ' '){
+            for (let cnt  = 0; cnt  < this.state.memories.length; cnt ++) {
+              const memory = this.state.memories[cnt]
+                for (let idx = 0; idx < memory.searchwords.length; idx++) {
+                  const memoryword = memory.searchwords[idx].keyword;  
+                  if( memoryword.includes( wordtofind) || memoryword === wordtofind  ){
+                      let x = this.state.searchResult
+                      x.push( memory )
+                      this.setState({ isSearching:true,searchResult : x })
+                      break;
+                  }
+                }
+            } 
+          }
+        }
+      });
+    }else{
+      this.setState({searchResult:[],isSearching:false,loadingMessage:'Loading...'})
     }
   };
+
+  //----------------------------------------------------------------------------------------------
+  
+  memoryInSearchResult = (memory) => {
+
+    for (let index = 0; index < this.state.searchResult.length; index++) {
+      const searchMem = this.state.searchResult[index];
+      if( searchMem.memid === memory.memid) return true
+    }
+    return false
+  }
 
   //----------------------------------------------------------------------------------------------
 
@@ -178,6 +146,7 @@ class Feed extends Component {
 
   //----------------------------------------------------------------------------------------------
 
+  
   getClouds = (cloudid) => {
     console.log(`getClouds : ${cloudid} `);
     return new Promise((resolve, reject) =>{
@@ -388,7 +357,10 @@ class Feed extends Component {
                 xmem.memfiles = files
                 mem.getMemoryLikes ( newmemory.memid, cloudid ).then ( likes =>{
                   xmem.likes = likes
-                  resolve ( xmem )
+                    mem.getMemorySearchwords ( newmemory.memid ).then ( searchwords =>{
+                      xmem.searchwords = searchwords
+                      resolve ( xmem )
+                    })
                   })
                 })
               })
@@ -512,13 +484,13 @@ class Feed extends Component {
 
 
   render() {
-    let memisArray = Array.isArray(this.state.memories);
-    console.log('feed render');
-    let memcount = 0;
-    let feedview = {};
-    if (memisArray) {
-      memcount = this.state.memories.length;
-    }
+
+    let memarray = this.state.isSearching ? this.state.searchResult:this.state.memories
+
+    let memisArray = Array.isArray(memarray);
+    //   thisconsole.log('feed render');
+    let memcount = memarray ? memarray.length : 0;
+    let feedview = {};    
     
     if (memisArray && !this.state.isLoading && memcount) {
       feedview = (        
@@ -530,7 +502,7 @@ class Feed extends Component {
               onRefresh={this.onRefresh}
             />
           }>
-          {this.state.memories.map((mem, index) => (
+          {memarray.map((mem, index) => (
             
             <MemoryCard
               key          = { index                  }

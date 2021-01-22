@@ -13,9 +13,7 @@ class CacheImage extends React.Component {
 
   loadFile = ( path )=> {
         
-        this.setState({ source:{isStatic:true,uri:path}},()=>{
-          //console.log(this.state.source);
-        }); ;
+        this.setState({ source:{isStatic:true,uri:path}})
       }
   
   
@@ -80,7 +78,7 @@ class CacheImage extends React.Component {
    //----------------------------------------------------------------
    
    render(){
-     //console.log('cahched image',this.state.source);
+     
      return(
        <Image style={this.props.style} source={this.state.source} />
      );

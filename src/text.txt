@@ -1,79 +1,78 @@
-return(
-        <TouchableOpacity onPress={this.handleOnPress}>
-          <View
-            style={{
-              flexDirection: 'row',
-              borderTopColor:'grey',                
-              borderTopWidth:1,
-              minHeight:50,
-              alignItems:'center',
-              paddingLeft:5,
-              
-            }}
-            >
-            
-            <Avatar
-              size="small"
-              rounded
-              title={initials}
-              overlayContainerStyle={{backgroundColor:person.avatar}}
-              onPress={() => console.log('Author avatar pressed ',author.userid, author.firstname,author.lastname)}
-              activeOpacity={0.7}
-            />
-            
-            <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
-              <Text                   
-                style={{ fontSize:15 }}              
-              >{`${person.firstname} ${person.lastname}`}
-              </Text>
-            </View>
-            
-            {checked}
-            
-          </View> 
-      </TouchableOpacity>     
-    )
-  }
+handleSearchChange = (searchwords) => {
 
+    let wordarray = [];
+    this.setState({searchwords:searchwords})
+    if (searchwords) {
+      wordarray = searchwords.toLowerCase().split(' ');
+    }
+    let cloudids = [this.state.activeCloudID]
+    let userid = this.state.user.userid;
 
-  <BottomNav.Navigator>
+    console.log(
+      'handleSearchChange ' + cloudids + ': searchwords ' + wordarray,
+    );
+
+    if (cloudids.length === 0) {
+      this.loadMemories(null);
+    } else if (cloudids.length === 1 && cloudids[0].value === 0) {
+      // personal only
         
-        <BottomNav.Screen
-          name="Feed"
-          component={Feed}
-          options={{
-            tabBarLabel: 'Home',
-            tabBarIcon: () => (
-              <MaterialIcon name="home" color={'black'} size={26} />
-            ),
-          }}
-        />
+        mem.searchMemories_User(userid, wordarray).then(
+          (memories) => {
+            this.loadMemories(memories);
+          },
+          (error) => {
+            this.loadMemories(null);
+          },
+        );
+      
+    } else if (cloudids.includes(0)) {
+      // personal cloud + other clouds
 
+      if (wordarray.length > 0) {
+        // clouds + searchwords
+        mem.getMemories_User_Words_Clouds(userid, wordarray, cloudids).then(
+          (memories) => {
+            this.loadMemories(memories);
+          },
+          (error) => {
+            this.loadMemories(null);
+          },
+        );
+      } else {
+        // clouds but no search words
+        mem.getMemories_User_Clouds(userid, cloudids).then(
+          (memories) => {
+            this.loadMemories(memories);
+          },
+          (error) => {
+            this.loadMemories(null);
+          },
+        );
+      }
+    } else {
+      if (wordarray.length > 0) {
+        // clouds + searchwords
+        mem.getMemories_Words_Clouds(cloudids, wordarray).then(
+          (memories) => {
+            this.loadMemories(memories);
+          },
+          (error) => {
+            this.loadMemories(null);
+          },
+        );
+      } else {
+        // clouds but no search words
+        mem.getMemories_Clouds(cloudids).then(
+          (memories) => {
+            this.loadMemories(memories);
+          },
+          (error) => {
+            this.loadMemories(null);
+          },
+        );
+      }
+    }
+  };
 
-
-        options={{
-            tabBarLabel: 'Home',
-            tabBarIcon: ({ focused, tintColor }) => (
-              <Image
-                focused = { focused}
-                source  = { require('./images/home.png')}
-                style   = { styles.mediumButton }                
-              />
-            ),
-          }}
-
-
-          <BottomNav.Screen
-          name="Feed"
-          component={Feed}
-          options={{
-            tabBarLabel: 'Home',
-            tabBarIcon: ({ focused, tintColor }) => (
-              <Image
-                focused = { focused}
-                source  = { require('./images/home.png')}
-                style   = { styles.mediumButton }                
-              />
-            ),
-          }}
-        />
+  //----------------------------------------------------------------------------------------------

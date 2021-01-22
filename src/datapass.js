@@ -856,6 +856,32 @@ export function getMemoryLikes ( memid, cloudid ) {
 
 }
 
+//---------------------------------------------------------------------------------------------
+
+export function getMemorySearchwords ( memid ) {
+  //console.log(`getMemorySearchwords for memid ${memid} and cloud ${cloudid}`);
+  return new Promise((resolve, reject) => {
+    fetch('https://memrii-api.herokuapp.com/get_searchwords_memid', {
+      method: 'post',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        memid  : memid,       
+      }),
+    })
+      .then((response) => response.json())
+      .then((res) => {
+        
+        if (res.success) {
+
+          resolve(res.data);
+        } else {
+          reject(res.error);
+        }
+      });
+  });
+
+}
+
 // ---------------------------------------------------------------------------------
 
 export function searchMemories(userid, cloudids, searchwords, callback) {
