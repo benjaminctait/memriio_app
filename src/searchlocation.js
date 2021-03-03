@@ -20,13 +20,9 @@ class SearchLocation extends Component{
 //--------------------------------------------------------------------------------
 
 handleSelectLocation = (location) => {
-  if(this.props.route){
-    this.props.navigation.navigate('NewPost',{location: location})
-  }else{
+  
     this.props.updateLocation(location.firstname + ' ' + location.lastname)
     this.props.close()
-  }
-  
 }
 
 //--------------------------------------------------------------------------------

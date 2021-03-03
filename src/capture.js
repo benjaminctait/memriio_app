@@ -77,6 +77,7 @@ class CaptureComponent extends Component {
   async componentDidMount() {
     
     console.log('capture did mount ');
+    console.log('capture route',this.props.route);
     const p = this.props
     
     let cc = p.captureContent?p.captureContent:[]
@@ -326,7 +327,7 @@ class CaptureComponent extends Component {
     this.setState({shutterFlashVisible:true})
     Animated.timing(this.state.fadeAnimation, {
       toValue: 1,
-      duration: 100,
+      duration: 50,
       useNativeDriver: true, 
     }).start(this.hideShutterFlash);
   };
@@ -334,7 +335,7 @@ class CaptureComponent extends Component {
   hideShutterFlash = () => {
     Animated.timing(this.state.fadeAnimation, {
       toValue: 0,
-      duration: 200,
+      duration: 50,
       useNativeDriver: true,
     }).start(this.setState({shutterFlashVisible:false}));
   };
@@ -496,29 +497,31 @@ class CaptureComponent extends Component {
     let content = null
     let effect = null
     let filestyle = null
-
+  
     switch (this.state.mode) {
       case 'camera':
+
+        if(this.state.shutterFlashVisible){
+          effect = <Animated.View style={[styles.fadingContainer,{opacity: this.state.fadeAnimation}]}/>
+        }
+
         bigButton = <CameraClickButton onPress={this.takePicture} />;
         content = (
-          <RNCamera
-            ref={(ref) => {
-              this.camera = ref;
-            }}
-            style={styles.preview}
-            type={RNCamera.Constants.Type.back}
-            flashMode={RNCamera.Constants.flashMode}
-            autoFocus={'on'}
-            playSoundOnCapture={true}
-          />
-        )
-        if(this.state.shutterFlashVisible){
-          effect = (
-            <Animated.View
-              style={[styles.fadingContainer,{opacity: this.state.fadeAnimation}]}
+           <View style={{flex: 1}} >
+            <RNCamera
+              ref={(ref) => {
+                this.camera = ref;
+              }}
+              style={styles.preview}
+              type={RNCamera.Constants.Type.back}
+              flashMode={RNCamera.Constants.flashMode}
+              autoFocus={'on'}
+              playSoundOnCapture={true}
             />
-          )
-        }
+             {effect} 
+         </View>
+        )
+        
         
         break;
       case 'video':
@@ -608,7 +611,7 @@ class CaptureComponent extends Component {
     return (
       <View style={styles.container}>
         {content}
-        {effect}
+        
         <View style={[styles.modeButtons,filestyle]}>
           <IconButtonCamera
             onPress={() => this.showMode('camera')}
@@ -713,7 +716,7 @@ const styles = StyleSheet.create({
     top:0,  
     left:0,
     width:'100%',
-    height:'100%',
+    height: '100%',
     backgroundColor:'whitesmoke'
 
       

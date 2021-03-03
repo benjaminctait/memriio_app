@@ -7,7 +7,7 @@ import * as mem from './datapass';
 import sliderStyles  from './styles/index.style';
 import {CacheImage,CachedZoomableImage} from './cachedImage'
 
-import { Avatar,Badge, Overlay } from 'react-native-elements'
+import { Avatar,Badge, Overlay,Tooltip, } from 'react-native-elements'
 import {
   StyleSheet,
   View,
@@ -19,6 +19,7 @@ import {
   
 } from 'react-native';
 import EditPost from './editpost';
+import { log } from 'react-native-reanimated';
 
 let monthNames =["Jan","Feb","Mar","Apr",
 "May","Jun","Jul","Aug",
@@ -154,18 +155,22 @@ class MemoryCard extends Component {
   handleOnLike = () => {
     mem.addLikeToMemory( this.state.activeUser.userid, this.props.memory.memid )
     .then(result =>{
+      console.log(`handleOnLike ${result}`);
       if(result.success){
         console.log('handleOnLike returned new prasieid :',result.data);
-        if (this.props.memory.likearray){
+        if (this.props.memory.likes){
           let tmp = this.props.memory
-          tmp.likearray.push(this.state.activeUser.userid)
+          tmp.likes.push(this.state.activeUser.userid)
           this.props.updateMemory(tmp)
         }else{
           let tmp = this.props.memory
-          tmp.likearray = [this.state.activeUser.userid]          
+          tmp.likes = [this.state.activeUser.userid]          
           this.props.updateMemory(tmp)
         }
       }
+    })
+    .catch((err)=>{
+      console.log(`handleOnLike ${err}`);
     })
     
   };
@@ -314,7 +319,9 @@ class MemoryCard extends Component {
     let badge = null
     let author = this.state.author
     let d = new Date(this.props.memory.createdon)
+
   
+    
     if(author){
       if ( author.firstname) { initials += author.firstname[0] }
       if ( author.lastname ) { initials += author.lastname[0]  }
@@ -322,6 +329,8 @@ class MemoryCard extends Component {
         authorLabel = <Text style={styles.authorText } >{author.firstname + ' ' + author.lastname}</Text>
       }
     }
+
+    
 
     if(this.state.currentStatusLevel) {
       badge = 
@@ -366,9 +375,10 @@ class MemoryCard extends Component {
         <View style={styles.iconrow}>
           <View style={styles.iconrow}>
             <SwitchIcon // Like heart
-              onPress   ={this.handleOnLike}
-              upImage   ={require('./images/heart_blue.png')}
-              downImage ={require('./images/heart_red.png')}
+              onPress   = { this.handleOnLike}
+              upImage   = { require('./images/heart_blue.png')}
+              downImage = { require('./images/heart_red.png')}
+              isDown    = {  this.props.memory.likes.length > 0 } 
             />
 
             <SwitchIcon // Share icon
@@ -378,9 +388,10 @@ class MemoryCard extends Component {
             />
 
             <SwitchIcon // Comment icon
-              onPress   ={this.handleOnComment}
-              upImage   ={require('./images/comment_purple.png')}
-              downImage ={require('./images/comment_purple.png')}
+              onPress   = { this.handleOnComment}
+              upImage   = { require('./images/comment_purple.png')}
+              downImage = { require('./images/comment_purple.png')}
+              
             />
 
           </View>
@@ -514,6 +525,11 @@ class MemoryCard extends Component {
         cardtype      : this.props.memory.cardtype,
         editcount     : this.props.memory.editcount,
         createdon     : this.props.memory.createdon,
+        likes         : this.props.memory.likes,
+        author        : this.props.memory.author,
+        modifiedon    : this.props.memory.modifiedon,
+        searchwords   : this.props.memory.searchwords,
+
       }
       console.log('CARD rendereditmodal')
       

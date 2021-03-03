@@ -10,16 +10,26 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Platform from 'react-native';
 import RNFS from 'react-native-fs';
 
-const memory = {
-  title: '', // short title of the memory : string
-  story: '', // text desciribing the memory : string
-  files: [], // an array of string pairs local filepath, local thumbpath : [ string, String ]
-  people: [], // an array of userids : [ int ]
-  location: '', // name of the location : string
-  groups: [], // array of group IDs : [ int ]
-  userid: 0, // id of the current user : int
-  memid: 0, // id of the newly created memory : int
-};
+const memory = {  
+  title        : '',    // short title of the memory : string
+  description  : '',    // text desciribing the memory : string
+  story        : '',    // text desciribing the memory : string
+  memfiles     : [],    // an array of string pairs local filepath, local thumbpath : [ string, String ]
+  taggedPeople : [],    // an array of userids  : [ int ]
+  location     : '',    // name of the location : string
+  taggedClouds : [],    // array of group IDs : [ int ]
+  userid       : 0,     // id of the current user : int
+  searchwords  : [],    
+  memid        : -1,    // id of the newly created memory : int
+  createdon    : '',
+  cardtype     : 0, 
+  editcount    : 0, 
+  modifiedon   : '',
+  author       : null,
+  likes        : []
+}
+
+  
 
 // -------------------------------------------------------------------------------
 
@@ -73,7 +83,13 @@ export async function getActiveUser() {
             AsyncStorage.getItem('lastname').then(lastName =>{
               AsyncStorage.getItem('email').then(email => {
                 AsyncStorage.getItem('activeCloudID').then(activeCloudID =>{
-                  activeCloudID = parseInt(activeCloudID)
+                  if(!activeCloudID){
+                    activeCloudID = 0;
+                    AsyncStorage.setItem('activeCloudID','0')  
+                  }else{
+                    activeCloudID = parseInt(activeCloudID)
+                  }
+                  
                   let user = {
                     userid, 
                     firstName, 
@@ -189,6 +205,33 @@ export async function getUserDetails( userid ){
 
 // -----------------------------------------------------------------------
 
+export function getMemoryDetails ( memid ){
+  
+  return new Promise((resolve,reject) => {
+    fetch(
+      'https://memrii-api.herokuapp.com/get_memory',
+      {
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          memid: memid
+        }),
+      },
+    )
+      .then((response) => response.json())
+      .then((res) => {
+        if (res.success) {
+          resolve(res.data[0]);
+        } else {
+          reject(res.error);
+        }
+      });
+
+  })
+}
+
+// -----------------------------------------------------------------------
+
 export async function getStatusLevels( cloudid ){
   return new Promise((resolve,reject) => {
     fetch(
@@ -243,24 +286,31 @@ export async function updateUserAvatar( userid , avatarString ){
 
 export async function postNewMemory(
   title,
-  story,
+  description,
   files,
   people,
   location,
-  groups,
+  clouds,
   userid,
   callback,
 ) {
 
   memory.title        = title;
-  memory.story        = story;
-  memory.files        = files;
-  memory.people       = people;
+  memory.description  = description;
+  memory.story        = ''
+  memory.memfiles     = files;
+  memory.taggedPeople = people;
   memory.location     = location;
-  memory.groups       = groups;
+  memory.taggedClouds = clouds;
   memory.userid       = userid;
-  memory.searchWords  = [];
+  memory.searchwords  = [];
   memory.memid        = -1;
+  memory.createdon    = ''
+  memory.cardtype     = 0 
+  memory.editcount    = 0 
+  memory.modifiedon   = ''
+  memory.author       = null
+  memory.likes        = []
 
   console.log('postNewMemory memory : ',JSON.stringify(memory,null,3));
 
@@ -276,31 +326,31 @@ const uploadNewMemory = (callBackOnSuccess) => {
 
   createMemoryID().then((response) => {
     if (response === 'success' && memory.memid !== -1) {
-      memory.people.map((person) => {
-        Promises.push(addPersontoMemory(person));
+      memory.taggedPeople.map((person) => {
+        Promises.push(addPersontoMemory(person)); 
       });
-      memory.groups.map((cloud) => {
+      memory.taggedClouds.map((cloud) => {
         Promises.push(addCloudtoMemory(cloud));
       });
       Promises.push(setMemorySearchWords(getSearchWords()));
 
-      memory.files.map((memfile, idx) => {
+      memory.memfiles.map((memfile, idx) => {
         
         if (isSupportedImageFile(memfile.filepath)) {
           Promises.push(
-            uploadImageFile(memfile).then((result) => {
+            uploadImageFile(memfile,idx).then((result) => {
               associateFileToMemory(result, (idx === 0 )); // set the first file memory as the hero shot.
             }),
           );
         } else if (isSupportedVideoFile(memfile.filepath)) {
           Promises.push(
-            uploadVideoFile(memfile).then((result) => {
+            uploadVideoFile(memfile,idx).then((result) => {
               associateFileToMemory(result, (idx === 0 ));
             }),
           );
         } else if (isSupportedAudioFile(memfile.filepath)) {
           Promises.push(
-            uploadAudioFile(memfile).then((result) => {
+            uploadAudioFile(memfile,idx).then((result) => {
               associateFileToMemory(result, (idx === 0 ));
             }),
           );
@@ -311,7 +361,7 @@ const uploadNewMemory = (callBackOnSuccess) => {
         console.log(
           'uploadNewMemory() - UPLOAD COMPLETE for memory id ' + memory.memid,
         );
-        callBackOnSuccess(memory.memid);
+        callBackOnSuccess(memory);
       });
     }
   });
@@ -761,10 +811,10 @@ export function getUserClouds(userid, callback) {
   console.log('getUserClouds : ', userid );
   fetch('https://memrii-api.herokuapp.com/get_clouds_userid', {
     method: 'post',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({userID: userid}),
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      userID: userid
+    }),
   })
     .then((response) => response.json())
     .then((res) => {
@@ -1198,7 +1248,7 @@ export function getCloudPeople(clouds, callback) {
       JSON.stringify(clouds.map((cloud) => parseInt(cloud.id))),
   );
 
- 
+    
     fetch('https://memrii-api.herokuapp.com/get_cloud_people_clouds', {
       method: 'post',
       headers: {
@@ -1317,7 +1367,7 @@ const stry = (str) => {
 
 // ------------------------------------------------------------------------------
 
-const uploadImageFile = (fileObj) => {
+const uploadImageFile = (fileObj,uid) => {
   let thumbS3URL = '';
   let filepath = stry(fileObj.filepath);
   let thumbnail = stry(fileObj.thumbnail);
@@ -1325,7 +1375,7 @@ const uploadImageFile = (fileObj) => {
   let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
   let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
-  let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
+  let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now() + '-' + uid;
   let origS3URL = thumbS3URL;
   let targetFileName = commonfileName + '-original' + '.' + origExtension;
 
@@ -1408,7 +1458,7 @@ export async function cameraRollPathToAbsolutePath(camRolluri,type=null) {
 
 // -------------------------------------------------------------------------------
 
-const uploadVideoFile = (fileObj) => {
+const uploadVideoFile = (fileObj,uid) => {
   console.log('uploadVideoFile ---------------------------------- ');
   console.log('original: ' + getFilename(fileObj.filepath));
   console.log('thumb: ' + getFilename(fileObj.thumbnail));
@@ -1420,7 +1470,7 @@ const uploadVideoFile = (fileObj) => {
   let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
   let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
-  let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
+  let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now()+ '-' + uid;
   let origS3URL = thumbS3URL;
   let vFolder = commonfileName + '-' + 0;
 
@@ -1470,7 +1520,7 @@ const uploadVideoFile = (fileObj) => {
 
 //-------------------------------------------------------------------------------
 
-const uploadAudioFile = (fileObj) => {
+const uploadAudioFile = (fileObj,uid) => {
   console.log('uploadAudioFile ---------------------------------- ');
   console.log('original: ' + getFilename(fileObj.filepath));
   console.log('thumb: ' + getFilename(fileObj.thumbnail), fileObj.thumbnail);
@@ -1482,7 +1532,7 @@ const uploadAudioFile = (fileObj) => {
   let origExtension = origFileParts[origFileParts.length - 1];
   let thumbFileParts = thumbnail.split('.');
   let thumbExtension = thumbFileParts[thumbFileParts.length - 1];
-  let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now();
+  let commonfileName = memory.userid + '-' + memory.memid + '-' + Date.now() + '-' + uid;
   let origS3URL = thumbS3URL;
 
   return new Promise((resolve, reject) => {
@@ -1592,7 +1642,7 @@ const processLowResImage = async (filepath, filetype) => {
         console.log('processImage : filetype is ' + ft);
         resolve(filepath);
       } else {
-        ImageResizer.createResizedImage(filepath, 1500, 540, 'JPEG', 80, 0)
+        ImageResizer.createResizedImage(filepath, 2000, 2000, 'JPEG', 90, 0)
           .then((response) => {
             console.log(
               'Resized Image : ' +

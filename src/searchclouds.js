@@ -1,89 +1,74 @@
 import React, { Component } from 'react';
 
-
 import { 
     StyleSheet,
-    View,
-    TouchableOpacity,
-    FlatList,
-    TouchableWithoutFeedbackBase,
+    View,    
+    FlatList,    
   } from 'react-native';
 
-import { BackButton,PersonListItem,SubTag} from './buttons'
-import { Input ,ListItem} from 'react-native-elements';
+import { BackButton,CloudListItem,SubTag} from './buttons'
+import { showMessage, hideMessage} from 'react-native-flash-message';
 
-class SearchPeople extends Component{
+
+class SearchClouds extends Component{
   constructor(props){
     super(props)
     this.inputRef = React.createRef()
   }
 
   state = {
-    searchText:'',
     tagged:[],
-    
   }
 
 
 componentDidMount =() =>{
-  
-  this.setState({tagged:this.props.taggedPeople})
+  this.setState({tagged:this.props.taggedClouds})
 }
 
 //--------------------------------------------------------------------------------
 
-handleTextChange = (value) => {
-  
-  this.setState({searchText:value})
-}
+handleCloudClick = (cloud) => {
 
-//--------------------------------------------------------------------------------
+  console.log(cloud.id === 0);
+  if(cloud.id === 0 ){
+    showMessage({
+      message: `Personal cloud is protected`,
+      type: 'success',
+      autoHide:true,
+      duration:1000,    
+      floating: true,
+      })   
 
-handlePersonClick = (person) => {
-
-  let route = this.props.route
-  if ( route ){
-
-  }
-  let tmp = route ? route.params.taggedPeople : this.props.taggedPeople
-  let idx =  tmp.findIndex(taggedPerson => {return person.userid === taggedPerson.userid})
-
-  if( idx > -1 )
-  { 
-    tmp.splice ( idx , 1 ) 
   }else{
-    tmp.push   ( person )
+    let route = this.props.route
     
+    let tmp = route ? route.params.taggedClouds : this.props.taggedClouds
+    let idx =  tmp.findIndex(taggedCloud => {return cloud.id === taggedCloud.id})
+
+    if( idx > -1 )
+    { 
+      tmp.splice ( idx , 1 ) 
+    }else{
+      tmp.push   ( cloud )
+    }
+    
+
+    this.setState({ tagged:tmp})
+    if ( route ) route.params.updateClouds(tmp)
+    else this.props.updateClouds(tmp)
   }
-  this.inputRef.current.clear()  
-  this.setState({ searchText:'' ,tagged:tmp})
-  if ( route ) route.params.updatePeople(tmp)
-  else this.props.updatePeople(tmp)
-    
+  
 }
 
 //--------------------------------------------------------------------------------
 
-itemIsTagged = ( userid ) =>{
+itemIsTagged = ( cloudid ) =>{
   
-  
-  let test = this.state.tagged.findIndex( person => { return person.userid === userid})
+  if (cloudid === 0)
+  return true
+  else {
+    let test = this.state.tagged.findIndex( cloud => { return (cloud.id === cloudid )})
   return (test !== -1)
-
-}
-
-//--------------------------------------------------------------------------------
-
-filterPeopleList = () => {
-
-  let stxt      = this.state.searchText
-  let allPeeps  = this.props.route ? this.props.route.params.allPeople : this.props.allPeople
- 
-  if(this.state.searchText !== '' ){
-    return allPeeps.filter((p)=>{ 
-      return( p.firstname.includes(stxt) || p.lastname.includes(stxt))})
-  }else{
-    return allPeeps
   }
   
 }
@@ -92,11 +77,11 @@ filterPeopleList = () => {
 
 renderItem = ({ item  }) => (
   
-  <PersonListItem 
-    key     = { item.userid }
-    tagged  = { this.itemIsTagged(item.userid) }
-    onPress = { this.handlePersonClick }
-    person  = { item }
+  <CloudListItem 
+    key     = { item.id }
+    tagged  = { this.itemIsTagged(item.id) }
+    onPress = { this.handleCloudClick }
+    cloud  = { item }
   />
 );
 
@@ -105,7 +90,7 @@ renderItem = ({ item  }) => (
 goBack =() =>{
   if(this.props.route){
     this.props.navigation.navigate('NewPost',{
-      taggedPeople: this.state.taggedPeople
+      taggedClouds: this.state.taggedClouds
     });
   }else{
     this.props.close()
@@ -117,24 +102,16 @@ goBack =() =>{
 render(){
   
   let toppadding = this.props.route ? 0 : toppadding = 50
+
+  let clouds = this.props.route ? this.props.route.params.allClouds : this.props.allClouds
   
   return(
-    <View style={[styles.container,{paddingTop:toppadding}]}>
+    <View style       = {[styles.container,{paddingTop:toppadding}]}>
 
-      <View  style={styles.searchArea}>
-        <Input 
-          ref = {this.inputRef}
-          style={styles.searchfield} 
-          placeholder= 'Search..'
-          placeholderTextColor = 'grey'
-          onChangeText={value => this.handleTextChange(value)}
-        />
-      </View>
-
-      <View style={styles.listArea}>
+      <View style     = {styles.listArea}>
         <FlatList   
-          keyExtractor={item => item.userid}
-          data = {this.filterPeopleList()}
+          keyExtractor= { item => item.id}
+          data        = { clouds }
           renderItem  = { this.renderItem }
         />
       </View>
@@ -150,7 +127,7 @@ render(){
 
 }
 
-export default SearchPeople;
+export default SearchClouds;
 
 const styles = StyleSheet.create({
     container:{

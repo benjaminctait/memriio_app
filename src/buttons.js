@@ -350,7 +350,7 @@ componentDidUpdate = (prevProps,prevState) =>{
         
         return(
         <TouchableOpacity onPress={this.onTagPress}>
-          <View style={styles.ptagGreyed}>
+          <View style={[styles.ptagGreyed,this.props.tagDownStyle]}>
             <Text style={styles.ptagTextGreyed}> {this.props.title}</Text>
             {this.getRightIcon()}
           </View>   
@@ -360,7 +360,7 @@ componentDidUpdate = (prevProps,prevState) =>{
         
         return (
         <TouchableOpacity onPress={this.onTagPress}>
-          <View style={[styles.ptag,this.props.tagStyle]}>
+          <View style={[styles.ptag,this.props.tagUpStyle]}>
             <Text style={[styles.ptagText,this.props.textStyle]}> {this.props.title}</Text>
             {this.getRightIcon()}
           </View>   
@@ -370,7 +370,7 @@ componentDidUpdate = (prevProps,prevState) =>{
     }else{
       return(
         <TouchableOpacity onPress={this.onTagPress}>
-          <View style={[styles.ptag,this.props.tagStyle]}>
+          <View style={[styles.ptag,this.props.tagUpStyle]}>
             <Text style={[styles.ptagText,this.props.textStyle]}> {this.props.title}</Text>
             {this.getRightIcon()}
           </View>   
@@ -466,7 +466,80 @@ class PersonListItem extends Component{
             
 //-----------------------------------------------------------------------------
 
+class CloudListItem extends Component{
 
+ 
+  handleOnPress = () =>{
+    this.props.onPress(this.props.cloud)
+  }
+
+  render(){
+    const {cloud,tagged} = this.props
+    let checked = null
+    let initials = ''
+    
+    if(cloud){
+      if ( cloud.name ) { 
+        if( cloud.name.length > 1 ) initials = cloud.name[0]+ cloud.name[1] 
+        else initials = cloud.name[0]
+      }
+      
+    }
+   
+    if(tagged) {
+      checked = <View style={{ alignSelf: 'flex-end',position:'absolute', right:5 }}>
+                  <Image
+                    style={{ width: 30, height: 30,  margin: 5 }}
+                    source={require('./images/checked_blue.png')}
+                    resizeMethod={'resize'}
+                  />
+                </View>
+      
+    }
+
+    return(
+        <TouchableOpacity onPress={this.handleOnPress}>
+          <View
+            style={{
+              flex:1,
+              flexDirection:'row',
+              borderTopColor:'grey',                
+              borderTopWidth:1,
+              minHeight:50,
+              alignItems:'center',
+              paddingLeft:5,
+              
+            }}
+            >
+            
+            <Avatar
+              size="small"
+              rounded
+              title={initials}
+              overlayContainerStyle={{backgroundColor:'blue',justifyContent:'flex-start'}}
+              onPress={() => console.log('Cloud avatar pressed ',cloud.id,cloud.name)}
+              activeOpacity={0.7}
+            />
+            
+            <View style={{ justifyContent: 'center', marginLeft: 5, fontSize:20}}>
+              <Text                   
+                style={{ fontSize:15 }}              
+              >{`${cloud.name} `}
+              </Text>
+            </View>
+            
+            {checked}
+            
+          </View> 
+      </TouchableOpacity>     
+    )
+  }
+
+
+}
+      
+            
+//-----------------------------------------------------------------------------
 
 class LocationTag extends Component{
 
@@ -515,6 +588,17 @@ class SwitchIcon extends Component{
       let newval = !this.state.up
       this.setState({up:newval})
       this.props.onPress()
+  }
+
+  componentDidMount =()=>{
+   
+    this.setState({up:!this.props.isDown})
+  }
+
+  componentDidUpdate = (prevProps) =>{
+    if(prevProps.isDown != this.props.isDown){
+      this.setState({up:!this.props.isDown})
+    }
   }
 
   render(){
@@ -637,6 +721,7 @@ export {CameraClickButton,
         SubTag,
         SwitchIcon,
         PersonListItem,
+        CloudListItem,
         BlankButton,
         TextCard,
       }

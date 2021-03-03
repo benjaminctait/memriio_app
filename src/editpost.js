@@ -8,6 +8,7 @@ import Dialog from 'react-native-dialog'
 import {showMessage} from 'react-native-flash-message';
 import SearchPeople from './searchpeople'
 import SearchLocation from './searchlocation'
+import SearchClouds from './searchclouds'
 import Capture from './capture'
 
 import {
@@ -62,11 +63,14 @@ class EditPost extends Component {
       allPeople: [],
       allClouds: [],
       spinner: false,
+
       modalVisible:false,
-      deleteDialogVisible:false,
+      deleteDialogVisible:false,      
       locationModalVisible:false,
       peopleModalVisible:false,
       captureModalVisible:false,
+      cloudModalVisable:false,
+
       activeItem:null,
       deleteIndex:'',
       initialCloudStatus:[],
@@ -78,35 +82,32 @@ class EditPost extends Component {
   
 
    setupCloudsAndPeople =  (clouds) => {
-    if (Array.isArray(clouds)) {
-      const firstitem = [
-        {
-          id: 0,
-          name: 'Personal',
-          administrator: this.state.user,
-          createdon: null,
-        },
-      ];
+    
+    const firstitem = [
+      {
+        id: 0,
+        name: 'Personal',
+        administrator: this.state.user,
+        createdon: null,
+      },
+    ];
+    let newarray = firstitem.concat(clouds);
+    this.setState({allClouds:newarray})
 
-      const newarray = firstitem.concat(clouds);
-
-      newarray.map((cloud,index) => {
-         mem.findArrayIndex(this.state.taggedClouds,(item)=>{return item.id == cloud.id})
-         .then(idx => {
-          if(idx != -1){
-              newarray[index].selected = true
-              this.setState({allClouds:newarray})
-            }
-         })
-      })
-
-      mem.getCloudPeople(clouds, null).then((people) => {
-        this.setState({allPeople: people, allClouds: newarray});
-      });
-      
-
-      
-    }
+    mem.log(this.state.taggedClouds,'taggedclouds')
+    newarray.map((cloud,index) => {
+        mem.findArrayIndex(this.state.taggedClouds,(item)=>{return item.id == cloud.id})
+        .then(idx => {
+        if(idx != -1){
+            newarray[index].selected = true
+            this.setState({allClouds:newarray})
+          }
+        })
+    })
+    
+    mem.getCloudPeople( clouds, (people) => {
+      this.setState({allPeople: people});
+    })    
 
   };
 
@@ -117,18 +118,24 @@ class EditPost extends Component {
     Keyboard.dismiss();    
     let oldMemory = this.props.memory;
     let newMemory = {
+
       memid         : this.state.memid,
+      createdon     : this.state.createdon,
+      userid        : this.state.userid,
       title         : this.state.title,
       description   : this.state.description,
-      story         : this.state.story,      
       location      : this.state.location,
-      taggedPeople  : this.state.taggedPeople,      
-      taggedClouds  : this.state.taggedClouds,
-      userid        : this.state.userid,
-      createdon     : this.state.createdon,
+      story         : this.state.story,      
       cardtype      : this.state.cardtype,
       editcount     : this.state.editcount,
-      memfiles      : await this.formatContentForFeed(this.state.content)
+      modifiedon    : this.state.modifiedon,
+      author        : this.state.author,
+      taggedClouds  : this.state.taggedClouds,
+      taggedPeople  : this.state.taggedPeople,      
+      memfiles      : await this.formatContentForFeed(this.state.content),
+      likes         : this.state.likes,
+      searchwords   : this.state.searchwords
+      
     }
         
     showMessage({
@@ -139,8 +146,9 @@ class EditPost extends Component {
       floating: true,
     });
 
-    this.props.updateMemory( newMemory )
+    
     this.props.close()
+
 
     mem.updateMemoryTitle       ( newMemory.memid , newMemory.title        )
     mem.updateMemoryDescription ( newMemory.memid , newMemory.description  )
@@ -181,6 +189,12 @@ class EditPost extends Component {
         })
       }
     })
+    mem.getMemoryDetails(newMemory.memid)
+    .then(remoteMemoryDetails =>{
+      newMemory.modifiedon = remoteMemoryDetails.modifiedon      
+      this.props.updateMemory( newMemory )  // update local memory
+    })
+    
     
   };
 
@@ -230,6 +244,7 @@ class EditPost extends Component {
   
   getClouds = () => {
     Keyboard.dismiss();
+    this.setState({cloudModalVisable:true})
   };
 
   // ---------------------------------------------------------------------------------
@@ -239,6 +254,28 @@ class EditPost extends Component {
     this.setState({peopleModalVisible:true})
     
   };
+
+  // ---------------------------------------------------------------------------------
+  updateClouds = ( taggedClouds  ) => {
+    console.log('update clouds called');
+    
+    this.setState({taggedClouds: taggedClouds},()=>{
+      
+      let x =  this.state.allClouds
+      x.map(cloud =>{ 
+        if(cloud.id != 0 ) cloud.selected = false
+        for (let index = 0; index < taggedClouds.length; index++) {
+          if (taggedClouds[index].id === cloud.id) 
+          {
+            cloud.selected = true            
+            break
+          }
+        }
+      })
+     this.setState( { allClouds:x } )
+      
+    })
+  }
 
   // ---------------------------------------------------------------------------------
 
@@ -258,7 +295,7 @@ class EditPost extends Component {
     const { capturedFiles,memory } = this.props
     let newarray = []
     console.log('EDITPOAST - didmount');
-    console.log('Editing memory ',memory.memid);
+    console.log('Editing memory ',memory);
     
     
     if(memory){
@@ -266,21 +303,26 @@ class EditPost extends Component {
       this.setState(
         {
           memid         : memory.memid,
-          title         : memory.title,
-          story         : memory.story,   
-          description   : memory.description,   
-          taggedPeople  : memory.taggedPeople,
-          location      : memory.location,
-          taggedClouds  : memory.taggedClouds,
-          userid        : memory.userid,
-          cardtype      : memory.cardtype,
-          editcount     : memory.editcount,
           createdon     : memory.createdon,
-
+          userid        : memory.userid,
+          title         : memory.title,
+          description   : memory.description,   
+          location      : memory.location,
+          story         : memory.story,   
+           cardtype      : memory.cardtype,
+          editcount     : memory.editcount,
+           modifiedon    : memory.modifiedon,
+           author        : memory.author,
+          taggedClouds  : memory.taggedClouds,
+          taggedPeople  : memory.taggedPeople,
+          
+          likes         : memory.likes,
+           searchwords   : memory.searchwords,
           activeUser    : null,
         }
       )
       mem.getUserClouds(memory.userid, this.setupCloudsAndPeople);
+      
       memory.files.map(file =>{
         let fname = mem.getFilename(file.thumburl)
         let ftype = this.getFileType(file.fileext)
@@ -292,8 +334,7 @@ class EditPost extends Component {
           fileext     : file.fileext,          
           thumbnail   : file.thumburl,
           thumbext    : file.thumbext,
-          displayurl  : file.displayurl,
-          
+          displayurl  : file.displayurl,          
           id          : file.id,        // CAMERA || CAMERAROLL || AUDIO || VIDEO     
           type        : ftype,          // IMAGE=0 || VIDEO=1 || AUDIO=2
           text        : '',             // needed only to match thumbScroll data structure            
@@ -473,19 +514,19 @@ class EditPost extends Component {
             />
             <ListItem // Location
               title="Location"
-              leftIcon={{name: 'language'}}
+              leftIcon  = {{name: 'language'}}
               bottomDivider
               chevron
-              onPress={() => this.getLocation()}
-              subtitle={this.renderLocation()}
+              onPress   = { () => this.getLocation()}
+              subtitle  = { this.renderLocation()}
             />
             <ListItem // Clouds
               title="Cloud"
-              leftIcon={{name: 'group'}}
+              leftIcon  = {{name: 'group'}}
               bottomDivider
               chevron
-              onPress={() => this.getClouds()}
-              subtitle={
+              onPress   = {() => this.getClouds()}
+              subtitle  = {
                 <View style={styles.subtitle}>
                   {this.state.allClouds.map((cloud, index) => (
 
@@ -495,7 +536,7 @@ class EditPost extends Component {
                       greyOutOnTagPress = { !(cloud.name === 'Personal')} // Cant turn off the Personal cloud
                       buttonDown        = { !cloud.selected  }
                       onTagPress        = { this.handleCloudTagPress}
-                      title             = { cloud.name}
+                      title             = { cloud.name }
                     />
                     
                   ))}
@@ -541,12 +582,38 @@ class EditPost extends Component {
         { this.renderPeopleModal()    }
         { this.renderLocationModal()  }
         { this.renderCaptureModal()   }
+        { this.renderCloudModal()     }
         
 
       </KeyboardShift>
     );
   }
   
+  // ---------------------------------------------------------------------------------
+
+  renderCloudModal = () =>{
+    
+    if(this.state.cloudModalVisable){
+      
+      return (
+        <Modal
+            animationType   = "slide"
+            transparent     = { false}
+            visible         = { this.state.cloudModalVisable}
+            >
+            <SearchClouds 
+                  allClouds     = { this.state.allClouds}
+                  taggedClouds  = { this.state.taggedClouds }
+                  updateClouds  = { this.updateClouds }
+                  close         = { () => {this.setState({cloudModalVisable: false})}}
+              />      
+          </Modal>
+      )
+    }else{
+      return null
+    }
+  }
+
   // ---------------------------------------------------------------------------------
 
   renderCaptureModal = () =>{
@@ -591,10 +658,10 @@ class EditPost extends Component {
               visible         = {this.state.peopleModalVisible}
               >
               <SearchPeople 
-                  allPeople = { this.state.allPeople}
-                  taggedPeople = { this.state.taggedPeople }
-                  updatePeople = { this.updatePeople }
-                  close        = { () => {this.setState({peopleModalVisible: false})}}
+                  allPeople     = { this.state.allPeople}
+                  taggedPeople  = { this.state.taggedPeople }
+                  updatePeople  = { this.updatePeople }
+                  close         = { () => {this.setState({peopleModalVisible: false})}}
               />              
             </Modal>
         )

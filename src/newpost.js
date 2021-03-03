@@ -5,7 +5,10 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import {ZoomableImage} from './cachedImage'
 import Video from 'react-native-video'
 import Dialog from 'react-native-dialog'
+import SearchPeople from './searchpeople'
+import SearchLocation from './searchlocation'
 import {showMessage, hideMessage} from 'react-native-flash-message';
+import { EventRegister } from 'react-native-event-listeners'
 
 import {
   StyleSheet,
@@ -58,6 +61,7 @@ class NewPost extends Component {
       spinner: false,
       modalVisible:false,
       deleteDialogVisible:false,
+      peopleModalVisible:false,
       activeItem:null,
       deleteIndex:'',
     };
@@ -69,6 +73,7 @@ class NewPost extends Component {
 
   setupCloudsAndPeople = (clouds) => {
     if (Array.isArray(clouds)) {
+      
       const firstitem = [
         {
           id: 0,
@@ -79,7 +84,7 @@ class NewPost extends Component {
       ];
 
       const newarray = firstitem.concat(clouds);
-      mem.getCloudPeople(clouds, null).then((people) => {
+      mem.getCloudPeople(clouds, (people) => {
         this.setState({allPeople: people, allClouds: newarray});
       });
     }
@@ -139,26 +144,26 @@ class NewPost extends Component {
 
   //--------------------------------------------------------------------------
 
-  pushMemory = (memid) => {
+  pushMemory = (memory) => {
     console.log('PUSH MEMORY');
-    console.log(this.props.navigation.screenProps);
+    EventRegister.emit('pushNewMemory', memory )
   };
 
   //--------------------------------------------------------------------------
 
-  doPostLoad = (memid) => {
+  doPostLoad = (memory) => {
     
     let uid = this.state.user.userid
-    this.pushMemory(memid)
+    this.pushMemory(memory)
     if( Array.isArray ( this.state.taggedClouds ) && this.state.taggedClouds.length > 0 )
     {
       let cid = this.state.taggedClouds.findIndex( cloud => parseInt(cloud.id) === 1 ) // search for UAP cloud only
       if(cid !== -1 )
         {
           cid = parseInt ( this.state.taggedClouds[cid].id ) // get the id of the UAP cloud
-          mem.postPointsEvent ( uid , 50 , memid , 'POINTS : Post new memory' , cid )
-          mem.postStatusEvent ( uid ,  5 , memid , 'STATUS : Post new memory' , cid )
-          console.log    ( 'refreshFeed Points & status: user : ', uid, ' memid : ', memid , ' cloud : ', cid )
+          mem.postPointsEvent ( uid , 50 , memory.memid , 'POINTS : Post new memory' , cid )
+          mem.postStatusEvent ( uid ,  5 , memory.memid , 'STATUS : Post new memory' , cid )
+          console.log    ( 'refreshFeed Points & status: user : ', uid, ' memid : ', memory.memid , ' cloud : ', cid )
         }
 
     }
@@ -177,7 +182,7 @@ class NewPost extends Component {
 
   getLocation = () => {
     Keyboard.dismiss();
-    this.props.navigation.navigate('SearchLocation');
+    this.setState({locationModalVisible:true})
   };
 
   // ---------------------------------------------------------------------------------
@@ -190,17 +195,14 @@ class NewPost extends Component {
 
   getPeople = () => {
     Keyboard.dismiss();
-    this.props.navigation.navigate('SearchPeople', {
-      allPeople: this.state.allPeople,
-      taggedPeople: this.state.taggedPeople,
-      updatePeople: this.updatePeople
-    });
+    this.setState({peopleModalVisible:true})
+    
   };
 
   // ---------------------------------------------------------------------------------
 
   updatePeople = ( taggedPeople  ) => {
-    console.log('update called');
+    
     this.setState({taggedPeople:taggedPeople})
   }
 
@@ -450,6 +452,8 @@ class NewPost extends Component {
         
         {this.renderImageEditModal()}
         {this.renderDeleteDialog()}
+        {this.renderPeopleModal()}
+        { this.renderLocationModal()  }
         
 
       </KeyboardShift>
@@ -555,6 +559,54 @@ class NewPost extends Component {
           </Dialog.Container>
         </View>
       )
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  renderPeopleModal = () =>{
+    
+    if(this.state.peopleModalVisible){
+      return (
+        <Modal
+            animationType   = "slide"
+            transparent     = {false}
+            visible         = {this.state.peopleModalVisible}
+            >
+            <SearchPeople 
+                allPeople     = { this.state.allPeople}
+                taggedPeople  = { this.state.taggedPeople }
+                updatePeople  = { this.updatePeople }
+                close         = { () => {this.setState({peopleModalVisible: false})}}
+            />              
+          </Modal>
+      )
+    }else{
+      return null
+    }
+    
+}
+  // ---------------------------------------------------------------------------------
+
+  renderLocationModal = () =>{
+    
+    if(this.state.locationModalVisible){
+      return (
+        <Modal
+            animationType   = "slide"
+            transparent     = {false}
+            visible         = {this.state.locationModalVisible}
+            >
+            <SearchLocation
+                location        = { this.state.location}
+                updateLocation  = { this.updateLocation }
+                close           = { () => {this.setState({locationModalVisible: false})}}
+            />              
+          </Modal>
+      )
+    }else{
+      return null
+    }
+    
   }
 
   // ---------------------------------------------------------------------------------

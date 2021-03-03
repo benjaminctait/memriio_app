@@ -239,6 +239,8 @@ getPointsAndStatus = () => {
                         onPress = {() =>{this.props.route.params.logoutcallback()}}
                       >Logout</Text>
                     </TouchableOpacity>
+                    
+
                   </View>
               </View> 
     
