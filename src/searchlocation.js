@@ -20,7 +20,7 @@ class SearchLocation extends Component{
 //--------------------------------------------------------------------------------
 
 handleSelectLocation = (location) => {
-  
+    console.log('handleSelectLocation ',location);
     this.props.updateLocation(location.firstname + ' ' + location.lastname)
     this.props.close()
 }

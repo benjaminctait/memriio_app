@@ -19,7 +19,7 @@ import {
   
 } from 'react-native';
 import EditPost from './editpost';
-import { log } from 'react-native-reanimated';
+
 
 let monthNames =["Jan","Feb","Mar","Apr",
 "May","Jun","Jul","Aug",
@@ -238,6 +238,7 @@ class MemoryCard extends Component {
           ref                   = {(ref) => (this.carousel = ref)} 
           data                  = {this.state.files}
           sliderWidth           = {width}
+         
           itemWidth             = {width}
           hasParallaxImages     = {false}
           firstItem             = {0}

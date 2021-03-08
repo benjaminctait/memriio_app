@@ -236,7 +236,7 @@ class EditPost extends Component {
   // ---------------------------------------------------------------------------------
 
   updateLocation = ( location  ) => {
-    console.log('update location called');
+    console.log('updateLocation : ', location);
     this.setState({ location : location})
   }
   
@@ -450,8 +450,8 @@ class EditPost extends Component {
       return (
         <View style={styles.subtitle}>
           <LocationTag
-            key= 'locid'
-            title={this.state.location}
+           key='locid'
+           title={ this.state.location }
           />
         </View>
       );

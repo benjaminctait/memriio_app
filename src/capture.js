@@ -379,12 +379,15 @@ class CaptureComponent extends Component {
   
   //--------------------------------------------------------------------------------------
   handleGetPhotossPress = async () => {
+
+    // note this function can be improved bystoring android permissions in local state
     this.showMode('file');
     if (Platform.OS === 'android' && !(await this.hasAndroidPermission())) {
       return;
     }
     return true;
-  };
+  }
+
   hasAndroidPermission = async () => {
     const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
     const getStoragePermission = await PermissionsAndroid.check(permission);
@@ -470,7 +473,7 @@ class CaptureComponent extends Component {
             if (Platform.OS === 'ios') {
               
               cameraRollPathToAbsolutePath(img.uri, img.type).then( assetPath => {
-                
+                console.log(`adding file ${img.filename}`);
                 this.addFileToContent(assetPath,CAMERAROLL_SRC,IMAGE,img.filename)
                 })
             } else {
@@ -684,7 +687,8 @@ class CaptureComponent extends Component {
     
   }
 
-  closeModal = () =>{
+  closeModal = async () =>{
+    await this.processSelectedFiles()
     this.props.updateContent(this.state.captureContent)
     this.props.close()
   }

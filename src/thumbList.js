@@ -1,24 +1,19 @@
-import React, { memo } from 'react';
-
+import React from 'react';
 import DraggableFlatList from 'react-native-draggable-flatlist'
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import * as mem from './datapass';
+import {TouchableOpacity} from 'react-native-gesture-handler'
+import {CacheImage} from './cachedImage'
 
 import {
   StyleSheet,
-  Image,
   View,
-  Text,
 } from 'react-native';
-
-import {TouchableOpacity} from 'react-native-gesture-handler'
 
 
 let THUMBNAIL_WIDTH = 180
 
-
-
 class ThumbList extends React.Component {
-  
 
   state = {
     data: []
@@ -50,9 +45,19 @@ class ThumbList extends React.Component {
   
   renderItem = ({ item, index, drag, isActive }) => {
     let st = isActive ? styles.activeThumb : styles.thumb
-    let im = isActive ? styles.activeImage : styles.image
+    let thumb = null
+    if(item){
+      console.log('item ', item);
+      let thumbname = mem.getFilename(item.thumbnail)
+      console.log('renderitem : ', thumbname);
+      thumb = <CacheImage 
+                  style     = { styles.image  } 
+                  uri       = { item.thumbnail } 
+                  filename  = { thumbname     }
+                />
+    }
     
-    const videoIndicator = (item.type===1) ? <Icon name={'videocam'} size={30} style={styles.videoIndicator} /> : null;
+    let videoIndicator = (item.type===1) ? <Icon name={'videocam'} size={30} style={styles.videoIndicator} /> : null;
                             
     return (
       <View>
@@ -63,13 +68,8 @@ class ThumbList extends React.Component {
         onPress       = { () => this.props.handleThumbPress(item.id) }
         zIndex        = { 0 }
         >
-          
-          <Image 
-            source  = { {uri: item.thumbnail} } 
-            style   = { styles.image }
-          />
-          
-          {videoIndicator}
+          { thumb }
+          { videoIndicator }
           
         </TouchableOpacity>
         <TouchableOpacity onPress={()=>this.handleOnDelete(item.id)} >

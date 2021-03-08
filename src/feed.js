@@ -406,13 +406,18 @@ class Feed extends Component {
   //----------------------------------------------------------------------------------------------
   
   pushMemoryToAllLocalFiles = (memory) =>{
+  
+  let allClouds = memory.taggedClouds.map(cloud =>{return cloud.id})
+  allClouds.unshift(0)
+  console.log(`Pushing memory ${memory.memid} to all local clouds ${allClouds}`);
 
-  memory.taggedClouds.map(cloud =>{ 
-    let cloudfile = `cloudfile-${cloud.id}`
-    this.readCloudMemoriesFromFile(cloud.id)
+  allClouds.map(cloudid =>{ 
+    let cloudfile = `cloudfile-${cloudid}`
+    this.readCloudMemoriesFromFile(cloudid)
       .then( memories =>{
         memories.push(memory)
-        this.writeCloudMemoriesToFile(memories,cloud.id)
+        if(memories.length>1) memories.sort(this.memoryCompare)
+        this.writeCloudMemoriesToFile(memories,cloudid)
       })
       .catch(err =>{
         console.log(`Error reading local file : ${cloudfile}`);
@@ -499,22 +504,27 @@ class Feed extends Component {
     return new Promise((resolve,reject)=>{
       mem.getUserDetails( xmem.userid ).then( author =>{
         xmem.author = author
-        mem.getMemoryDetails( xmem.memid ).then ( memdeets =>{
-          xmem.createdon = memdeets.createdon
-          xmem.modifiedon = memdeets.modifiedon
-          mem.getMemoryClouds( newmemory.memid ).then( uclouds =>{
-            xmem.taggedClouds = uclouds                  
-            mem.getMemoryPeople ( newmemory.memid, (people) =>{
-              xmem.taggedPeople = people              
-              mem.getMemoryFiles ( newmemory.memid, (files) =>{                  
-                xmem.memfiles = files
-                mem.getMemorySearchwords ( newmemory.memid ).then ( searchwords =>{
-                  xmem.searchwords = searchwords
-                  resolve ( xmem )
+        mem.getUserStatus( author.userid , this.state.activeCloudID).then(status =>{
+          console.log(`user status : user ${author.userid} cloud : ${this.state.activeCloudID} `);
+          xmem.author.status = status     
+            mem.getMemoryDetails( xmem.memid ).then ( memdeets =>{
+              xmem.createdon = memdeets.createdon
+              xmem.modifiedon = memdeets.modifiedon
+              mem.getMemoryClouds( xmem.memid ).then( uclouds =>{
+                xmem.taggedClouds = uclouds 
+                mem.getMemoryPeople ( newmemory.memid, (people) =>{
+                  xmem.taggedPeople = people              
+                  mem.getMemoryFiles ( newmemory.memid, (files) =>{                  
+                    xmem.memfiles = files
+                    mem.getMemorySearchwords ( newmemory.memid ).then ( searchwords =>{
+                      xmem.searchwords = searchwords               
+                      console.log(`Memory ${xmem.memid} prepped for local storage`);   
+                      resolve ( xmem )
+                    })
+                  })
                 })
               })
             })
-          })
         })
       })
     })
@@ -567,34 +577,38 @@ class Feed extends Component {
   componentDidMount = async () => {
     console.log(' FEED : DIDMOUNT ');
     this.setState({spinnerVisible:true})
+
+    // Setup the active user getUserDetails
+
     mem.getActiveUser().then(user =>{
       mem.log(user,'Active User : ');
       this.setState({ user:user , activeCloudID:user.activeCloudID },()=>{
-        mem.getMemoryDetails(544)
         mem.getUserClouds(this.state.user.userid, this.loadClouds);
       })
     })
-    
-    this.listener = EventRegister.addEventListener('pushNewMemory', (memory) => {
-      console.log(`new memory pushed : ${memory.memid}`)
-      
-      this.prepNewMemoryForLocalStorage  (memory).then (newMemory =>{
-        // this.pushMemoryToAllLocalFiles ( newMemory )
-        // mem.findArrayIndex(newMemory.taggedClouds,(cloud) =>{return cloud.id === this.state.activeCloudID })
-        // .then(index =>{
-        //   if (index > -1 ){
-        //     this.pushNewMemories( [ newMemory ],this.state.activeCloudID )
-        //   }
-        // })
-        
-        mem.log(newMemory)
-      })
-      
 
-      
-      
+    // Add listener for newMemory event
+
+    this.listener = EventRegister.addEventListener('pushNewMemory', (memory) => {      
+      this.prepNewMemoryForLocalStorage  (memory).then (newMemory =>{        
+        this.pushMemoryToAllLocalFiles ( newMemory )     
+
+        if(this.state.activeCloudID === 0){
+          console.log(`Pushing Memory ${newMemory.memid} to feed `)
+          this.pushNewMemories( [ newMemory ],this.state.activeCloudID )
+        }else{
+          // if the current cloud is in the new memories tagged clouds then push it to the active feed
+          mem.findArrayIndex(newMemory.taggedClouds,(cloud) => { return cloud.id === this.state.activeCloudID })
+          .then(index =>{
+            if (newMemory.taggedClouds.length = index != -1 ){
+              console.log(`Pushing Memory ${newMemory.memid} to feed `)
+              this.pushNewMemories( [ newMemory ],this.state.activeCloudID )
+            }
+          })
+        }
+      })
     })
-    
+
   };
 
   //----------------------------------------------------------------------------------------------
@@ -740,7 +754,6 @@ class Feed extends Component {
     } else if (memisArray && this.state.isLoading) {
       feedview = (
         <View style={styles.nomemory}>
-          <Text style={styles.textMain}>{this.state.loadingMessage}</Text>
           {this.renderSpinner()}
           {this.renderProgressBar()}          
         </View>

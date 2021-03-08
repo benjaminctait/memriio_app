@@ -215,6 +215,11 @@ class NewPost extends Component {
       }
     }
   }
+  // ---------------------------------------------------------------------------------
+
+  updateLocation = (location) =>{
+    this.setState({ location : location })
+  }
 
   // ---------------------------------------------------------------------------------
   // Loads the state of the New Post view
@@ -336,10 +341,8 @@ class NewPost extends Component {
       return (
         <View style={styles.subtitle}>
           <LocationTag
-            key={this.state.location.locid}
-            title={
-              this.state.location.firstname + ' ' + this.state.location.lastname
-            }
+            key= 'locid'
+            title={this.state.location}
           />
         </View>
       );
@@ -433,7 +436,7 @@ class NewPost extends Component {
                 </View>
               }
             />
-          </View>
+          </View>  
               <ThumbList
                 data              = { this.state.content}
                 handleThumbPress  = { this.showImageEditModal}    
