@@ -32,7 +32,7 @@
     "lodash": "^4.17.15",
     "react": "^16.9.0",
     "react-audio-player": "^0.13.0",
-    "react-native": "^0.63.2",
+    "react-native": "^0.64.1",
     "react-native-animated-wave": "^1.2.3",
     "react-native-audio": "^4.3.0",
     "react-native-aws3": "0.0.9",
